@@ -1,0 +1,48 @@
+{
+    "name": "knit-game",
+    "tree": 
+    {
+        "$className": "DataModel",
+
+        "ReplicatedStorage" : 
+        {
+            "$className": "ReplicatedStorage",
+            "Source":
+            {
+                "$path": "src/ReplicatedStorage"
+            },
+            "Packages":
+            {
+                "$path": "Packages"
+            }
+        },
+        "ServerScriptService" : 
+        {
+            "$className": "ServerScriptService",
+            "Source":
+            {
+                "$path": "src/ServerScriptService"
+            }
+        },
+        "ServerStorage" : 
+        {
+            "$className": "ServerStorage",
+            "Source":
+            {
+                "$path": "src/ServerStorage"
+            }
+        },
+        "StarterPlayer" : 
+        {
+            "$className": "StarterPlayer",
+            "StarterPlayerScripts": 
+            {
+                "$className": "StarterPlayerScripts",
+                "Source":
+                {
+                    "$path": "src/StarterPlayerScripts"
+                }
+            }
+        }
+    }
+}
