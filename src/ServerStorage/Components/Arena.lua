@@ -14,8 +14,12 @@ local Knit = require(ReplicatedStorage.Packages.Knit)
 local Janitor = require(ReplicatedStorage.Packages.Janitor)
 local Signal = require(ReplicatedStorage.Packages.Signal)
 local Component = require(ReplicatedStorage.Packages.Component)
+local Promise = require(Knit.Util.Promise)
 --Assets
 local BALL_PREFAB =  game:GetService('ServerStorage').Assets.Ball
+--Constants
+local RESPAWN_BALL_TIME = 3
+
 
 local Arena = Component.new({
     Tag = 'Arena',
@@ -33,10 +37,10 @@ function Arena:Construct()
 end
 
 function Arena:Start()
-    self._respawn:Connect(function()        
+    self._respawnSignal:Connect(function()        
         self:_spawnBall()
     end)
-    self._respawn:Fire()
+    self._respawnSignal:Fire()
 end
 
 function Arena:ObserveScore(teamName : string, handler) : RBXScriptSignal
@@ -57,13 +61,14 @@ end
 --****************************************************
 -- Function: ArenaComponent:SetScore
 --
--- Purpose: Constructs the object with all the neccessary variables to assign.
+-- Purpose: Sets scores to teams during the match.
 --****************************************************
 
 function Arena:SetScoreForTeam(teamName : string, score : number)
     local teamScore = teamName .. 'Score'
     self.Instance:SetAttribute(teamScore, score)
 end
+
 
 function Arena:CleanUp()
     self._janitor:Cleanup()
@@ -74,17 +79,14 @@ function Arena:_spawnBall()
     ball.Parent = self.Instance
     ball.CFrame = self.Instance.Center.Attachment.WorldCFrame
     self._janitor:Add(ball)
+    Knit.GetService('ArenaService').CurrentBall = ball
     self._janitor:Add(ball:GetPropertyChangedSignal('Parent'):Connect(function()
         if (not ball.Parent) then
-            self._janitor:AddPromise(156165165)
-            self._respawn:Fire()
+            self._janitor:AddPromise(Promise.delay(RESPAWN_BALL_TIME)):andThen(function()                
+                self._respawnSignal:Fire()
+            end)
         end
     end))
 end
-
-Arena.Started:Connect(function(component)
-	local robloxInstance: Instance = component.Instance
-	print("Component is bound to " .. robloxInstance:GetFullName())
-end)
 
 return Arena

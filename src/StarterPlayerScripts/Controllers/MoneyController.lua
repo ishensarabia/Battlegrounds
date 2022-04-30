@@ -19,7 +19,7 @@ function MoneyController:KnitStart()
 end
 
 function MoneyController:KnitInit()
-    print("MoneyController Initialized")
+    
 end
 
 return MoneyController
