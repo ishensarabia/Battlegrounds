@@ -129,6 +129,7 @@ function DestructibleObject:CancelConstruction()
             self._tweenPromises[child:GetAttribute('PartIndex')]:cancel()
         end
     end
+    self:_setBuildTime()
 end
 
 function DestructibleObject:Stop()
