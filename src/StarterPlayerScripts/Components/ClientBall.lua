@@ -96,7 +96,7 @@ function ClientBall:_cleanupForLocalPlayer()
 end
 
 function ClientBall:Start()
-    self:_setupForLocalPlayer()
+    -- self:_setupForLocalPlayer()
 end
 
 function ClientBall:Stop()
