@@ -17,7 +17,7 @@ ArenaService.BALL_RUN_SPEED = 52
 
 function ArenaService:GetArena()
     local ArenaComponent = require(game.ServerStorage.Source.Components.Arena)
-    return ArenaComponent:FromInstance(workspace.Arena)  
+    -- return ArenaComponent:FromInstance(workspace.Arena)  
 end
 
 function ArenaService:_startGame()
@@ -42,8 +42,8 @@ function ArenaService:KnitInit()
 end
 
 function ArenaService:KnitStart()
-    repeat task.wait() until Knit.ComponentsLoaded == true
-    self:_startGame()
+    -- repeat task.wait() until Knit.ComponentsLoaded == true
+    -- self:_startGame()
 end
 
 

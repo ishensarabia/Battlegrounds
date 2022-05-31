@@ -1,7 +1,7 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Knit = require(ReplicatedStorage.Packages.Knit)
 --Dependencies
-local WeaponSystem = require(ReplicatedStorage.Source.Modules.WeaponsSystem.WeaponsSystem)
+local WeaponSystem = require(ReplicatedStorage.Source.Systems.WeaponsSystem.WeaponsSystem)
 
 local WeaponsController = Knit.CreateController {
     Name = "WeaponsController",

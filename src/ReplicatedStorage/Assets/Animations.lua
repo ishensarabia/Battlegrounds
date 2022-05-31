@@ -1,5 +1,5 @@
 --****************************************************
--- File: Apps.lua
+-- File: Animations.lua
 --
 -- Purpose: Stores all animations IDs.
 --

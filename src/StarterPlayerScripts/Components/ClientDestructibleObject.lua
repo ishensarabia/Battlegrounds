@@ -5,14 +5,18 @@ local Animations = require(game.ReplicatedStorage.Source.Assets.Animations)
 --Constants
 local LOCAL_COMPONENTS_PATH = game.StarterPlayer.StarterPlayerScripts.Source.Components
 
-local Conditions = {}
-function Conditions.ShouldConstruct(component)
-    return component.Instance.Interactable.BuildPart.Attachment:FindFirstChildOfClass('ProximityPrompt')
-end
+-- local Conditions = {}
+-- function Conditions.ShouldConstruct(component)
+--     if (component.Instance:FindFirstChild("Interactable")) then
+--         return true
+--     else
+--         return false
+--     end
+-- end
 
 local ClientDestructibleObject = Component.new({
     Tag = 'DestructibleObject',
-    Extensions = {Conditions}
+    -- Extensions = {Conditions}
 })
 
 
@@ -40,49 +44,58 @@ end
 function ClientDestructibleObject:Start()
     self._buildingAnimationTrack = self:_setUpAnimation()
         --Setup proximity prompts
-    for index, child in pairs(self.Instance.Interactable:GetChildren()) do
-        local constructPrompt = child.Attachment:WaitForChild('ProximityPrompt') 
-        table.insert(self.constructPrompts, constructPrompt)
-        self._janitor:Add(constructPrompt)
-
-        self._janitor:Add(constructPrompt.PromptShown:Connect(function()
-            Knit.GetService('DestructibleObjectService'):SetBuildTime(self.Instance)
-        end))
-
-        self._janitor:Add(constructPrompt.PromptButtonHoldBegan:Connect(function(player)
-            self._buildingAnimationTrack:Play()
-        end))
-        
-        self._janitor:Add(constructPrompt.Triggered:Connect(function(player)
-
-        end))
-        
-        self._janitor:Add(constructPrompt.PromptButtonHoldEnded:Connect(function(player)
-            self._buildingAnimationTrack:Stop(0.5)
-        end))
-        --Listen for new prompts
-        self._janitor:Add(child.Attachment.ChildAdded:Connect(function(constructPrompt)
-            if (constructPrompt:IsA('ProximityPrompt')) then
-                self._janitor:Add(constructPrompt.PromptShown:Connect(function()
-                    Knit.GetService('DestructibleObjectService'):SetBuildTime(self.Instance)
-                end))
-        
-                self._janitor:Add(constructPrompt.PromptButtonHoldBegan:Connect(function(player)
-                    self._buildingAnimationTrack:Play()
-                end))
-                
-                self._janitor:Add(constructPrompt.Triggered:Connect(function(player)
-        
-                end))
-                
-                self._janitor:Add(constructPrompt.PromptButtonHoldEnded:Connect(function(player)
-                    self._buildingAnimationTrack:Stop(0.5)
-                end))
-            end
-        end))
-    end
-
+        for index, child in pairs(self.Instance.Interactable:GetChildren()) do
+            local constructPrompt = child.Attachment:WaitForChild('ProximityPrompt') 
+            table.insert(self.constructPrompts, constructPrompt)
+            self._janitor:Add(constructPrompt)
     
+            self._janitor:Add(constructPrompt.PromptShown:Connect(function()
+                Knit.GetService('DestructibleObjectService'):SetBuildTime(self.Instance)
+            end))
+    
+            self._janitor:Add(constructPrompt.PromptButtonHoldBegan:Connect(function(player)
+                self._buildingAnimationTrack:Play()
+            end))
+            
+            self._janitor:Add(constructPrompt.PromptButtonHoldEnded:Connect(function(player)
+                self._buildingAnimationTrack:Stop(0.5)
+            end))
+        end    
+    self._janitor:Add(self.Instance.Interactable.ChildAdded:Connect(function(child)
+        if (child:IsA("BasePart")) then
+            local constructPrompt = child:WaitForChild("Attachment"):WaitForChild('ProximityPrompt') 
+            table.insert(self.constructPrompts, constructPrompt)
+            self._janitor:Add(constructPrompt)
+    
+            self._janitor:Add(constructPrompt.PromptShown:Connect(function()
+                Knit.GetService('DestructibleObjectService'):SetBuildTime(self.Instance)
+            end))
+    
+            self._janitor:Add(constructPrompt.PromptButtonHoldBegan:Connect(function(player)
+                self._buildingAnimationTrack:Play()
+            end))
+            
+            self._janitor:Add(constructPrompt.PromptButtonHoldEnded:Connect(function(player)
+                self._buildingAnimationTrack:Stop(0.5)
+            end))
+            --Listen for new prompts
+            self._janitor:Add(child.Attachment.ChildAdded:Connect(function(constructPrompt)
+                if (constructPrompt:IsA('ProximityPrompt')) then
+                    self._janitor:Add(constructPrompt.PromptShown:Connect(function()
+                        Knit.GetService('DestructibleObjectService'):SetBuildTime(self.Instance)
+                    end))
+            
+                    self._janitor:Add(constructPrompt.PromptButtonHoldBegan:Connect(function(player)
+                        self._buildingAnimationTrack:Play()
+                    end))
+    
+                    self._janitor:Add(constructPrompt.PromptButtonHoldEnded:Connect(function(player)
+                        self._buildingAnimationTrack:Stop(0.5)
+                    end))
+                end
+            end))
+        end
+    end))
 end
 
 
@@ -90,8 +103,6 @@ function ClientDestructibleObject:Stop()
     self._janitor:Cleanup()
 end
 
-function ClientDestructibleObject:HeartbeatUpdate(deltaTime)
-   
-end
+
 
 return ClientDestructibleObject

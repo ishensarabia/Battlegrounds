@@ -1,0 +1,6 @@
+return {
+	NONE = 0x0,
+	PROCESS = 0x1,
+	BROADCAST = 0x2,
+	PROCESS_AND_BROADCAST = 0x3,
+}

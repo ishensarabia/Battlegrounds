@@ -2,7 +2,7 @@ local Janitor = require(game.ReplicatedStorage.Packages.Janitor)
 local Knit = require(game.ReplicatedStorage.Packages.Knit)
 local Promise = require(Knit.Util.Promise)
 local Component = require(game.ReplicatedStorage.Packages.Component)
-local TweenObject = require(game.ServerStorage.Source.Modules.TweenObject)
+local TweenObject = require(game.ServerStorage.Source.Systems.TweenObject)
 local Players = game:GetService("Players")
 --Services
 local TweenService = game:GetService("TweenService")
@@ -142,7 +142,7 @@ function DestructibleObject:ConstructObject(player)
 							CFrame = player.Character.HumanoidRootPart.CFrame + Vector3.new(
 								0,
 								0,
-								math.random(3, 6)
+								math.random(-9, -3)
 							),
 						}
 					)
