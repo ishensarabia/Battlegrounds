@@ -2,7 +2,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Config = game:GetService("ReplicatedFirst").Configurations
 local Knit = require(ReplicatedStorage.Packages.Knit)
 
-local RECS = require(ReplicatedStorage.Packages.RECS)
+local RECS = require(ReplicatedStorage.Source.Systems.Core.RECS)
 local RECSController = Knit.CreateController { Name = "RECSController" }
 
 local recsCore = RECS.Core.new({})

@@ -9,8 +9,8 @@ local ToggleMapEvent = ReplicatedStorage.Events.ToggleMapEvent
 --local EnableToggleMapButtonEvent = ReplicatedStorage.Events.EnableToggleMapButtonEvent
 
 local Conf = require(ReplicatedFirst.Configurations.MainConfiguration)
-local Util = require(ReplicatedStorage.Packages.Util)
-local RECS = require(ReplicatedStorage.Packages.RECS)
+local Util = require(ReplicatedStorage.Source.Modules.Core.Util)
+local RECS = require(ReplicatedStorage.Source.Systems.Core.RECS)
 
 local _playerIndicator = nil
 local _map = nil

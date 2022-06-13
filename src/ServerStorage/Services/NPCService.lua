@@ -23,15 +23,15 @@ end
 
 
 function NPCService:KnitInit()
-    for index, folder in ipairs(workspace.NPCs:GetChildren()) do
-        local data = {}
-        for index, spawnPart in ipairs(folder:GetChildren()) do
-            table.insert(data, {["_CFrame"] = spawnPart.CFrame, ['size'] = spawnPart.Size})
-            spawnPart:Destroy()
-        end
-        table.insert(NPCS,{[folder] = data})
-        folder:SetAttribute("Position", GetPosition(folder))
-    end
+    -- for index, folder in ipairs(workspace.NPCs:GetChildren()) do
+    --     local data = {}
+    --     for index, spawnPart in ipairs(folder:GetChildren()) do
+    --         table.insert(data, {["_CFrame"] = spawnPart.CFrame, ['size'] = spawnPart.Size})
+    --         spawnPart:Destroy()
+    --     end
+    --     table.insert(NPCS,{[folder] = data})
+    --     folder:SetAttribute("Position", GetPosition(folder))
+    -- end
 end
 
 

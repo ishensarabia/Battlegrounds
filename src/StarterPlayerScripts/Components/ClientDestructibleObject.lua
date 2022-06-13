@@ -54,6 +54,7 @@ function ClientDestructibleObject:Start()
             end))
     
             self._janitor:Add(constructPrompt.PromptButtonHoldBegan:Connect(function(player)
+                warn("Construction building")
                 self._buildingAnimationTrack:Play()
             end))
             
@@ -72,6 +73,7 @@ function ClientDestructibleObject:Start()
             end))
     
             self._janitor:Add(constructPrompt.PromptButtonHoldBegan:Connect(function(player)
+                warn("Construction building")
                 self._buildingAnimationTrack:Play()
             end))
             

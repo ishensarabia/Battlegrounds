@@ -309,29 +309,9 @@ local defaults = {
 		},
 	},
 
-	weapon_system = {
-		debug_hitmarkers = false,
-		weapon_tag = "NewWeapon",
-		ignore_list_tag = "WeaponSystemRayIgnore",
-		max_penetration_casts = 50,
-		bullet_holes_fade = true,
-		weapons = {
-			NewPistol = {
-				handlers = {},
-				default_state = {
-					ammo = 10,
-					reloadStartTime = 0,
-					lastFiredTime = 0,
-				},
-				config = {
-					damage = 20,
-					clip_capacity = 10,
-					range = 500,
-					reloadTimeLength = 2,
-					firingDebounce = 0.15,
-				}
-			},
-		},
+	weapons_system = {
+		SlowZoomWalkedEnabled = true,
+		SprintEnabled = true
 	},
 
 	keybindings = {

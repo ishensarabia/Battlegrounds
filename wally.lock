@@ -38,7 +38,7 @@ version = "1.4.2"
 dependencies = []
 
 [[package]]
-name = "sci-punk/playgrounds"
+name = "sci-punk/battlegrounds"
 version = "0.1.0"
 dependencies = [["Component", "sleitnick/component@2.4.5"], ["Flipper", "reselim/flipper@2.0.0"], ["Janitor", "howmanysmall/janitor@1.14.1"], ["Knit", "sleitnick/knit@1.4.6"], ["Maid", "quenty/maid@2.0.1-canary.140ed9d6.1"], ["Option", "sleitnick/option@1.0.3"], ["Roact", "roblox/roact@1.4.2"], ["Roact-Flipper", "reselim/roact-flipper@2.0.0"], ["Roact-Hooks", "kampfkarren/roact-hooks@0.3.0"], ["Signal", "sleitnick/signal@1.1.0"]]
 

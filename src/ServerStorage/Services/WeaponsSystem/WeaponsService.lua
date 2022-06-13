@@ -7,7 +7,10 @@ local weaponsSystemInitialized = false
 
 local WeaponsService = Knit.CreateService {
     Name = "WeaponsService",
-    Client = {},
+    Client = 
+	{
+		SendWeaponData = Knit.CreateSignal()
+	},
 }
 
 local function initializeWeaponsSystemAssets()
@@ -57,13 +60,16 @@ end
 
 function WeaponsService:KnitStart()
     initializeWeaponsSystemAssets()
+	if (not WeaponsSystem.doingSetup and not WeaponsSystem.didSetup) then
+		WeaponsSystem.setup()
+	end
 end
 
+function WeaponsService:SendWeaponData(targetPlayer : Player, typeOfData : string, dealerPosition : Vector3)
+	self.Client.SendWeaponData:Fire(targetPlayer, typeOfData, dealerPosition)
+end
 
 function WeaponsService:KnitInit()
-    if (not WeaponsSystem.doingSetup and not WeaponsSystem.didSetup) then
-        WeaponsSystem.setup()
-    end
 end
 
 

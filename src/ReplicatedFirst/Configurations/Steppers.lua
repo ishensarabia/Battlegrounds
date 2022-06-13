@@ -1,7 +1,7 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 
-local RECS = require(ReplicatedStorage.Packages.RECS)
+local RECS = require(ReplicatedStorage.Source.Systems.Core.RECS)
 -- local Runner = require(ReplicatedStorage.SharedSystems.Runner)
 -- local Pathing = require(ReplicatedStorage.SharedSystems.Pathing)
 -- local DataflowSystem = require(ReplicatedStorage.SharedSystems.DataflowSystem)

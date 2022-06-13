@@ -4,8 +4,13 @@ local Players = game:GetService("Players")
 
 local IsServer = RunService:IsServer()
 
+--Module dependencies
+local Knit = require(game.ReplicatedStorage.Packages.Knit)
+
 -- Dependencies
-local WeaponData = script.Parent:WaitForChild("WeaponData")
+local WeaponData = script.Parent:FindFirstChild("WeaponData") or Instance.new("RemoteEvent")
+WeaponData.Name = "WeaponData"
+WeaponData.Parent = script.Parent
 local WeaponsSystemFolder = script.Parent
 local WeaponTypes = WeaponsSystemFolder:WaitForChild("WeaponTypes")
 local Libraries = WeaponsSystemFolder:WaitForChild("Libraries")
@@ -14,12 +19,6 @@ local WeaponsGui = require(Libraries:WaitForChild("WeaponsGui"))
 local SpringService = require(Libraries:WaitForChild("SpringService"))
 local ancestorHasTag = require(Libraries:WaitForChild("ancestorHasTag"))
 ShoulderCamera.SpringService = SpringService
-
-local Configuration = WeaponsSystemFolder:WaitForChild("Configuration")
-local ConfigurationValues = {
-	SprintEnabled = Configuration:WaitForChild("SprintEnabled"),
-	SlowZoomWalkEnabled = Configuration:WaitForChild("SlowZoomWalkEnabled"),
-}
 
 local WEAPON_TAG = "WeaponsSystemWeapon"
 local WEAPON_TYPES_LOOKUP = {}
@@ -141,13 +140,9 @@ function WeaponsSystem.setup()
 		WeaponsSystem.camera = ShoulderCamera.new(WeaponsSystem)
 		WeaponsSystem.gui = WeaponsGui.new(WeaponsSystem)
 
-		if ConfigurationValues.SprintEnabled.Value then
-			WeaponsSystem.camera:setSprintEnabled(ConfigurationValues.SprintEnabled.Value)
-		end
+			WeaponsSystem.camera:setSprintEnabled(true)
 		
-		if ConfigurationValues.SlowZoomWalkEnabled.Value then
-			WeaponsSystem.camera:setSlowZoomWalkEnabled(ConfigurationValues.SlowZoomWalkEnabled.Value)
-		end
+			WeaponsSystem.camera:setSlowZoomWalkEnabled(true)
 
 		local networkFolder = WeaponsSystemFolder:WaitForChild("Network", math.huge)
 
@@ -444,6 +439,7 @@ function WeaponsSystem.doDamage(target, amount, damageType, dealer, hitInfo, dam
 			if dealerHumanoid and target ~= dealerHumanoid and targetPlayer then
 				-- Trigger the damage indicator
 				WeaponData:FireClient(targetPlayer, "HitByOtherPlayer", dealer.Character.HumanoidRootPart.CFrame.Position)
+				
 			end
 		end
 

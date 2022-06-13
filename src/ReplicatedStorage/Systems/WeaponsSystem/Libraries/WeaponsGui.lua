@@ -6,6 +6,7 @@ local TweenService = game:GetService("TweenService")
 
 local LocalPlayer = Players.LocalPlayer
 
+--Module dependencies
 local WeaponsSystemFolder = script.Parent.Parent
 local WeaponData = WeaponsSystemFolder:WaitForChild("WeaponData")
 local Libraries = WeaponsSystemFolder:WaitForChild("Libraries")
@@ -92,6 +93,7 @@ function WeaponsGui.new(weaponsSystem)
 		self.gui.Parent = LocalPlayer:WaitForChild("PlayerGui")
 		self.gui:GetPropertyChangedSignal("AbsoluteSize"):Connect(function() self:onScreenSizeChanged() end)
 		self:onScreenSizeChanged()
+
 
 		WeaponData.OnClientEvent:Connect(function(cmd, otherPlayerPosition)
 			if cmd == "HitByOtherPlayer" then
