@@ -21,6 +21,7 @@ function DestructibleObject:Construct()
 	self._handsTweenPromises = {}
 	self.constructPrompt = nil
 	self.constructPrompts = {}
+	self._shouldAnchor = self.Instance:GetAttribute("ShouldAnchor") or true
 end
 
 function DestructibleObject:DestroyObject()
@@ -40,6 +41,7 @@ function DestructibleObject:DestroyObject()
 			self._janitor:Add(constructPrompt)
 
 			self._janitor:Add(constructPrompt.PromptButtonHoldBegan:Connect(function(player)
+				player.Character.Humanoid:UnequipTools()
 				self:ConstructObject(player)
 			end))
 
@@ -62,13 +64,13 @@ function DestructibleObject:DestroyObject()
 			child.Anchored = false
 		end
 	end
+	
 	self:_setBuildTime()
 	self.isConstructed = false
 end
 
 function DestructibleObject:Start()
 	self:_setModelPartCFrames()
-	self:DestroyObject()
 end
 
 function DestructibleObject:_setModelPartCFrames()
@@ -157,8 +159,10 @@ function DestructibleObject:ConstructObject(player)
 					end)
 				end
 			end
-
-			child.Anchored = true
+			--Cleanup part
+			child.Anchored = self._shouldAnchor
+			child.AssemblyLinearVelocity = Vector3.new(0,0,0)
+			child.AssemblyAngularVelocity = Vector3.new(0,0,0)
 		end
 	end
 
