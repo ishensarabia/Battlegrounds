@@ -148,6 +148,7 @@ function InventoryHandler:render()
 					position =  UDim2.fromScale(0.126, 0.0637),
 					size = UDim2.fromScale(0.793, 0.837),
 					inventoryType = self.state.inventoryType
+					
 				}
 			)
 		})		

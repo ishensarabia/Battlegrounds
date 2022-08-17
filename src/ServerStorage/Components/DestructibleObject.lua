@@ -5,8 +5,11 @@ local Component = require(game.ReplicatedStorage.Packages.Component)
 local TweenObject = require(game.ServerStorage.Source.Systems.TweenObject)
 local Players = game:GetService("Players")
 --Services
+local ServerStorage = game:GetService("ServerStorage")
 local TweenService = game:GetService("TweenService")
-
+--Module dependencies
+local DataService = require(ServerStorage.Source.Data.DataService)
+--Class
 local DestructibleObject = Component.new({
 	Tag = "DestructibleObject",
 })
@@ -24,11 +27,14 @@ function DestructibleObject:Construct()
 	self._shouldAnchor = self.Instance:GetAttribute("ShouldAnchor") or true
 end
 
-function DestructibleObject:DestroyObject()
+function DestructibleObject:DestroyObject(player)
 	--Make sure the object is constructed before destroying it
 	if not self.isConstructed then
 		return
 	end
+	DataService.incrementIntValue(player, "ObjectsDestroyed")
+	warn("Object broke by player: " .. player.UserId)
+	warn("Players data: ", DataService:GetProfileData(player))
 	--Setup proximity prompts
 	for index, child in pairs(self.Instance.Interactable:GetChildren()) do
 		if child:IsA("BasePart") then

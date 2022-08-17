@@ -12,6 +12,7 @@ local saveStructure = {
 	Knockouts = 0,
 	Defeats = 0,
 	LastLogin = os.time(),
+	ObjectsDestroyed = 0,
 	Days = 0,
 	Codes = {},
 	Settings = {
@@ -21,19 +22,20 @@ local saveStructure = {
 }
 
 --Profile service module to save in the module ProfileService data module about currencies soon
-local ProfileStore = ProfileService.GetProfileStore("Development", saveStructure)
+local ProfileStore = ProfileService.GetProfileStore("Battlegrounds_Dev", saveStructure)
 
-local DataHandler = {}
+local DataService = {}
 
 local Profiles = {}
 
 --Functions to get the data structures
-function DataHandler:Get(player)
+function DataService:GetProfileData(player)
 	local profile = Profiles[player]
 	if profile then
 		return profile.Data
 	end
 end
+
 
 local function DeepCopy(original)
 	local copy = {}
@@ -64,7 +66,7 @@ end
 
 local function onPlayerAdded(player)
 	local profile = ProfileStore:LoadProfileAsync("Player_" .. player.UserId, "ForceLoad")
-
+	
 	if profile then
 		profile:ListenToRelease(function()
 			Profiles[player] = nil
@@ -74,7 +76,6 @@ local function onPlayerAdded(player)
 		if player:IsDescendantOf(Players) then
 			Profiles[player] = profile
 			MergeDataWithTemplate(profile.Data, saveStructure)
-			game.ReplicatedStorage.Data.LoadData:Fire(player)
 		else
 			profile:Release()
 		end
@@ -83,43 +84,42 @@ local function onPlayerAdded(player)
 	end
 end
 
-function onPlayerRemoving(player)
+local function onPlayerRemoving(player)
 	local profile = Profiles[player]
 	if profile then
 		profile:Release()
 	end
 end
 
-local function LengthOfDictionary(Table)
-	local counter = 0
-	for _, v in pairs(Table) do
-		counter = counter + 1
-	end
-	return counter
-end
-
-function DataHandler.AddContainers(player, amount)
-	local data = DataHandler:Get(player)
-
-	while LengthOfDictionary(data.CompanionsData.Containers) < amount do
-		data.CompanionsData.Containers[LengthOfDictionary(data.CompanionsData.Containers) + 1] = {
-			["Id"] = HttpService:GenerateGUID(false),
-			["Name"] = LengthOfDictionary(data.CompanionsData.Containers) + 1,
-			["Companions"] = {},
-		}
-	end
-	DataHandler.CompanionsContainersDataToInstances(data.CompanionsData.Containers, player.CompanionsContainers)
-end
-
-function DataHandler.WipeData(player)
-	local data = DataHandler:Get(player)
+function DataService.WipeData(player)
+	local data = DataService:GetProfileData(player)
 	data = {}
 	player:Kick("Your data has been wiped")
 end
 
+function DataService.setKeyValue(player, key : string, newValue : any)
+	local profile = Profiles[player]
+	if profile then
+		if profile.Data[key] then			
+			profile.Data[key] = newValue
+		end
+	end
+end
+
+function DataService.incrementIntValue(player, key : string, amount : number?)
+	assert(type(amount) == "number" or not amount, "Amount is not a number, please verify set parameters")
+	local profile = Profiles[player]
+	assert(type(profile.Data[key] == "number"), "Data key is not an int value, please verify parameters values")
+	if amount then
+		if (profile) then
+			profile.Data[key] += amount
+		end
+	end
+	profile.Data[key] += 1
+end
 --Connecting events
 Players.PlayerRemoving:Connect(onPlayerRemoving)
 
 Players.PlayerAdded:Connect(onPlayerAdded)
 
-return DataHandler
+return DataService

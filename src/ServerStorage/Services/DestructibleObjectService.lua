@@ -2,6 +2,7 @@ local Knit = require(game.ReplicatedStorage.Packages.Knit)
 --Constants
 local LOCAL_COMPONENTS_PATH = game.StarterPlayer.StarterPlayerScripts.Source.Components
 local COMPONENTS_PATH = game.ServerStorage.Source.Components
+--Class
 local DestructibleObject = require(COMPONENTS_PATH['DestructibleObject'])
 local DestructibleObjectService = Knit.CreateService {
     Name = "DestructibleObjectService",
@@ -18,10 +19,6 @@ function DestructibleObjectService:SetBuildTime(destructibleObject : Model)
     currentDestructibleObject:_setBuildTime()
 end
 
-function DestructibleObjectService:DestroyObject(destructibleObject : Model)
-    local currentDestructibleObject = DestructibleObject:FromInstance(destructibleObject)
-    currentDestructibleObject:DestroyObject()
-end
 
 function DestructibleObjectService.Client:SetBuildTime(player, destructibleObject : Model)
     return self.Server:SetBuildTime(destructibleObject)

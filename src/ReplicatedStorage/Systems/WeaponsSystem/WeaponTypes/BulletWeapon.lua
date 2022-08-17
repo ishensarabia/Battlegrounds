@@ -739,7 +739,7 @@ function BulletWeapon:applyDamage(hitInfo)
 	if damage <= 0 then
 		return
 	end
-
+	
 	self.weaponsSystem.doDamage(hitInfo.h, damage, nil, self.player)
 end
 
@@ -787,7 +787,7 @@ function BulletWeapon:onHit(hitInfo)
 			local damageToDeal = blastDamage * damageMultiplier
 			local destructibleObject = ancestorHasTag(explodedPart,'DestructibleObject')
 			if (destructibleObject) then
-				require(game.ServerStorage.Source.Components.DestructibleObject):FromInstance(destructibleObject):DestroyObject()
+				require(game.ServerStorage.Source.Components.DestructibleObject):FromInstance(destructibleObject):DestroyObject(self.player)
 			end
 
 			local humanoid = self.weaponsSystem.getHumanoid(explodedPart)
