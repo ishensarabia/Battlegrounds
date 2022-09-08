@@ -74,8 +74,63 @@ local function stopAnims(humanoid)
 	end
 end
 
-function RagdollService:ragdollPlayer(character)
-    local humanoid = character:WaitForChild("Humanoid")
+local function setLDRagdollState(character : Model, state : boolean)
+	if character.UpperTorso then
+		for i,motor6d in pairs(character.UpperTorso:GetChildren()) do
+			if motor6d:IsA("Motor6D") then	
+				motor6d.Parent.CollisionGroupId = 1
+				motor6d.Parent.CanTouch = false
+				motor6d.Enabled = state
+			end	
+		end		
+	end
+
+	if character.LeftFoot then
+		for i,motor6d in pairs(character.LeftFoot:GetChildren()) do
+			if motor6d:IsA("Motor6D") then	
+				motor6d.Parent.CollisionGroupId = 1
+				motor6d.Parent.CanTouch = false
+				motor6d.Enabled = state
+			end	
+		end		
+	end
+
+	if character.RightFoot then
+		for i,motor6d in pairs(character.RightFoot:GetChildren()) do
+			if motor6d:IsA("Motor6D") then	
+				motor6d.Parent.CollisionGroupId = 1
+				motor6d.Parent.CanTouch = false
+				motor6d.Enabled = state
+			end	
+		end		
+	end
+
+	if character.Head then
+		for i,motor6d in pairs(character.Head:GetChildren()) do
+			if motor6d:IsA("Motor6D") then	--Getting motor6D joints as joints. Their parents are the parts. 
+				motor6d.Parent.CollisionGroupId = 1
+				motor6d.Parent.CanTouch = false
+				motor6d.Enabled = state
+			end	
+		end		
+	end
+end
+
+local function setRagdollMotors(character : Model, state : boolean)
+	for i,limbs in pairs(character:GetChildren()) do
+		for i,motor6d in pairs(limbs:GetChildren()) do
+			if motor6d:IsA("Motor6D") then	--Getting motor6D joints as joints. Their parents are the parts. 
+				motor6d.Parent.CollisionGroupId = 1
+				motor6d.Enabled = state
+			end	
+		end
+	end
+end
+
+function RagdollService:ragdollPlayer(character : Model, time : number)
+    local humanoid = character.Humanoid
+	local player = Players:GetPlayerFromCharacter(character)
+	humanoid:UnequipTools()
 	humanoid.AutoRotate = false	
 	character.HumanoidRootPart.CollisionGroupId = 1
 	character.HumanoidRootPart.CanCollide = false
@@ -90,58 +145,29 @@ function RagdollService:ragdollPlayer(character)
 		task.wait(0.1 * RagdollService.deadCharacters) --Activate ragdoll delay, tenth x per character
 	end
 
+	activateVelocity(player)
 	if RagdollService.ragdollsLdEnable == true and lDModeOn == true then --If LD mode is on
-		if character.UpperTorso then
-			for i,motor6d in pairs(character.UpperTorso:GetChildren()) do
-				if motor6d:IsA("Motor6D") then	
-					motor6d.Parent.CollisionGroupId = 1
-					motor6d.Parent.CanTouch = false
-					motor6d:Destroy()
-				end	
-			end		
-		end
-
-		if character.LeftFoot then
-			for i,motor6d in pairs(character.LeftFoot:GetChildren()) do
-				if motor6d:IsA("Motor6D") then	
-					motor6d.Parent.CollisionGroupId = 1
-					motor6d.Parent.CanTouch = false
-					motor6d:Destroy()
-				end	
-			end		
-		end
-
-		if character.RightFoot then
-			for i,motor6d in pairs(character.RightFoot:GetChildren()) do
-				if motor6d:IsA("Motor6D") then	
-					motor6d.Parent.CollisionGroupId = 1
-					motor6d.Parent.CanTouch = false
-					motor6d:Destroy()
-				end	
-			end		
-		end
-
-		if character.Head then
-			for i,motor6d in pairs(character.Head:GetChildren()) do
-				if motor6d:IsA("Motor6D") then	--Getting motor6D joints as joints. Their parents are the parts. 
-					motor6d.Parent.CollisionGroupId = 1
-					motor6d.Parent.CanTouch = false
-					motor6d:Destroy()
-				end	
-			end		
+		setLDRagdollState(character, false)
+		if time then			
+			task.delay(time, function()
+				setLDRagdollState(character, true)
+				deactivateVelocity(player)
+			end)
 		end
 	else --If LD mode is off
 		RagdollService.currentRagdolls += 1
-		for i,limbs in pairs(character:GetChildren()) do
-			for i,motor6d in pairs(limbs:GetChildren()) do
-				if motor6d:IsA("Motor6D") then	--Getting motor6D joints as joints. Their parents are the parts. 
-					motor6d.Parent.CollisionGroupId = 1
-					motor6d.Parent.CanCollide = false
-					motor6d:Destroy()
-				end	
-			end
+		setRagdollMotors(character, false)
+		if time then			
+			task.delay(time, function()
+				setRagdollMotors(character, true)
+				deactivateVelocity(player)
+			end)
 		end
 	end
+end
+
+function RagdollService.Client:ragdollPlayer(player, character)
+	return self.Server:ragdollPlayer(character)
 end
 
 function RagdollService:KnitInit()

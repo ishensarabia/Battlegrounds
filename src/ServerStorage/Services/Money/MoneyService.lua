@@ -33,6 +33,7 @@ function MoneyService.Client:GetMoney(player : Player) : number
     return self.Server:GetMoney(player)
 end
 
+
 function MoneyService:KnitStart()
     print("MoneyService Started")
 
@@ -40,5 +41,6 @@ function MoneyService:KnitStart()
         self._MoneyPerPlayer[player] = nil
     end)
 end
+
 
 return MoneyService

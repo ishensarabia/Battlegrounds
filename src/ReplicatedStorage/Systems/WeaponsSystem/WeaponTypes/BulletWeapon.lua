@@ -1,4 +1,5 @@
 --Services
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local TweenService = game:GetService("TweenService")
 local RunService = game:GetService("RunService")
 local Players = game:GetService("Players")
@@ -15,6 +16,7 @@ local BaseWeapon = require(Libraries:WaitForChild("BaseWeapon"))
 local Parabola = require(Libraries:WaitForChild("Parabola"))
 local Roblox = require(Libraries:WaitForChild("Roblox"))
 local ancestorHasTag = require(Libraries:WaitForChild("ancestorHasTag"))
+local Knit = require(ReplicatedStorage.Packages.Knit)
 
 local Effects = WeaponsSystemFolder:WaitForChild("Assets"):WaitForChild("Effects")
 local ShotsFolder = Effects:WaitForChild("Shots")
@@ -500,13 +502,13 @@ function BulletWeapon:simulateProjectile(firingPlayer, fireInfo, projectileIdx, 
 						-- Trigger hit indicators on client that initiated the shot if the explosion hit another player/humanoid
 						explosion.Hit:Connect(function(explodedPart, hitDist)
 							local humanoid = self.weaponsSystem.getHumanoid(explodedPart)
-	
+							--Ragdoll player hit by explosion
 							if humanoid and
-							   explodedPart.Name == "UpperTorso" and
-							   humanoid:GetState() ~= Enum.HumanoidStateType.Dead and
-							   self.weaponsSystem.gui and
-							   explodedPart.Parent ~= self.player.Character and
-							   self.weaponsSystem.playersOnDifferentTeams(self.weaponsSystem.getPlayerFromHumanoid(humanoid), self.player)
+							explodedPart.Name == "UpperTorso" and
+							humanoid:GetState() ~= Enum.HumanoidStateType.Dead and
+							self.weaponsSystem.gui and
+							explodedPart.Parent ~= self.player.Character and
+							self.weaponsSystem.playersOnDifferentTeams(self.weaponsSystem.getPlayerFromHumanoid(humanoid), self.player)
 							then
 								self.weaponsSystem.gui:OnHitOtherPlayer(self:calculateDamage(hitInfo.d), humanoid)
 							end
@@ -773,6 +775,7 @@ function BulletWeapon:onHit(hitInfo)
 		local blastRadius = self:getConfigValue("BlastRadius", 8)
 		local blastPressure = self:getConfigValue("BlastPressure", 10000)
 		local blastDamage = self:getConfigValue("BlastDamage", 100)
+		local ragdollTime = self:getConfigValue("RagdollTime", 3)
 
 		local explosion = Instance.new("Explosion")
 		explosion.Position = hitPoint + (hitNormal * 0.5)
@@ -797,6 +800,10 @@ function BulletWeapon:onHit(hitInfo)
 				   self.weaponsSystem.playersOnDifferentTeams(self.weaponsSystem.getPlayerFromHumanoid(humanoid), self.player)
 				then
 					-- Do damage to players/humanoids
+					local hitPlayer = Players:GetPlayerFromCharacter(humanoid.Parent)
+					if (hitPlayer and hitPlayer.Character) then
+						Knit.GetService("RagdollService"):ragdollPlayer(hitPlayer.Character, ragdollTime)
+					end
 					self.weaponsSystem.doDamage(humanoid, damageToDeal, nil, self.player)
 				end
 			elseif not CollectionService:HasTag(explodedPart, "WeaponsSystemIgnore") then

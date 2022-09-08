@@ -4,7 +4,7 @@ local Roact = require(Packages.Roact)
 local Flipper = require(Packages.Flipper)
 
 local InventoryFrame = Roact.Component:extend("InventoryFrame")
-local RoactComponents = game.StarterPlayer.StarterPlayerScripts.Source.RoactComponents
+local RoactComponents = game.StarterPlayer.StarterPlayerScripts.Source.Roact.Components
 --Assets
 local InventoryIcons = require(game.ReplicatedStorage.Source.Assets.Icons.InventoryIcons)
 --Components

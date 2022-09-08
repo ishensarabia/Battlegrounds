@@ -5,7 +5,7 @@ local Flipper = require(Packages.Flipper)
 local Janitor = require(Packages.Janitor) 
 
 local InventoryHandler = Roact.Component:extend("InventoryHandler")
-local RoactComponents = game.StarterPlayer.StarterPlayerScripts.Source.RoactComponents
+local RoactComponents = game.StarterPlayer.StarterPlayerScripts.Source.Roact.Components
 --Assets
 local InventoryIcons = require(game.ReplicatedStorage.Source.Assets.Icons.InventoryIcons)
 --Components
@@ -141,14 +141,22 @@ function InventoryHandler:render()
 					}),
 				}
 			),
-			--Frames
-			InventoryFrame = Roact.createElement(
+			--Inventory Frames
+			Frame = Roact.createElement(
 				InventoryFrame,
 				{
 					position =  UDim2.fromScale(0.126, 0.0637),
 					size = UDim2.fromScale(0.793, 0.837),
-					inventoryType = self.state.inventoryType
-					
+					inventoryType = self.state.inventoryType,
+					closeButtonCallback = function(_callback)
+						if _callback then
+							_callback()
+						end
+						task.delay(0.33, function()							
+							self:setState({currentScreen = "HOME"})
+							self.flipperPositionGroupMotor:setGoal({buttonsFrame = FLIPPER_SPRING_RETRACT})
+						end)
+					end
 				}
 			)
 		})		

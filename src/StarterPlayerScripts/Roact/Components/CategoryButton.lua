@@ -3,13 +3,13 @@ local Packages = game.ReplicatedStorage.Packages
 local Roact = require(Packages.Roact)
 local Flipper = require(Packages.Flipper)
 
-local Button = Roact.Component:extend("Button")
-local RoactComponents = game.StarterPlayer.StarterPlayerScripts.Source.RoactComponents
+local CategoryButton = Roact.Component:extend("CategoryButton")
+local RoactComponents = game.StarterPlayer.StarterPlayerScripts.Source.Roact.Components
 --Assets
 local ButtonIcons = require(game.ReplicatedStorage.Source.Assets.Icons.ButtonIcons)
 --Components
 
-function Button:init()
+function CategoryButton:init()
 		--Flipper motors
 		self.flipperGroupMotor = Flipper.GroupMotor.new(
 			{
@@ -25,7 +25,7 @@ function Button:init()
 		self.flipperGroupMotor._motors.positionAndSize:onStep(setPositionAndSizeMotorBinding)
 end
 
-function Button:render()
+function CategoryButton:render()
   return Roact.createElement("Frame", {
     BackgroundColor3 = Color3.fromRGB(255, 255, 255),
     BackgroundTransparency = 1,
@@ -68,4 +68,4 @@ function Button:render()
   })
 end
 
-return Button
+return CategoryButton

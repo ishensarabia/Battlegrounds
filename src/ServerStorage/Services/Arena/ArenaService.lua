@@ -16,8 +16,11 @@ ArenaService.NORMAL_RUN_SPEED = 36
 ArenaService.BALL_RUN_SPEED = 52
 
 function ArenaService:GetArena()
-    local ArenaComponent = require(game.ServerStorage.Source.Components.Arena)
-    -- return ArenaComponent:FromInstance(workspace.Arena)  
+    return workspace.Arena
+end
+
+function ArenaService.Client:GetArena()
+    return self.Server:GetArena()
 end
 
 function ArenaService:_startGame()

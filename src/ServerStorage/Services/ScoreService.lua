@@ -2,8 +2,8 @@
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerStorage = game:GetService("ServerStorage")
+local Knit = require(ReplicatedStorage.Packages.Knit)
 --Module dependencies
-local dataService = require(ServerStorage.Source.Data.DataService)
 --Main
 local Knit = require(ReplicatedStorage.Packages.Knit)
 
@@ -42,10 +42,11 @@ local function damageToBattleCoins(damage : number)
 end
 
 function ScoreService:rewardHitSession(taker : Player)
+    local dataService = Knit.GetService("DataService")
     if self.hitSessions[taker.UserId] then
         for damageDealerID, amount in (self.hitSessions[taker.UserId]) do
             local player = Players:GetPlayerByUserId(damageDealerID)
-            if player then                
+            if player then         
                 local damageDealerProfile = dataService:GetProfileData(player)
                 damageDealerProfile.BattleCoins += damageToBattleCoins(amount)
             end
@@ -62,7 +63,7 @@ function ScoreService:KnitInit()
                 --reward hit dealers
                 self:rewardHitSession(player)
                 humanoid:UnequipTools() --Allow for ragdoll and any tool to sync serverside
-                for i, tool in pairs(player.Backpack:GetChildren()) do --If you are looking for :Unequip(), see localscript
+                for i, tool in (player.Backpack:GetChildren()) do --If you are looking for :Unequip(), see localscript
                     tool:Destroy()
                 end
             end)

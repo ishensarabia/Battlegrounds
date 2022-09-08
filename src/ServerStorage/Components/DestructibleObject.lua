@@ -8,7 +8,6 @@ local Players = game:GetService("Players")
 local ServerStorage = game:GetService("ServerStorage")
 local TweenService = game:GetService("TweenService")
 --Module dependencies
-local DataService = require(ServerStorage.Source.Data.DataService)
 --Class
 local DestructibleObject = Component.new({
 	Tag = "DestructibleObject",
@@ -28,11 +27,13 @@ function DestructibleObject:Construct()
 end
 
 function DestructibleObject:DestroyObject(player)
+	local DataService = Knit.GetService("DataService")
 	--Make sure the object is constructed before destroying it
 	if not self.isConstructed then
 		return
 	end
-	DataService.incrementIntValue(player, "ObjectsDestroyed")
+	
+	DataService:incrementIntValue(player, "ObjectsDestroyed")
 	warn("Object broke by player: " .. player.UserId)
 	warn("Players data: ", DataService:GetProfileData(player))
 	--Setup proximity prompts

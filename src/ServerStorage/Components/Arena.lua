@@ -40,7 +40,7 @@ function Arena:Start()
     self._respawnSignal:Connect(function()        
         self:_spawnBall()
     end)
-    self._respawnSignal:Fire()
+    -- self._respawnSignal:Fire()
 end
 
 function Arena:ObserveScore(teamName : string, handler) : RBXScriptSignal

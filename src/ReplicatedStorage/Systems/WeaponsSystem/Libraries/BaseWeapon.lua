@@ -67,6 +67,11 @@ function BaseWeapon:doInitialSetup()
 	for _, child in pairs(self.instance:GetChildren()) do
 		self:onChildAdded(child)
 	end
+	-- -- Set up custom attributes
+	-- for name, value in pairs(self.instance:GetAttributes()) do
+	-- 	warn("Attribute found. Name: " .. name .. "\nValue: " .. value)
+	-- 	self:addConfigAttribute(name, value)
+	-- end
 
 	-- Initialize self.ammoInWeaponValue
 	if selfClass.CanBeReloaded then
@@ -437,6 +442,10 @@ function BaseWeapon:onConfigValueAdded(valueObj)
 	end)
 end
 
+function BaseWeapon:addConfigAttribute(name : string, attribute : any)
+	self.configValues[name] = attribute
+end
+
 function BaseWeapon:onConfigValueRemoved(valueObj)
 	local valueName = valueObj.Name
 	self.configValues[valueName] = nil
@@ -471,6 +480,7 @@ function BaseWeapon:setConfiguration(config)
 			self:onConfigValueAdded(child)
 		end
 	end
+	
 	self.connections.configChildAdded = config.ChildAdded:Connect(function(child)
 		if child:IsA("ValueBase") then
 			self:onConfigValueAdded(child)
