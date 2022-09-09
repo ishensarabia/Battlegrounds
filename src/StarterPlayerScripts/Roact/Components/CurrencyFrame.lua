@@ -6,6 +6,11 @@ local Flipper = require(Packages.Flipper)
 local RoactComponents = game.StarterPlayer.StarterPlayerScripts.Source.Roact.Components
 --Components
 local CurrencyFrame = Roact.Component:extend("CurrencyFrame")
+local currencyIcons =
+{
+    battleGems =  "rbxassetid://10835980573",
+    battleCoins = "rbxassetid://10835882861"
+}
 --Springs
 local FLIPPER_SPRING_EXPAND = Flipper.Spring.new(1, {
 	frequency = 5,
@@ -28,7 +33,7 @@ function CurrencyFrame:render()
         Size = self.props.size,
       }, {
         icon = Roact.createElement("ImageLabel", {
-          Image = "rbxassetid://10835980573",
+          Image = currencyIcons[self.props.currency],
           BackgroundColor3 = Color3.fromRGB(255, 255, 255),
           BackgroundTransparency = 1,
           Position = UDim2.fromScale(0.0888, 0.0581),

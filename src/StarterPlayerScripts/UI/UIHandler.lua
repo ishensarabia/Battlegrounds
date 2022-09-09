@@ -9,11 +9,11 @@ local RoactHandlers = game.StarterPlayer.StarterPlayerScripts.Source.Roact.Handl
 local InventoryHandler = require(RoactHandlers.InventoryHandler)
 local MainMenuHandler = require(RoactHandlers.MainMenuHandler)
 
-local UIBootstrap = {}
+local UIHandler = {}
 
-UIBootstrap.mode = "MainMenu"
+UIHandler.mode = "MainMenu"
 
-function UIBootstrap:Initialize()
+function UIHandler:Initialize()
 	local MainHUD = Roact.createElement("ScreenGui", {
 		ZIndexBehavior = Enum.ZIndexBehavior.Sibling,
 	}, {
@@ -30,7 +30,7 @@ function UIBootstrap:Initialize()
 		}),
 	})
 
-	
+	--To do parent the components here and delete RoactHandlers
 	local MainMenu = Roact.createElement("ScreenGui", {
 		ZIndexBehavior = Enum.ZIndexBehavior.Global,
 		IgnoreGuiInset = true
@@ -52,4 +52,4 @@ function UIBootstrap:Initialize()
 	return true
 end
 
-return UIBootstrap:Initialize()
+return UIHandler:Initialize()

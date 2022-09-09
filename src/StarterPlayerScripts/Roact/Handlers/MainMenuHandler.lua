@@ -23,26 +23,28 @@ local FLIPPER_SPRING_EXPAND = Flipper.Spring.new(1, {
 
 local MainMenuHandler = Roact.Component:extend("MainMenuHandler")
 
-function MainMenuHandler:init() end
+function MainMenuHandler:init()
+    self.active = true
+end
 
 function MainMenuHandler:render()
 	return Roact.createElement(
 		CurrencyFrame,
-		{ position = UDim2.fromScale(0.714, 0.897), size = UDim2.fromScale(0.139, 0.0816) }
+		{ position = UDim2.fromScale(0.714, 0.897), size = UDim2.fromScale(0.139, 0.0816), currency = "battleCoins"}
 	)
 end
 
 function MainMenuHandler:didMount()
 	self.active = true
 	local CameraController = Knit.GetController("CameraController")
-	local ArenaService = Knit.GetService("ArenaService")
 	local currentArenaInstance = workspace:WaitForChild("Arena")
 	local cutscenePoints = currentArenaInstance.Cutscene
-    --Set up main menu
+    --Set up main menu cutscene
     workspace.CurrentCamera.CFrame = currentArenaInstance.StartingCamera.CFrame
     task.spawn(function()        
-        CameraController.isInMenu = true
-        CameraController:TransitionBetweenPoints(cutscenePoints)
+        while self.active do            
+            CameraController:TransitionBetweenPoints(cutscenePoints)
+        end
     end)
 end
 
