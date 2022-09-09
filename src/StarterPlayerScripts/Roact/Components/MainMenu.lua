@@ -21,20 +21,47 @@ local FLIPPER_SPRING_EXPAND = Flipper.Spring.new(1, {
 })
 --Main!
 
-local MainMenuHandler = Roact.Component:extend("MainMenuHandler")
+local MainMenu = Roact.Component:extend("MainMenuHandler")
 
-function MainMenuHandler:init()
+function MainMenu:init()
     self.active = true
 end
 
-function MainMenuHandler:render()
-	return Roact.createElement(
-		CurrencyFrame,
-		{ position = UDim2.fromScale(0.714, 0.897), size = UDim2.fromScale(0.139, 0.0816), currency = "battleCoins"}
-	)
+function MainMenu:render()
+	return  Roact.createElement("ScreenGui", {
+		ZIndexBehavior = Enum.ZIndexBehavior.Global,
+		IgnoreGuiInset = true,
+	}, {
+		bottomBar = Roact.createElement("Frame", {
+			BackgroundColor3 = Color3.fromRGB(47, 47, 47),
+			Position = UDim2.fromScale(-0.00428, 0.961),
+			Size = UDim2.fromOffset(1409, 28),
+		}),
+
+		topBar = Roact.createElement("Frame", {
+			BackgroundColor3 = Color3.fromRGB(47, 47, 47),
+			Size = UDim2.fromScale(1.17, 0.0867),
+		}),
+
+		battleCoinsFrame = Roact.createElement(
+			CurrencyFrame,
+			{
+				position = UDim2.fromScale(0.0888, 0.0581),
+				size = UDim2.fromScale(0.236, 0.859),
+				currency = "battleCoins",
+			}
+		),
+		battleGemsFrame = Roact.createElement(
+			CurrencyFrame,
+			{
+				position = UDim2.fromScale(0.714, 0.897),
+				size = UDim2.fromScale(0.139, 0.0816),
+				currency = "battleGems",
+			}
+		),
 end
 
-function MainMenuHandler:didMount()
+function MainMenu:didMount()
 	self.active = true
 	local CameraController = Knit.GetController("CameraController")
 	local currentArenaInstance = workspace:WaitForChild("Arena")
@@ -48,4 +75,4 @@ function MainMenuHandler:didMount()
     end)
 end
 
-return MainMenuHandler
+return MainMenu

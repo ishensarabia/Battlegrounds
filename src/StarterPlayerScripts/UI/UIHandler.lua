@@ -5,9 +5,11 @@ local Packages = game.ReplicatedStorage.Packages
 local Roact = require(Packages.Roact)
 local Knit = require(ReplicatedStorage.Packages.Knit)
 --Roact components
+local RoactComponents = game.StarterPlayer.StarterPlayerScripts.Source.Roact.Components
 local RoactHandlers = game.StarterPlayer.StarterPlayerScripts.Source.Roact.Handlers
 local InventoryHandler = require(RoactHandlers.InventoryHandler)
-local MainMenuHandler = require(RoactHandlers.MainMenuHandler)
+local MainMenu = require(RoactComponents.MainMenu)
+local CurrencyFrame = require(RoactComponents.CurrencyFrame)
 
 local UIHandler = {}
 
@@ -31,22 +33,7 @@ function UIHandler:Initialize()
 	})
 
 	--To do parent the components here and delete RoactHandlers
-	local MainMenu = Roact.createElement("ScreenGui", {
-		ZIndexBehavior = Enum.ZIndexBehavior.Global,
-		IgnoreGuiInset = true
-	}, {
-		bottomBar = Roact.createElement("Frame", {
-			BackgroundColor3 = Color3.fromRGB(47, 47, 47),
-			Position = UDim2.fromScale(-0.00428, 0.961),
-			Size = UDim2.fromOffset(1409, 28),
-		}),
-
-		topBar = Roact.createElement("Frame", {
-			BackgroundColor3 = Color3.fromRGB(47, 47, 47),
-			Size = UDim2.fromScale(1.17, 0.0867),
-		}),
-		mainMenu = Roact.createElement(MainMenuHandler,{},nil)
-	})
+	local MainMenu =
 	Roact.mount(MainHUD, PlayerGui, "MainHUD")
 	Roact.mount(MainMenu, PlayerGui, "MainMenu")
 	return true
