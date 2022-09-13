@@ -4,7 +4,7 @@ local Roact = require(Packages.Roact)
 local Flipper = require(Packages.Flipper)
 local Janitor = require(Packages.Janitor) 
 
-local InventoryHandler = Roact.Component:extend("InventoryHandler")
+local Inventory = Roact.Component:extend("Inventory")
 local RoactComponents = game.StarterPlayer.StarterPlayerScripts.Source.Roact.Components
 --Assets
 local InventoryIcons = require(game.ReplicatedStorage.Source.Assets.Icons.InventoryIcons)
@@ -23,7 +23,7 @@ local FLIPPER_SPRING_EXPAND = Flipper.Spring.new(1, {
 
 
 
-function InventoryHandler:init()
+function Inventory:init()
 		--Flipper motors
 		self.flipperPositionGroupMotor = Flipper.GroupMotor.new(
 			{
@@ -51,7 +51,7 @@ function InventoryHandler:init()
 		})
 end
 
-function InventoryHandler:render()
+function Inventory:render()
 	if (self.state.currentScreen == "HOME") then
 		return Roact.createElement("Frame", {
 			ZIndex = 2,
@@ -63,7 +63,7 @@ function InventoryHandler:render()
 				"Frame",
 				{
 					Position = self.flipperPositionMotorsBindings.buttonsFrame:map(function(value)
-						return self.props.buttonsFramePosition:Lerp(UDim2.fromScale(1,0), value)
+						return self.props.buttonsFramePosition:getValue():Lerp(UDim2.fromScale(1,0), value)
 					end),
 					
 					Size = self.props.buttonsFrameSize,
@@ -71,7 +71,7 @@ function InventoryHandler:render()
 				},
 				{
 					ItemsInventoryButton = Roact.createElement(InventoryButton, {
-						position = UDim2.fromScale(0.191, 0.685),
+						position = UDim2.fromScale(0.191, 0.085),
 						size = UDim2.fromScale(0.234, 0.279),
 						typeOfInventory = "ItemsInventory",
 						callback = function() 
@@ -107,9 +107,7 @@ function InventoryHandler:render()
 			ButtonsFrame = Roact.createElement(
 				"Frame",
 				{
-					Position = self.flipperPositionMotorsBindings.buttonsFrame:map(function(value)
-						return self.props.buttonsFramePosition:Lerp(UDim2.fromScale(1,0), value)
-					end),
+					Position = self.props.buttonsFramePosition,
 					
 					Size = self.props.buttonsFrameSize,
 					BackgroundTransparency = 1,
@@ -163,4 +161,4 @@ function InventoryHandler:render()
 	end
 end
 
-return InventoryHandler
+return Inventory

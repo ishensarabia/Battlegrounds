@@ -5,13 +5,13 @@ local Flipper = require(Packages.Flipper)
 
 local RoactComponents = game.StarterPlayer.StarterPlayerScripts.Source.Roact.Components
 --Components
-local CloseButton = Roact.Component:extend("CloseButton")
+local PlayButton = Roact.Component:extend("CloseButton")
 --Springs
 local FLIPPER_SPRING_EXPAND = Flipper.Spring.new(1, {
 	frequency = 5,
 	dampingRatio = 1,
 })
-function CloseButton:init()
+function PlayButton:init()
 	self.motor = Flipper.SingleMotor.new(0)
 
 	local binding, setBinding = Roact.createBinding(self.motor:getValue())
@@ -20,16 +20,17 @@ function CloseButton:init()
 	self.motor:onStep(setBinding)
 end
 
-function CloseButton:render()
+function PlayButton:render()
   return Roact.createElement("ImageButton", {
-    Image = "rbxassetid://10621524124",
+    Image = "rbxassetid://9963227346",
+    ImageColor3 = Color3.fromRGB(255, 184, 60),
+    ScaleType = Enum.ScaleType.Fit,
     BackgroundColor3 = Color3.fromRGB(255, 255, 255),
     BackgroundTransparency = 1,
     Position = self.props.position,
     Size = self.binding:map(function(value)
-        return self.props.size:Lerp(UDim2.fromScale(0.06, 0.145     ), value)
-    end),  
-    ZIndex = self.props.zindex,
+        return self.props.size:Lerp(self.props.size - UDim2.fromScale(0.03, 0.05), value)
+    end),
     [Roact.Event.MouseButton1Down] = function()
       self.motor:setGoal(Flipper.Spring.new(1, {
           frequency = 5,
@@ -39,7 +40,22 @@ function CloseButton:render()
           self.props.callback(self.props.retractCallback)
       end)
   end,
+  }, {
+    title = Roact.createElement("TextLabel", {
+      Font = Enum.Font.SourceSansBold,
+      Text = "P L A Y",
+      TextColor3 = Color3.fromRGB(255, 255, 255),
+      TextScaled = true,
+      TextSize = 14,
+      TextStrokeTransparency = 0.3,
+      TextWrapped = true,
+      BackgroundColor3 = Color3.fromRGB(255, 255, 255),
+      BackgroundTransparency = 1,
+      Position = UDim2.fromScale(0.123, 0.203),
+      Size = UDim2.fromScale(0.753, 0.581),
+    }),
+
   })
 end
 
-return CloseButton
+return PlayButton

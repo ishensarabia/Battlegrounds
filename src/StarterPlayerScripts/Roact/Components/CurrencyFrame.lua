@@ -31,6 +31,7 @@ function CurrencyFrame:render()
         BackgroundTransparency = 1,
         Position = self.props.position,
         Size = self.props.size,
+        ZIndex = self.props.zIndex
       }, {
         icon = Roact.createElement("ImageLabel", {
           Image = currencyIcons[self.props.currency],
@@ -56,7 +57,7 @@ function CurrencyFrame:render()
       
         label = Roact.createElement("ImageLabel", {
           Image = "rbxassetid://9963227346",
-          ImageColor3 = Color3.fromRGB(46, 46, 46),
+          ImageColor3 = Color3.fromRGB(0, 0, 0),
           BackgroundColor3 = Color3.fromRGB(255, 255, 255),
           BackgroundTransparency = 1,
           Position = UDim2.fromScale(0, -0.0141),
