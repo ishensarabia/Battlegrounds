@@ -1,8 +1,9 @@
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Janitor = require(game.ReplicatedStorage.Packages.Janitor)
 local Knit = require(game.ReplicatedStorage.Packages.Knit)
 local Promise = require(Knit.Util.Promise)
 local Component = require(game.ReplicatedStorage.Packages.Component)
-local TweenObject = require(game.ServerStorage.Source.Systems.TweenObject)
+local TweenObject = require(ReplicatedStorage.Source.Modules.Util.TweenObject)
 local Players = game:GetService("Players")
 --Services
 local ServerStorage = game:GetService("ServerStorage")
@@ -196,6 +197,8 @@ function DestructibleObject:CancelConstruction()
 	end
 end
 
-function DestructibleObject:Stop() end
+function DestructibleObject:Stop()
+	self._janitor:Cleanup()
+end
 
 return DestructibleObject

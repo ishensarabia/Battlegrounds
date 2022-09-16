@@ -16,6 +16,7 @@ end
 
 
 function HumanoidService:KnitInit()
+    Players.CharacterAutoLoads = false
     Players.PlayerAdded:Connect(function(player)
         player.CharacterAdded:Connect(function(character)
             character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Ragdoll, false)

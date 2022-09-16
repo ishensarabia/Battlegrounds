@@ -19,4 +19,17 @@ function module.TweenBasePart(basePart : BasePart, tweenInfo : TweenInfo, proper
     end)
 end
 
+function module.TweenCamera(camera : Camera, tweenInfo : TweenInfo, properties : table)
+    return Promise.new(function(resolve, reject, onCancel)
+        local tween = TweenService:Create(camera, tweenInfo, properties)
+        tween:Play()
+
+        onCancel(function()
+            tween:Cancel()
+        end)
+
+        tween.Completed:Connect(resolve)
+    end)
+end
+
 return module

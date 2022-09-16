@@ -57,6 +57,21 @@ function DataService:GetProfileData(player)
 	end
 end
 
+function DataService:GetKeyValue(player, key : string)
+	local profile = self.profiles[player]
+	if profile and profile.Data[key] then
+		return profile.Data[key]
+	end
+end
+
+function DataService.Client:GetProfileData(player)
+	return self.Server:GetProfileData(player)
+end
+
+function DataService.Client:GetKeyValue(player, key : string)
+	return self.Server:GetKeyValue(player, key)
+end
+
 function DataService:onPlayerAdded(player)
 	local profile = self.profileStore:LoadProfileAsync("Player_" .. player.UserId, "ForceLoad")
 	if profile then

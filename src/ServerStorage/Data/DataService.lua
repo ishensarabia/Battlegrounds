@@ -28,7 +28,7 @@ local DataConfig = require(ServerStorage.Source.Services.Data.DataConfig)
 
 local DataService = {}
 
--- local Profiles = {}
+-- local Profiles = {}      
 
 -- --Functions to get the data structures
 -- function DataService:GetProfileData(player)

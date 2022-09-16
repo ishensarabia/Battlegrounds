@@ -40,7 +40,7 @@ function UIHandler:Initialize()
 			playButton = { position = UDim2.fromScale(0.411, 0.781) },
 			battleCoinsFrame = { position = UDim2.fromScale(0.853, 0.898) },
 			battleGemsFrame = { position = UDim2.fromScale(0.714, 0.897) },
-
+			inventory = { position = UDim2.fromScale(0.3, 0.3)}
 		}
 	)
 	-- Roact.mount(MainHUD, PlayerGui, "MainHUD")
