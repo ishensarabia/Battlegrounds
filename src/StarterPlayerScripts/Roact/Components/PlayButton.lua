@@ -1,11 +1,13 @@
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Packages = game.ReplicatedStorage.Packages
 --Module dependencies
 local Roact = require(Packages.Roact)
 local Flipper = require(Packages.Flipper)
+local Knit = require(ReplicatedStorage.Packages.Knit)
 
 local RoactComponents = game.StarterPlayer.StarterPlayerScripts.Source.Roact.Components
 --Components
-local PlayButton = Roact.Component:extend("CloseButton")
+local PlayButton = Roact.Component:extend("PlayButton")
 --Springs
 local FLIPPER_SPRING_EXPAND = Flipper.Spring.new(1, {
 	frequency = 5,
@@ -37,6 +39,7 @@ function PlayButton:render()
           dampingRatio = 1,
       }))
       task.delay(0.3, function()
+          Knit.GetService("PlayerService"):SpawnCharacter()
           self.props.callback(self.props.retractCallback)
       end)
   end,

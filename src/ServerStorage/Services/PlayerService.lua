@@ -4,18 +4,25 @@ local Players = game:GetService("Players")
 
 local Knit = require(ReplicatedStorage.Packages.Knit)
 
-local HumanoidService = Knit.CreateService {
-    Name = "HumanoidService",
+local PlayerService = Knit.CreateService {
+    Name = "PlayerService",
     Client = {},
 }
 
 
-function HumanoidService:KnitStart()
+function PlayerService:KnitStart()
     
 end
 
+function PlayerService:SpawnCharacter(player : Player)
+    player:LoadCharacter()
+end
 
-function HumanoidService:KnitInit()
+function PlayerService.Client:SpawnCharacter(player)
+    return self.Server:SpawnCharacter(player)
+end
+
+function PlayerService:KnitInit()
     Players.CharacterAutoLoads = false
     Players.PlayerAdded:Connect(function(player)
         player.CharacterAdded:Connect(function(character)
@@ -25,4 +32,4 @@ function HumanoidService:KnitInit()
 end
 
 
-return HumanoidService
+return PlayerService
