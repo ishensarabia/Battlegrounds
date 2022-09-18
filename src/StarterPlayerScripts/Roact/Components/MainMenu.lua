@@ -1,3 +1,4 @@
+local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Packages = game.ReplicatedStorage.Packages
 --Module dependencies
@@ -229,6 +230,7 @@ end
 
 function MainMenu:didMount()
 	local CameraController = Knit.GetController("CameraController")
+	local PlayerService = Knit.GetService("PlayerService")
 	local currentArenaInstance = workspace:WaitForChild("Arena")
 	local cutscenePoints = currentArenaInstance.Cutscene
 	--Set up main menu cutscene
@@ -239,6 +241,11 @@ function MainMenu:didMount()
 			CameraController:TransitionBetweenPoints(cutscenePoints)
 		end
 		warn("Main menu component state active : " .. tostring(self.state.active))
+	end)
+	Players.LocalPlayer.CharacterAdded:Connect(function(character)
+		character:WaitForChild("Humanoid").Died:Connect(function()
+			self.flipperPositionGroupMotor:setGoal({ inventory_pos = FLIPPER_SPRING_RETRACT, play_button_pos = FLIPPER_SPRING_RETRACT})
+		end)
 	end)
 end
 
