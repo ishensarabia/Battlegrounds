@@ -46,7 +46,7 @@ function PlayButton:render()
   }, {
     title = Roact.createElement("TextLabel", {
       Font = Enum.Font.SourceSansBold,
-      Text = "P L A Y",
+      Text = "PLAY",
       TextColor3 = Color3.fromRGB(255, 255, 255),
       TextScaled = true,
       TextSize = 14,

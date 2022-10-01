@@ -61,11 +61,7 @@ function Inventory:render()
 		}, {
 			--Buttons
 			ButtonsFrame = Roact.createElement("Frame", {
-				Position = self.flipperPositionMotorsBindings.buttonsFrame:map(function(value)
-					warn("Changing buttons frame position")
-					return self.props.buttonsFramePosition:getValue():Lerp(UDim2.fromScale(1, 0), value)
-				end),
-
+				Position = self.props.buttonsFramePosition,
 				Size = self.props.buttonsFrameSize,
 				BackgroundTransparency = 1,
 			}, {

@@ -8,7 +8,10 @@ local DataConfig = require(ServerStorage.Source.Services.Data.DataConfig)
 
 local DataService = Knit.CreateService {
     Name = "DataService",
-    Client = {},
+    Client = {
+		BattleCoinsChanged = Knit.CreateSignal(),
+        BattleGemsChanged = Knit.CreateSignal()
+	},
 }
 
 local function DeepCopy(original)
@@ -41,7 +44,7 @@ end
 
 function DataService:KnitStart()
     self.profiles = {}
-	self.profileStore = ProfileService.GetProfileStore("Battlegrounds_Dev1", DataConfig.profileTemplate)
+	self.profileStore = ProfileService.GetProfileStore("Battlegrounds_Devevelopment", DataConfig.profileTemplate)
 	Players.PlayerRemoving:Connect(function(player)
 		self:onPlayerRemoving(player)
 	end)

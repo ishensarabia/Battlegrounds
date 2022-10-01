@@ -23,6 +23,7 @@ end
 
 function MenuController:Play()
     local CameraController = Knit.GetController("CameraController")
+    CameraController.isInMenu = false
     CameraController:CancelActiveTween()
     CameraController:SetCameraType("Custom")
 end

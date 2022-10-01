@@ -1,11 +1,10 @@
 local DataConfig = {}
 
-DataConfig.profileTemplate =
-{
+DataConfig.profileTemplate = {
 	BattleCoins = 0,
-	Weapons = 
-	{
-		
+	BattleGems = 0,
+	Weapons = {
+		Rocket_Launcher = true,
 	},
 	Powers = {},
 	Knockouts = 0,
@@ -20,9 +19,15 @@ DataConfig.profileTemplate =
 	DevProducts = {},
 }
 
-DataConfig.weaponTemplate = 
-{
-	
+DataConfig.weaponTemplate = {
+	Customization = {},
+
+	Modifications = {},
 }
 
+DataConfig.powerTemplate = {
+	Customization = {},
+
+	Upgrades = {}
+}
 return DataConfig

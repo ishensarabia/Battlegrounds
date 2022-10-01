@@ -1,3 +1,4 @@
+local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local PlayerGui = game.Players.LocalPlayer:WaitForChild("PlayerGui")
 local Packages = game.ReplicatedStorage.Packages
@@ -32,17 +33,18 @@ function UIHandler:Initialize()
 	-- })
 
 	--To do parent the components here and delete RoactHandlers
-	local MainMenu = Roact.createElement(
-		MainMenuComponent,
-		{
-			bottomBar = { position = UDim2.fromScale(-0.00428, 0.961), size = UDim2.fromOffset(1409, 28) },
-			topBar = { position = UDim2.fromScale(0,0) },
-			playButton = { position = UDim2.fromScale(0.411, 0.781) },
-			battleCoinsFrame = { position = UDim2.fromScale(0.853, 0.898) },
-			battleGemsFrame = { position = UDim2.fromScale(0.714, 0.897) },
-			inventory = { position = UDim2.fromScale(0.3, 0.3)}
-		}
-	)
+	local MainMenu = Roact.createElement(MainMenuComponent, {
+		bottomBar = { position = UDim2.fromScale(-0.00428, 0.961), size = UDim2.fromOffset(1409, 28) },
+		topBar = { position = UDim2.fromScale(0, 0) },
+		playButton = { position = UDim2.fromScale(0.411, 0.781) },
+		battleCoinsFrame = { position = UDim2.fromScale(0.853, 0.898) },
+		battleGemsFrame = { position = UDim2.fromScale(0.714, 0.897) },
+		inventory = { position = UDim2.fromScale(0.3, 0.3) },
+		playerPreview = {
+			position = UDim2.fromScale(0.266, 0.196),
+			humanoidDescription = Players:GetHumanoidDescriptionFromUserId(Players.LocalPlayer.UserId),
+		},
+	})
 	-- Roact.mount(MainHUD, PlayerGui, "MainHUD")
 	Roact.mount(MainMenu, PlayerGui, "MainMenu")
 	return true

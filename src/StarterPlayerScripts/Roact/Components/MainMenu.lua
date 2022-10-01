@@ -14,6 +14,7 @@ local RoactComponents = game.StarterPlayer.StarterPlayerScripts.Source.Roact.Com
 local CurrencyFrameComponent = require(RoactComponents.CurrencyFrame)
 local InventoryComponent = require(RoactCoreComponents.Inventory)
 local PlayButtonComponent = require(RoactComponents.PlayButton)
+local PlayerPreview = require(RoactComponents.PlayerPreview)
 --Constants
 local FLIPPER_SPRING_RETRACT = Flipper.Spring.new(0, {
 	frequency = 4,
@@ -32,36 +33,48 @@ function MainMenu:init()
 	self.flipperPositionGroupMotor = Flipper.GroupMotor.new({
 		position = 0,
 		inventory_pos = 0,
-		play_button_pos = 0
+		play_button_pos = 0,
+		player_preview = 0,
 	})
 	--Flipper bindings
-	local positionMotorBinding, setPositionMotorBinding = Roact.createBinding(self.flipperPositionGroupMotor:getValue().position)
-	local inventoryPosMotorBinding, setInvPosMotorBinding = Roact.createBinding(self.flipperPositionGroupMotor:getValue().position)
-	local playPosMotorBinding, setPlayPosMotorBinding = Roact.createBinding(self.flipperPositionGroupMotor:getValue().position)
+	local positionMotorBinding, setPositionMotorBinding =
+		Roact.createBinding(self.flipperPositionGroupMotor:getValue().position)
+	local inventoryPosMotorBinding, setInvPosMotorBinding =
+		Roact.createBinding(self.flipperPositionGroupMotor:getValue().position)
+	local playPosMotorBinding, setPlayPosMotorBinding =
+		Roact.createBinding(self.flipperPositionGroupMotor:getValue().position)
+	local player_previewPosMotorBinding, setPlayer_PreviewPosMotorBinding =
+		Roact.createBinding(self.flipperPositionGroupMotor:getValue().position)
 
 	--Flipper connections
 	self.flipperPositionMotorsBindings = {
 		position = positionMotorBinding,
 		inventory_pos = inventoryPosMotorBinding,
-		play_button_pos = playPosMotorBinding
+		play_button_pos = playPosMotorBinding,
+		player_preview = player_previewPosMotorBinding,
 	}
 	self.flipperPositionGroupMotor._motors.position:onStep(setInvPosMotorBinding)
 	self.flipperPositionGroupMotor._motors.inventory_pos:onStep(setPositionMotorBinding)
 	self.flipperPositionGroupMotor._motors.play_button_pos:onStep(setPlayPosMotorBinding)
+	self.flipperPositionGroupMotor._motors.player_preview:onStep(setPlayer_PreviewPosMotorBinding)
 	--Roact connections
 	self.janitor = Janitor.new()
 	--Set states
 	self:setState({
 		currentScreen = "Menu",
-		active = true
+		active = true,
 	})
+	--Refs
+	self.cameraRef = Roact.createRef()
+	self.viewportRef = Roact.createRef()
 end
 
 function MainMenu:render()
-	if (self.state.currentScreen == "Menu") then
+	if self.state.currentScreen == "Menu" then
 		return Roact.createElement("ScreenGui", {
 			ZIndexBehavior = Enum.ZIndexBehavior.Sibling,
 			IgnoreGuiInset = true,
+			ResetOnSpawn = false,
 		}, {
 			bottomBar = Roact.createElement("Frame", {
 				BackgroundColor3 = Color3.fromRGB(0, 0, 0),
@@ -73,18 +86,15 @@ function MainMenu:render()
 				end),
 				Size = UDim2.fromOffset(1409, 28),
 			}),
-	
+
 			topBar = Roact.createElement("Frame", {
 				BackgroundColor3 = Color3.fromRGB(0, 0, 0),
 				Position = self.flipperPositionMotorsBindings.position:map(function(value)
-					return self.props.topBar.position:Lerp(
-						self.props.topBar.position - UDim2.fromScale(1.33),
-						value
-					)
+					return self.props.topBar.position:Lerp(self.props.topBar.position - UDim2.fromScale(1.33), value)
 				end),
 				Size = UDim2.fromScale(1.17, 0.0867),
 			}),
-	
+
 			battleCoinsFrame = Roact.createElement(CurrencyFrameComponent, {
 				position = self.flipperPositionMotorsBindings.position:map(function(value)
 					return self.props.battleCoinsFrame.position:Lerp(
@@ -93,7 +103,7 @@ function MainMenu:render()
 					)
 				end),
 				size = UDim2.fromScale(0.139, 0.0816),
-				currency = "battleCoins",
+				currency = "BattleCoins",
 				zIndex = 1,
 			}),
 			battleGemsFrame = Roact.createElement(CurrencyFrameComponent, {
@@ -118,9 +128,9 @@ function MainMenu:render()
 					)
 				end),
 				changeMenuStateCallback = function(_currentScreen)
-					self:setState({currentScreen = _currentScreen})
-					self.flipperPositionGroupMotor:setGoal({ play_button_pos = FLIPPER_SPRING_EXPAND })
-				end
+					self:setState({ currentScreen = _currentScreen })
+					self.flipperPositionGroupMotor:setGoal({ play_button_pos = FLIPPER_SPRING_EXPAND, player_preview = FLIPPER_SPRING_EXPAND })
+				end,
 			}),
 			--Play button
 			playButton = Roact.createElement(PlayButtonComponent, {
@@ -135,16 +145,29 @@ function MainMenu:render()
 					self:setState({
 						active = false,
 					})
-					local CameraController = Knit.GetController("CameraController")
-					CameraController.isInMenu = false
-					self.flipperPositionGroupMotor:setGoal({ inventory_pos = FLIPPER_SPRING_EXPAND, play_button_pos = FLIPPER_SPRING_EXPAND})
+					self.flipperPositionGroupMotor:setGoal({
+						inventory_pos = FLIPPER_SPRING_EXPAND,
+						play_button_pos = FLIPPER_SPRING_EXPAND,
+						position = FLIPPER_SPRING_EXPAND,
+						player_preview = FLIPPER_SPRING_EXPAND
+					})
 					Knit.GetController("MenuController"):Play()
 				end,
+			}),
+			--Player preview
+			playerPreview = Roact.createElement(PlayerPreview, {
+				position = self.flipperPositionMotorsBindings.player_preview:map(function(value)
+					return self.props.playerPreview.position:Lerp(
+						self.props.playerPreview.position - UDim2.fromScale(1.33),
+						value
+					)
+				end),
+				playerHumanoidDescription = self.props.playerPreview.humanoidDescription,
 			}),
 		})
 	end
 
-	if (self.state.currentScreen == "Inventory") then
+	if self.state.currentScreen == "Inventory" then
 		return Roact.createElement("ScreenGui", {
 			ZIndexBehavior = Enum.ZIndexBehavior.Sibling,
 			IgnoreGuiInset = true,
@@ -159,18 +182,15 @@ function MainMenu:render()
 				end),
 				Size = UDim2.fromOffset(1409, 28),
 			}),
-	
+
 			topBar = Roact.createElement("Frame", {
 				BackgroundColor3 = Color3.fromRGB(0, 0, 0),
 				Position = self.flipperPositionMotorsBindings.position:map(function(value)
-					return self.props.topBar.position:Lerp(
-						self.props.topBar.position - UDim2.fromScale(1.33),
-						value
-					)
+					return self.props.topBar.position:Lerp(self.props.topBar.position - UDim2.fromScale(1.33), value)
 				end),
 				Size = UDim2.fromScale(1.17, 0.0867),
 			}),
-	
+
 			battleCoinsFrame = Roact.createElement(CurrencyFrameComponent, {
 				position = self.flipperPositionMotorsBindings.position:map(function(value)
 					return self.props.battleCoinsFrame.position:Lerp(
@@ -204,9 +224,9 @@ function MainMenu:render()
 					)
 				end),
 				changeMenuStateCallback = function(_currentScreen)
-					self:setState({currentScreen = _currentScreen})
-					self.flipperPositionGroupMotor:setGoal({ play_button_pos = FLIPPER_SPRING_RETRACT })
-				end
+					self:setState({ currentScreen = _currentScreen })
+					self.flipperPositionGroupMotor:setGoal({ play_button_pos = FLIPPER_SPRING_RETRACT, player_preview = FLIPPER_SPRING_RETRACT})
+				end,
 			}),
 			--Play button
 			playButton = Roact.createElement(PlayButtonComponent, {
@@ -217,12 +237,17 @@ function MainMenu:render()
 					)
 				end),
 				size = UDim2.fromScale(0.22, 0.18),
-				callback = function()
-					self:setState({
-						active = false,
-					})
-					self.flipperPositionGroupMotor:setGoal({ inventory_pos = FLIPPER_SPRING_EXPAND })
-				end,
+				callback = function() end,
+			}),
+			--Player preview
+			playerPreview = Roact.createElement(PlayerPreview, {
+				position = self.flipperPositionMotorsBindings.player_preview:map(function(value)
+					return self.props.playerPreview.position:Lerp(
+						self.props.playerPreview.position - UDim2.fromScale(1.33),
+						value
+					)
+				end),
+				playerHumanoidDescription = self.props.playerPreview.humanoidDescription,
 			}),
 		})
 	end
@@ -230,7 +255,7 @@ end
 
 function MainMenu:didMount()
 	local CameraController = Knit.GetController("CameraController")
-	local PlayerService = Knit.GetService("PlayerService")
+	local currencyService = Knit.GetService("CurrencyService")
 	local currentArenaInstance = workspace:WaitForChild("Arena")
 	local cutscenePoints = currentArenaInstance.Cutscene
 	--Set up main menu cutscene
@@ -242,9 +267,15 @@ function MainMenu:didMount()
 		end
 		warn("Main menu component state active : " .. tostring(self.state.active))
 	end)
+	--Set up respawn respawn
 	Players.LocalPlayer.CharacterAdded:Connect(function(character)
 		character:WaitForChild("Humanoid").Died:Connect(function()
-			self.flipperPositionGroupMotor:setGoal({ inventory_pos = FLIPPER_SPRING_RETRACT, play_button_pos = FLIPPER_SPRING_RETRACT})
+			self.flipperPositionGroupMotor:setGoal({
+				inventory_pos = FLIPPER_SPRING_RETRACT,
+				play_button_pos = FLIPPER_SPRING_RETRACT,
+				player_preview = FLIPPER_SPRING_RETRACT,
+				position = FLIPPER_SPRING_RETRACT,
+			})
 		end)
 	end)
 end

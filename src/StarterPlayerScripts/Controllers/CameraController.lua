@@ -38,6 +38,19 @@ function CameraController:SetCameraType(type : string)
     camera.CameraType = Enum.CameraType[type]
 end
 
+function CameraController:TweenCamera(camera : Camera, tweenInfo : TweenInfo, properties : table)
+    return Promise.new(function(resolve, reject, onCancel)
+        local tween = TweenService:Create(camera, tweenInfo, properties)
+        tween:Play()
+
+        onCancel(function()
+            tween:Cancel()
+        end)
+
+        tween.Completed:Connect(resolve)
+    end)
+end
+
 function CameraController:KnitInit()
     
 end

@@ -12,10 +12,10 @@ function MoneyController:KnitStart()
         print('Money:', money)
     end
 
-    local MoneyService = Knit.GetService("MoneyService")
-    MoneyService:GetMoney():andThen(ObserveMoney):catch(warn):andThen(function()
-        MoneyService.MoneyChanged:Connect(ObserveMoney)
-    end)
+    -- local MoneyService = Knit.GetService("MoneyService")
+    -- MoneyService:GetMoney():andThen(ObserveMoney):catch(warn):andThen(function()
+    --     MoneyService.MoneyChanged:Connect(ObserveMoney)
+    -- end)
 end
 
 function MoneyController:KnitInit()
