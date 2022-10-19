@@ -11,7 +11,7 @@ screenGui.Parent = playerGui
 screenGui.DisplayOrder = 1
 local textLabel = Instance.new("TextLabel")
 textLabel.Size = UDim2.new(1, 0, 1, 0)
-textLabel.BackgroundColor3 = Color3.fromRGB(0, 20, 40)
+textLabel.BackgroundColor3 = Color3.fromRGB(52, 59, 67)
 textLabel.Font = Enum.Font.GothamSemibold
 textLabel.TextColor3 = Color3.new(0.8, 0.8, 0.8)
 textLabel.Text = "Loading"
@@ -20,11 +20,11 @@ textLabel.Parent = screenGui
 local loadingRing = Instance.new("ImageLabel")
 loadingRing.Size = UDim2.new(0, 256, 0, 256)
 loadingRing.BackgroundTransparency = 1
-loadingRing.Image = "rbxassetid://4965945816"
+loadingRing.Image = "rbxassetid://11237061172"
 loadingRing.AnchorPoint = Vector2.new(0.5, 0.5)
 loadingRing.Position = UDim2.new(0.5, 0, 0.5, 0)
 loadingRing.Parent = screenGui
- 
+
 -- Remove the default loading screen
 ReplicatedFirst:RemoveDefaultLoadingScreen()
  

@@ -84,6 +84,20 @@ function InventoryFrame:render()
 			callback = self.props.closeButtonCallback,
 			retractCallback = retractCallback
 		}),
+
+		categoryButtons = Roact.createElement("Frame", {
+			BackgroundColor3 = Color3.fromRGB(255, 255, 255),
+			BackgroundTransparency = 1,
+			Position = UDim2.fromScale(0.0287, 0.12),
+			Rotation = 10,
+			Size = UDim2.fromScale(0.119, 0.805),
+		  }, {
+			uIGridLayout = Roact.createElement("UIGridLayout", {
+			  CellPadding = UDim2.fromScale(0, 0.05),
+			  CellSize = UDim2.fromScale(1, 0.13),
+			  SortOrder = Enum.SortOrder.LayoutOrder,
+			}),
+		  })
 	  })
 end
 

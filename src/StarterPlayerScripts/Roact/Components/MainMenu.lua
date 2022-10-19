@@ -84,7 +84,7 @@ function MainMenu:render()
 						value
 					)
 				end),
-				Size = UDim2.fromOffset(1409, 28),
+				Size = UDim2.fromScale(1.19, 1.0384),
 			}),
 
 			topBar = Roact.createElement("Frame", {
@@ -180,7 +180,7 @@ function MainMenu:render()
 						value
 					)
 				end),
-				Size = UDim2.fromOffset(1409, 28),
+				Size = UDim2.fromScale(1.19, 1.0384),
 			}),
 
 			topBar = Roact.createElement("Frame", {
@@ -199,7 +199,7 @@ function MainMenu:render()
 					)
 				end),
 				size = UDim2.fromScale(0.139, 0.0816),
-				currency = "battleCoins",
+				currency = "BattleCoins",
 				zIndex = 1,
 			}),
 			battleGemsFrame = Roact.createElement(CurrencyFrameComponent, {

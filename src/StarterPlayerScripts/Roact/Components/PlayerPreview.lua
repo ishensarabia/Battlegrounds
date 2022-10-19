@@ -1,3 +1,4 @@
+local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Packages = game.ReplicatedStorage.Packages
 --Module dependencies
@@ -42,7 +43,8 @@ function PlayerPreview:render()
 
 		playerName = Roact.createElement("TextLabel", {
 			Font = Enum.Font.SourceSansBold,
-			Text = "Sci_Punk",
+			ZIndex = 2,
+			Text = Players.LocalPlayer.Name,
 			TextColor3 = Color3.fromRGB(255, 255, 255),
 			TextScaled = true,
 			TextSize = 14,
@@ -79,7 +81,7 @@ function PlayerPreview:didMount()
 		dummy.Parent = workspace
 		dummy:WaitForChild("Humanoid"):ApplyDescription(self.props.playerHumanoidDescription)
 		dummy.Parent = worldModel
-		self.cameraRef:getValue().CFrame = (dummy.PrimaryPart.CFrame + Vector3.new(0, 0, 6.6))
+		self.cameraRef:getValue().CFrame = (dummy.PrimaryPart.CFrame + Vector3.new(0, 0, 7.3))
 			* CFrame.Angles(0, math.rad(40), 0)
 		--Align character to face camera
 		dummy:SetPrimaryPartCFrame(dummy.PrimaryPart.CFrame * CFrame.Angles(0, math.rad(-180), 0))
