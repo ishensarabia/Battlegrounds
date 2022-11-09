@@ -82,16 +82,17 @@ function Inventory:render()
 						self.props.changeMenuStateCallback("Inventory")
 					end,
 				}),
-				SuperPowersInventoryButton = Roact.createElement(InventoryButton, {
-					position = UDim2.fromScale(1.7, 0.34),
+				AbilitiesInventoryButton = Roact.createElement(InventoryButton, {
+					position = UDim2.fromScale(1.7, 0.64),
 					size = UDim2.fromScale(0.234, 0.279),
-					typeOfInventory = "SuperPowersInventory",
+					typeOfInventory = "Abilities",
 					callback = function()
 						self:setState({
 							currentScreen = "INVENTORY",
-							inventoryType = "SUPER-POWERS",
+							inventoryType = "ABILITIES",
 						})
 						self.flipperPositionGroupMotor:setGoal({ buttonsFrame = FLIPPER_SPRING_EXPAND })
+						self.props.changeMenuStateCallback("Inventory")
 					end,
 				}),
 			}),
@@ -122,14 +123,14 @@ function Inventory:render()
 						self.flipperPositionGroupMotor:setGoal({ buttonsFrame = FLIPPER_SPRING_EXPAND })
 					end,
 				}),
-				SuperPowersInventoryButton = Roact.createElement(InventoryButton, {
-					position = UDim2.fromScale(1.7, 0.34),
+				AbilitiesInventoryButton = Roact.createElement(InventoryButton, {
+					position = UDim2.fromScale(1.7, 0.64),
 					size = UDim2.fromScale(0.234, 0.279),
-					typeOfInventory = "SuperPowersInventory",
+					typeOfInventory = "Abilities",
 					callback = function()
 						self:setState({
 							currentScreen = "INVENTORY",
-							inventoryType = "SUPER-POWERS",
+							inventoryType = "ABILITIES",
 							items = Knit.GetService("DataService"):GetProfileData(Players.LocalPlayer),
 						})
 						warn(self.state.items)

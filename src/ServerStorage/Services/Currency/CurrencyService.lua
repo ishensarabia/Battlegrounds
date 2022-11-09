@@ -16,8 +16,8 @@ local CurrencyService = Knit.CreateService{
 }
 
 function CurrencyService:GetCurrencyValue(player : Player, currency : string) : number
-    local battleCoins = self._CurrencyPerPlayer[player][currency] or 0
-    return battleCoins
+    local currencyValueFetched = self._dataService:GetKeyValue(player, currency)
+    return currencyValueFetched
 end
 
 function CurrencyService:AddMoney(player : Player, amount : number)
@@ -36,15 +36,7 @@ end
 
 
 function CurrencyService:KnitStart()
-    local dataService = Knit.GetService("DataService")
-    Players.PlayerAdded:Connect(function(player)
-        warn("Battlecoins : ", dataService:GetKeyValue(player, "BattleCoins"))
-        self._CurrencyPerPlayer[player] = {}
-        self._CurrencyPerPlayer[player].BattleCoins = dataService:GetKeyValue(player, "BattleCoins")
-    end)
-    Players.PlayerRemoving:Connect(function(player)
-        self._CurrencyPerPlayer[player] = nil
-    end)
+    self._dataService = Knit.GetService("DataService")
 end
 
 

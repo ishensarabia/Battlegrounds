@@ -6,11 +6,12 @@ DataConfig.profileTemplate = {
 	Weapons = {
 		Rocket_Launcher = true,
 	},
-	Powers = {},
+	Rank = 0,
+	Abilities = {},
 	Knockouts = 0,
 	Defeats = 0,
 	LastLogin = os.time(),
-	ObjectsDestroyed = 0,
+	DestroyedObjects = 0,
 	Days = 0,
 	Codes = {},
 	Settings = {

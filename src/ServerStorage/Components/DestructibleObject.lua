@@ -34,7 +34,8 @@ function DestructibleObject:DestroyObject(player)
 		return
 	end
 	
-	DataService:incrementIntValue(player, "ObjectsDestroyed")
+	DataService:incrementIntValue(player, "DestroyedObjects")
+	DataService:incrementIntValue(player, "Rank")
 	warn("Object broke by player: " .. player.UserId)
 	warn("Players data: ", DataService:GetProfileData(player))
 	--Setup proximity prompts

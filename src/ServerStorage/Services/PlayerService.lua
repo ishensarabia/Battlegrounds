@@ -27,8 +27,16 @@ function PlayerService:KnitInit()
     Players.PlayerAdded:Connect(function(player)
         player.CharacterAdded:Connect(function(character)
             character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Ragdoll, false)
+            character.Humanoid.Died:Connect(function(player)
+                self:RegisterDead(player)
+            end)
         end)
     end)
+end
+
+function PlayerService:RegisterDead(player : Player)
+    local dataService = Knit.GetService("DataService")
+    dataService:incrementIntValue(player, "Defeats")
 end
 
 

@@ -9,8 +9,8 @@ local RoactComponents = game.StarterPlayer.StarterPlayerScripts.Source.Roact.Com
 --Components
 local CurrencyFrame = Roact.Component:extend("CurrencyFrame")
 local currencyIcons = {
-	battleGems = "rbxassetid://10835980573",
 	BattleCoins = "rbxassetid://10835882861",
+	BattleGems = "rbxassetid://10835980573",
 }
 --Springs
 local FLIPPER_SPRING_EXPAND = Flipper.Spring.new(1, {
@@ -27,6 +27,7 @@ function CurrencyFrame:init()
 	self.motor:onStep(setBinding)
 	--Roact binding
 	local currencyService = Knit.GetService("CurrencyService")
+	warn(self.props.currency)
 	currencyService:GetCurrencyValue(self.props.currency):andThen(function(currencyValue)
 		self.currencyValue, self.updateCurrencyValue = Roact.createBinding(currencyValue)
 	end)

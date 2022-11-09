@@ -5,9 +5,10 @@ local Packages = game.ReplicatedStorage.Packages
 local Roact = require(Packages.Roact)
 local Flipper = require(Packages.Flipper)
 local Knit = require(ReplicatedStorage.Packages.Knit)
-
-local RoactComponents = game.StarterPlayer.StarterPlayerScripts.Source.Roact.Components
 --Components
+local RoactComponents = game.StarterPlayer.StarterPlayerScripts.Source.Roact.Components
+local StatFrameComponent = require(RoactComponents.StatFrame)
+local RankFrameComponent = require(RoactComponents.RankFrame)
 local PlayerPreview = Roact.Component:extend("PlayerPreview")
 --Springs
 local FLIPPER_SPRING_EXPAND = Flipper.Spring.new(1, {
@@ -56,11 +57,29 @@ function PlayerPreview:render()
 			Size = UDim2.fromScale(0.526, 0.0943),
 		}),
 
+		KnockoutsFrame = Roact.createElement(StatFrameComponent, {
+			position = UDim2.fromScale(0.131, 0.255),
+			size = UDim2.fromScale(0.227, 0.194),
+			stat = "Knockouts",
+			ZIndex = 2
+		}),
+
+		DefeatsFrame  = Roact.createElement(StatFrameComponent, {
+			position = UDim2.fromScale(0.131, 0.669),
+			size = UDim2.fromScale(0.227, 0.194),
+			stat = "Defeats",
+			ZIndex = 2
+		}),
+
+		RankFrame = Roact.createElement(RankFrameComponent,{
+			ZIndex = 2
+		}),
+		
 		viewportFrame = Roact.createElement("ViewportFrame", {
 			BackgroundColor3 = Color3.fromRGB(255, 255, 255),
 			BackgroundTransparency = 1,
 			Position = UDim2.fromScale(0, 0.0268),
-			Size = UDim2.fromScale(0.95, 0.937),
+			Size = UDim2.fromScale(0.83, 0.937),
 			ZIndex = 2,
 			[Roact.Ref] = self.viewportRef,
 		}),
@@ -87,8 +106,9 @@ function PlayerPreview:didMount()
 		dummy:SetPrimaryPartCFrame(dummy.PrimaryPart.CFrame * CFrame.Angles(0, math.rad(-180), 0))
 		self.viewportRef:getValue().CurrentCamera = self.cameraRef:getValue()
 		--Activate controller
+		local PlayerPreviewController = Knit.GetController("PlayerPreviewController")
 		task.spawn(function()
-			Knit.GetController("PlayerPreviewController"):spawnCharacterMenu()
+			PlayerPreviewController:spawnCharacterInMenu()
 		end)
 	end
 end

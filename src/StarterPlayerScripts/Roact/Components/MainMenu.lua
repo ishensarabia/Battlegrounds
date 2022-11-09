@@ -8,7 +8,7 @@ local Knit = require(ReplicatedStorage.Packages.Knit)
 local Janitor = require(Packages.Janitor)
 --Assets
 local InventoryIcons = require(game.ReplicatedStorage.Source.Assets.Icons.InventoryIcons)
---Components
+--Roact components
 local RoactCoreComponents = game.StarterPlayer.StarterPlayerScripts.Source.Roact.Core
 local RoactComponents = game.StarterPlayer.StarterPlayerScripts.Source.Roact.Components
 local CurrencyFrameComponent = require(RoactComponents.CurrencyFrame)
@@ -114,7 +114,7 @@ function MainMenu:render()
 					)
 				end),
 				size = UDim2.fromScale(0.139, 0.0816),
-				currency = "battleGems",
+				currency = "BattleGems",
 				zIndex = 2,
 			}),
 			--Init inventory component
@@ -210,7 +210,7 @@ function MainMenu:render()
 					)
 				end),
 				size = UDim2.fromScale(0.139, 0.0816),
-				currency = "battleGems",
+				currency = "BattleGems",
 				zIndex = 2,
 			}),
 			--Init inventory component

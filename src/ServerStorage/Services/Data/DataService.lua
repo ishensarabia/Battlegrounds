@@ -12,6 +12,7 @@ local DataService = Knit.CreateService {
 		BattleCoinsChanged = Knit.CreateSignal(),
         BattleGemsChanged = Knit.CreateSignal()
 	},
+	Initialized = false
 }
 
 local function DeepCopy(original)
@@ -43,14 +44,16 @@ end
 
 
 function DataService:KnitStart()
+	-- Initialize profiles table to store
     self.profiles = {}
-	self.profileStore = ProfileService.GetProfileStore("Battlegrounds_Devevelopment", DataConfig.profileTemplate)
+	self.profileStore = ProfileService.GetProfileStore("Battlegrounds_Devevelopment3", DataConfig.profileTemplate)
 	Players.PlayerRemoving:Connect(function(player)
 		self:onPlayerRemoving(player)
 	end)
 	Players.PlayerAdded:Connect(function(player)
 		self:onPlayerAdded(player)
 	end)
+	self.Initialized = true
 end
 
 function DataService:GetProfileData(player)
@@ -61,6 +64,10 @@ function DataService:GetProfileData(player)
 end
 
 function DataService:GetKeyValue(player, key : string)
+	repeat
+		task.wait() --make sure the porfile is there
+	until  self.profiles[player]
+	-- warn(self.profiles[player].Data[key]) -- set usage for the player profile
 	local profile = self.profiles[player]
 	if profile and profile.Data[key] then
 		return profile.Data[key]
@@ -123,7 +130,7 @@ function DataService:incrementIntValue(player, key : string, amount : number?)
 	assert(type(profile.Data[key] == "number"), "Data key is not an int value, please verify parameters values")
 	if amount then
 		if (profile) then
-			profile.Data[key] += amount
+			profile.Data[key] += amount or 1
 		end
 	else
 		profile.Data[key] += 1

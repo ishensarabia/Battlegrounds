@@ -1,13 +1,38 @@
 local Players = game:GetService("Players")
+local Player = Players.LocalPlayer
+local Mouse = Player:GetMouse()
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
 local Knit = require(ReplicatedStorage.Packages.Knit)
 
 local PlayerPreviewController = Knit.CreateController({ Name = "PlayerPreviewController" })
 
-function PlayerPreviewController:spawnCharacterMenu()
-	local playerCharacter = Players.LocalPlayer.PlayerGui
-		:WaitForChild("MainMenu").playerPreview.viewportFrame.WorldModel
-		:WaitForChild("Dummy")
+local playerCharacter
+
+function PlayerPreviewController:setHeadMouseBehavior(bool : boolean)
+	if (bool) then
+		local attachment = Instance.new("Attachment")
+		attachment.Name = "Camera Follow"
+		attachment.CFrame = playerCharacter.Head.CFrame 
+		attachment.Parent = playerCharacter.Head 
+
+		local IKController = Instance.new("IKControl")
+		IKController.Parent = playerCharacter.Humanoid
+		IKController.ChainRoot = playerCharacter.UpperTorso
+		IKController.EndEffector = playerCharacter.Head
+		IKController.Target = attachment
+		IKController.Pole = nil
+		RunService.RenderStepped:Connect(function(deltaTime)
+			attachment.WorldPosition = CFrame.lookAt(playerCharacter.Head.CFrame.Position, Vector3.new(Mouse.Hit.Position.X, playerCharacter.HumanoidRootPart.CFrame.Position.Y, Mouse.Hit.Position.Z)).Position
+		end)
+	end
+end
+
+
+function PlayerPreviewController:spawnCharacterInMenu()
+	playerCharacter = Players.LocalPlayer.PlayerGui
+:WaitForChild("MainMenu").playerPreview.viewportFrame.WorldModel
+:WaitForChild("Dummy")
 	local idleAnimation = Instance.new("Animation")
 	idleAnimation.AnimationId = "rbxassetid://782841498"
 	idleAnimation.Name = "Idle"
@@ -44,6 +69,8 @@ function PlayerPreviewController:spawnCharacterMenu()
 	)
 	weld.Part0 = playerCharacter.RightHand
 	weld.Part1 = clonedRocketLauncher.Handle
+	
+	-- self:setHeadMouseBehavior( true)
 
 	--Animate the selected weapon
 	local IKController = Instance.new("IKControl")
@@ -51,6 +78,7 @@ function PlayerPreviewController:spawnCharacterMenu()
 	IKController.ChainRoot = playerCharacter.LeftUpperArm
 	IKController.EndEffector = playerCharacter.LeftHand
 	IKController.Target = clonedRocketLauncher.RocketLauncher.Model.SecondHandleAttachment
+
 end
 
 function PlayerPreviewController:KnitStart() end

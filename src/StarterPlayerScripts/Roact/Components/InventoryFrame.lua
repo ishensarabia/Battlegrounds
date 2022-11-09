@@ -79,7 +79,7 @@ function InventoryFrame:render()
 
 		closeButton = Roact.createElement(CloseButton, {
 			position = UDim2.fromScale(0.914, -0.0323),
-			size = UDim2.fromOffset(89, 73),
+			size = UDim2.fromScale(0.09, 0.214),
 			zindex = 2,
 			callback = self.props.closeButtonCallback,
 			retractCallback = retractCallback
