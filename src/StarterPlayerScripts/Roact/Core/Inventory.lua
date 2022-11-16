@@ -68,12 +68,12 @@ function Inventory:render()
 				ItemsInventoryButton = Roact.createElement(InventoryButton, {
 					position = UDim2.fromScale(1.7, 0.185),
 					size = UDim2.fromScale(0.234, 0.279),
-					typeOfInventory = "Items",
+					typeOfInventory = "Weapons",
 					callback = function()
 						Knit.GetService("DataService"):GetKeyValue("Weapons"):andThen(function(weapons: table)
 							self:setState({
 								currentScreen = "INVENTORY",
-								inventoryType = "ITEMS",
+								inventoryType = "WEAPONS",
 								items = weapons,
 							})
 							warn("Weapons fetched: ", self.state.items)
@@ -113,11 +113,11 @@ function Inventory:render()
 				ItemsInventoryButton = Roact.createElement(InventoryButton, {
 					position = UDim2.fromScale(1.7, 0.185),
 					size = UDim2.fromScale(0.234, 0.279),
-					typeOfInventory = "Items",
+					typeOfInventory = "Weapons",
 					callback = function()
 						self:setState({
 							currentScreen = "INVENTORY",
-							inventoryType = "ITEMS",
+							inventoryType = "WEAPONS",
 							items = Knit.GetService("DataService"):GetProfileData(Players.LocalPlayer),
 						})
 						self.flipperPositionGroupMotor:setGoal({ buttonsFrame = FLIPPER_SPRING_EXPAND })
@@ -133,16 +133,16 @@ function Inventory:render()
 							inventoryType = "ABILITIES",
 							items = Knit.GetService("DataService"):GetProfileData(Players.LocalPlayer),
 						})
-						warn(self.state.items)
 						self.flipperPositionGroupMotor:setGoal({ buttonsFrame = FLIPPER_SPRING_EXPAND })
 					end,
 				}),
 			}),
 			--Inventory Frames
 			Frame = Roact.createElement(InventoryFrame, {
-				position = UDim2.fromScale(0.126, 0.0637),
+				position = UDim2.fromScale(0.126, 0.0763),
 				size = UDim2.fromScale(0.793, 0.837),
 				inventoryType = self.state.inventoryType,
+				inventoryItems = self.state.items,
 				closeButtonCallback = function(_callback)
 					if _callback then
 						_callback()
