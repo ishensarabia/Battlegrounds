@@ -45,8 +45,8 @@ function RankFrame:render()
   return Roact.createElement("Frame", {
     BackgroundColor3 = Color3.fromRGB(255, 255, 255),
     BackgroundTransparency = 1,
-    Position = UDim2.fromScale(0.723, 0.192),
-    Size = UDim2.fromScale(0.114, 0.318),
+    Position = self.props.position,
+    Size = self.props.size,
     ZIndex = self.props.ZIndex
   }, {
     rankValue = Roact.createElement("TextLabel", {
@@ -64,7 +64,7 @@ function RankFrame:render()
     }),
   
     rankIcon = Roact.createElement("ImageLabel", {
-      Image = "rbxassetid://11394200934",
+      Image = "rbxassetid://11530445688",
       ScaleType = Enum.ScaleType.Fit,
       BackgroundColor3 = Color3.fromRGB(102, 102, 102),
       BackgroundTransparency = 1,

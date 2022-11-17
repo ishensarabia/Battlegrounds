@@ -38,7 +38,7 @@ function PlayButton:render()
           frequency = 5,
           dampingRatio = 1,
       }))
-      task.delay(0.3, function()
+      task.delay(0.163, function()
           Knit.GetService("PlayerService"):SpawnCharacter()
           self.props.callback(self.props.retractCallback)
       end)

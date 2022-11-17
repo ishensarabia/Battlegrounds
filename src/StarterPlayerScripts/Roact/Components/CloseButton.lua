@@ -1,7 +1,9 @@
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Packages = game.ReplicatedStorage.Packages
 --Module dependencies
 local Roact = require(Packages.Roact)
 local Flipper = require(Packages.Flipper)
+local Knit = require(ReplicatedStorage.Packages.Knit)
 
 local RoactComponents = game.StarterPlayer.StarterPlayerScripts.Source.Roact.Components
 --Components
@@ -31,14 +33,16 @@ function CloseButton:render()
     end),  
     ZIndex = self.props.zindex,
     [Roact.Event.MouseButton1Down] = function()
+      --Play the sound 
+      Knit.GetController("AudioController"):PlaySound("click")
       self.motor:setGoal(Flipper.Spring.new(1, {
           frequency = 5,
           dampingRatio = 1,
       }))
-      task.delay(0.3, function()
+      task.delay(0.163, function()
           self.props.callback(self.props.retractCallback)
       end)
-  end,
+    end,
   })
 end
 

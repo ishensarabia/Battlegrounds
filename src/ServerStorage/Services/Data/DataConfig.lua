@@ -4,7 +4,15 @@ DataConfig.profileTemplate = {
 	BattleCoins = 0,
 	BattleGems = 0,
 	Weapons = {
-		Rocket_Launcher = true,
+		Rocket_Launcher = {
+			Owned = true,
+			Skin = "Default",
+					
+		},
+		Stick = {
+			Owned = true,
+			Skin = "Default"
+		}
 	},
 	Rank = 0,
 	Abilities = {},

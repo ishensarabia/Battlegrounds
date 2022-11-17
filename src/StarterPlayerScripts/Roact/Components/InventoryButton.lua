@@ -1,6 +1,8 @@
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Packages = game.ReplicatedStorage.Packages
 local Roact = require(Packages.Roact)
 local Flipper = require(Packages.Flipper)
+local Knit = require(ReplicatedStorage.Packages.Knit)
 
 local InventoryButton = Roact.Component:extend("InventoryButton")
 
@@ -23,6 +25,7 @@ function InventoryButton:render()
 		Size = self.props.size,
 		Position = self.props.position,
 	}, {
+		--Create a sub layer frame to be able to tween the frame contents and animate them
 		ButtonFrame = Roact.createElement("Frame", {
 			BackgroundTransparency = 1,
 			Size = self.binding:map(function(value)
@@ -36,22 +39,24 @@ function InventoryButton:render()
 				Position = UDim2.fromScale(0.236, -0.144),
 				Size = UDim2.fromScale(0.533, 0.748),
 				ZIndex = 2,
-							--Events
+				--Events
 
-			[Roact.Event.MouseButton1Down] = function()
-				self.motor:setGoal(Flipper.Spring.new(1, {
-					frequency = 5,
-					dampingRatio = 1,
-				}))
-			end,
-
-			[Roact.Event.MouseButton1Up] = function()
-				self.motor:setGoal(Flipper.Spring.new(0, {
-					frequency = 4,
-					dampingRatio = 0.75,
-				}))
-				self.props.callback()
-			end,
+				[Roact.Event.MouseButton1Down] = function()
+					--Play sound
+					Knit.GetController("AudioController"):PlaySound("click")
+					self.motor:setGoal(Flipper.Spring.new(1, {
+						frequency = 5,
+						dampingRatio = 1,
+					}))
+					task.delay(0.163, function()
+						self.props.callback(self.props.retractCallback)
+						self.motor:setGoal(Flipper.Spring.new(0, {
+							frequency = 4,
+							dampingRatio = 0.75,
+						}))
+						self.props.callback()
+					end)
+				end,
 			}),
 
 			buttonImageLabel = Roact.createElement("ImageLabel", {
@@ -64,7 +69,7 @@ function InventoryButton:render()
 			}),
 
 			buttonTitle = Roact.createElement("TextLabel", {
-				Text = self.props.typeOfInventory,
+				Text = string.upper(self.props.typeOfInventory),
 				TextColor3 = Color3.fromRGB(255, 255, 255),
 				TextScaled = true,
 				TextSize = 14,
@@ -77,39 +82,6 @@ function InventoryButton:render()
 				ZIndex = 2,
 			}),
 		}),
-		-- ButtonFrame = Roact.createElement("Frame", {
-		-- 	ZIndex = 2,
-		-- 	BackgroundTransparency = 1,
-		-- 	Size = self.binding:map(function(value)
-		-- 		return UDim2.fromScale(1, 1):Lerp(UDim2.fromScale(0.8, 0.8), value)
-		-- 	end),
-		-- }, {
-
-		-- 	Button = Roact.createElement("ImageButton", {
-		-- 		ZIndex = 2,
-		-- 		BackgroundTransparency = 1,
-		-- 		Image = InventoryIcons[self.props.typeOfInventory],
-		-- 		PressedImage = InventoryIcons.ItemInventory,
-		-- 		Size = UDim2.fromScale(1, 1),
-
-		-- 		--Events
-
-		-- 		[Roact.Event.MouseButton1Down] = function()
-		-- 			self.motor:setGoal(Flipper.Spring.new(1, {
-		-- 				frequency = 5,
-		-- 				dampingRatio = 1,
-		-- 			}))
-		-- 		end,
-
-		-- 		[Roact.Event.MouseButton1Up] = function()
-		-- 			self.motor:setGoal(Flipper.Spring.new(0, {
-		-- 				frequency = 4,
-		-- 				dampingRatio = 0.75,
-		-- 			}))
-		-- 			self.props.callback()
-		-- 		end,
-		-- 	}),
-		-- }),
 	})
 end
 

@@ -72,7 +72,9 @@ function PlayerPreview:render()
 		}),
 
 		RankFrame = Roact.createElement(RankFrameComponent,{
-			ZIndex = 2
+			ZIndex = 2,
+			Position = UDim2.fromScale(0.723, 0.192),
+			Size = UDim2.fromScale(0.114, 0.318)
 		}),
 		
 		viewportFrame = Roact.createElement("ViewportFrame", {
