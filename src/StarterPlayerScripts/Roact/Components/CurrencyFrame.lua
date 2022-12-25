@@ -27,7 +27,6 @@ function CurrencyFrame:init()
 	self.motor:onStep(setBinding)
 	--Roact binding
 	local currencyService = Knit.GetService("CurrencyService")
-	warn(self.props.currency)
 	currencyService:GetCurrencyValue(self.props.currency):andThen(function(currencyValue)
 		self.currencyValue, self.updateCurrencyValue = Roact.createBinding(currencyValue)
 	end)

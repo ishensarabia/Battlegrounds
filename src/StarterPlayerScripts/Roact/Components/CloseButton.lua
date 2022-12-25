@@ -30,17 +30,17 @@ function CloseButton:render()
     Position = self.props.position,
     Size = self.binding:map(function(value)
         return self.props.size:Lerp(UDim2.fromScale(0.06, 0.145     ), value)
-    end),  
+    end),
     ZIndex = self.props.zindex,
     [Roact.Event.MouseButton1Down] = function()
-      --Play the sound 
+      --Play the sound
       Knit.GetController("AudioController"):PlaySound("click")
       self.motor:setGoal(Flipper.Spring.new(1, {
           frequency = 5,
           dampingRatio = 1,
       }))
       task.delay(0.163, function()
-          self.props.callback(self.props.retractCallback)
+        self.props.callback(self.props.retractCallback)
       end)
     end,
   })

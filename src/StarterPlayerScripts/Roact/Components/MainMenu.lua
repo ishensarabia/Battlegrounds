@@ -61,7 +61,7 @@ function MainMenu:init()
 	self.janitor = Janitor.new()
 	--Set states
 	self:setState({
-		currentScreen = "Menu",
+		currentScreen = "MENU",
 		active = true,
 	})
 	--Refs
@@ -70,7 +70,7 @@ function MainMenu:init()
 end
 
 function MainMenu:render()
-	if self.state.currentScreen == "Menu" then
+	if self.state.currentScreen == "MENU" then
 		return Roact.createElement("ScreenGui", {
 			ZIndexBehavior = Enum.ZIndexBehavior.Sibling,
 			IgnoreGuiInset = true,
@@ -125,7 +125,7 @@ function MainMenu:render()
 					return self.props.inventory.position:Lerp(
 						self.props.inventory.position - UDim2.fromScale(1.33),
 						value
-					)
+				)
 				end),
 				changeMenuStateCallback = function(_currentScreen)
 					self:setState({ currentScreen = _currentScreen })
@@ -167,7 +167,7 @@ function MainMenu:render()
 		})
 	end
 
-	if self.state.currentScreen == "Inventory" then
+	if self.state.currentScreen == "INVENTORY" then
 		return Roact.createElement("ScreenGui", {
 			ZIndexBehavior = Enum.ZIndexBehavior.Sibling,
 			IgnoreGuiInset = true,

@@ -7,7 +7,7 @@ local Knit = require(ReplicatedStorage.Packages.Knit)
 
 local RoactComponents = game.StarterPlayer.StarterPlayerScripts.Source.Roact.Components
 --Components
-local RankFrame = Roact.Component:extend("RankFrame")
+local ItemPreviewFrame = Roact.Component:extend("ItemPreviewFrame")
 local rankIcons = {
 	Knockouts = "rbxassetid://11388696098",
 	Defeats = "rbxassetid://11388651427",
@@ -22,7 +22,7 @@ local FLIPPER_SPRING_EXPAND = Flipper.Spring.new(1, {
 	dampingRatio = 1,
 })
 
-function RankFrame:init()
+function ItemPreviewFrame:init()
 	self.motor = Flipper.SingleMotor.new(0)
 
 	local binding, setBinding = Roact.createBinding(self.motor:getValue())
@@ -38,19 +38,24 @@ function RankFrame:init()
 	end)
 end
 
-function RankFrame:render()
-  repeat
-    task.wait()
-  until self.rankValue 
+function ItemPreviewFrame:render()
   return Roact.createElement("Frame", {
     BackgroundColor3 = Color3.fromRGB(255, 255, 255),
     BackgroundTransparency = 1,
-    Position = UDim2.fromScale(0.723, 0.192),
-    Size = UDim2.fromScale(0.114, 0.318),
-    ZIndex = self.props.ZIndex
+    Position = UDim2.fromScale(0.335, 0.104),
+    Size = UDim2.fromScale(0.433, 0.636),
   }, {
-    rankValue = Roact.createElement("TextLabel", {
-      Text = self.rankValue,
+    imageLabel = Roact.createElement("ImageLabel", {
+      Image = "rbxassetid://11571256920",
+      ImageTransparency = 0.3,
+      BackgroundColor3 = Color3.fromRGB(255, 255, 255),
+      BackgroundTransparency = 1,
+      Position = UDim2.fromScale(-5.15e-08, 0),
+      Size = UDim2.fromScale(1.02, 1),
+    }),
+  
+    title = Roact.createElement("TextLabel", {
+      Text = self.props.weaponID,
       TextColor3 = Color3.fromRGB(255, 255, 255),
       TextScaled = true,
       TextSize = 14,
@@ -58,23 +63,19 @@ function RankFrame:render()
       TextWrapped = true,
       BackgroundColor3 = Color3.fromRGB(255, 255, 255),
       BackgroundTransparency = 1,
-      Position = UDim2.fromScale(0.31, 0.144),
-      Size = UDim2.fromScale(0.381, 0.743),
-      ZIndex = 2,
+      Position = UDim2.fromScale(0.28, 0.0428),
+      Size = UDim2.fromScale(0.526, 0.0943),
     }),
   
-    rankIcon = Roact.createElement("ImageLabel", {
-      Image = "rbxassetid://11394200934",
-      ScaleType = Enum.ScaleType.Fit,
-      BackgroundColor3 = Color3.fromRGB(102, 102, 102),
+    viewportFrame = Roact.createElement("ViewportFrame", {
+      BackgroundColor3 = Color3.fromRGB(255, 255, 255),
       BackgroundTransparency = 1,
-      Position = UDim2.fromScale(-0.00427, 0.0554),
-      Size = UDim2.fromScale(1, 1.02),
+      Position = UDim2.fromScale(0.215, 0.199),
+      Size = UDim2.fromOffset(342, 172),
     }),
-  })
-end
+  })end
 
-function RankFrame:didMount()
+function ItemPreviewFrame:didMount()
 	local statsService = Knit.GetService("StatsService")
 	--Update bindings
 	statsService.StatChanged:Connect(function(newValue)
@@ -82,4 +83,4 @@ function RankFrame:didMount()
 	end)
 end
 
-return RankFrame
+return ItemPreviewFrame

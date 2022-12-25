@@ -24,6 +24,7 @@ function CategoryButton:init()
 end
 
 function CategoryButton:render()
+	--Create two frames so tweening worksd
 	return Roact.createElement("Frame", {
 		BackgroundColor3 = Color3.fromRGB(255, 255, 255),
 		BackgroundTransparency = 1,
@@ -49,7 +50,7 @@ function CategoryButton:render()
 			}),
 
 			title = Roact.createElement("TextLabel", {
-				Font = Enum.Font.SourceSansBold,
+				Font = Enum.Font.GothamBold,
 				Text = self.props.buttonCategory,
 				TextColor3 = Color3.fromRGB(255, 255, 255),
 				TextScaled = true,

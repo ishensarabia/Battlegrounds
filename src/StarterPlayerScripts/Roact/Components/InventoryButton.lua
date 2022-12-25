@@ -54,7 +54,6 @@ function InventoryButton:render()
 							frequency = 4,
 							dampingRatio = 0.75,
 						}))
-						self.props.callback()
 					end)
 				end,
 			}),

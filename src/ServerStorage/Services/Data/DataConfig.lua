@@ -12,7 +12,15 @@ DataConfig.profileTemplate = {
 		Stick = {
 			Owned = true,
 			Skin = "Default"
-		}
+		},
+		Crossbow = {
+			Owned = false,
+			Skin = "Default"
+		},
+		Pistol = {
+			Owned = tr,
+			Skin = "Default"
+		},
 	},
 	Rank = 0,
 	Abilities = {},
