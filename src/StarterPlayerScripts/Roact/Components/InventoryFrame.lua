@@ -87,7 +87,7 @@ function InventoryFrame:render()
 
 	for itemName, itemProps in self.props.inventoryItems do
 		inventoryItems[itemName] = Roact.createElement(WeaponFrame, {
-			weaponID = itemName,
+			itemName = itemName,
 			category = self.props.category,
 			selectWeapon = self.props.weaponSelectedCallback
 		})
