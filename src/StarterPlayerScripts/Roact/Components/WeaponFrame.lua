@@ -25,7 +25,7 @@ function WeaponFrame:init()
 end
 
 function WeaponFrame:render()
-	local weaponName = string.gsub(self.props.weaponID, "_", " ")
+	local weaponName = string.gsub(self.props.itemName, "_", " ")
 	return Roact.createElement("Frame", {
 		BackgroundColor3 = Color3.fromRGB(255, 255, 255),
 		BackgroundTransparency = 1,
@@ -41,7 +41,7 @@ function WeaponFrame:render()
 			end),
 		}, {
 			itemIcon = Roact.createElement("ImageButton", {
-				Image = WeaponsIcons[self.props.category][self.props.weaponID],
+				Image = WeaponsIcons[self.props.category][self.props.itemName],
 				ScaleType = Enum.ScaleType.Fit,
 				BackgroundColor3 = Color3.fromRGB(255, 255, 255),
 				BackgroundTransparency = 1,
