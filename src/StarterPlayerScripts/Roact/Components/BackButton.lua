@@ -31,7 +31,7 @@ function BackButton:render()
 			return self.props.size:Lerp(UDim2.fromScale(0.053, 0.096), value)
 		end),
 	}, {
-		inventoryButton = Roact.createElement("ImageButton", {
+		labelIcon = Roact.createElement("ImageButton", {
 			Image = "rbxassetid://9963227346",
 			ImageColor3 = Color3.fromRGB(102, 102, 102),
 			ScaleType = Enum.ScaleType.Tile,
