@@ -3,7 +3,7 @@ local SoundService = game:GetService("SoundService")
 local Knit = require(ReplicatedStorage.Packages.Knit)
 
 local AudioController =
-	Knit.CreateController({ Name = "AudioController", Sounds = { click = "rbxassetid://4499400560" } })
+	Knit.CreateController({ Name = "AudioController", Sounds = { click = "rbxassetid://4499400560", equip = "rbxassetid://1334782302" } })
 
 function AudioController:KnitStart() end
 

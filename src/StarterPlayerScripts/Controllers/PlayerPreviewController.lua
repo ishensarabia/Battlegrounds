@@ -2,19 +2,23 @@ local Players = game:GetService("Players")
 local Player = Players.LocalPlayer
 local Mouse = Player:GetMouse()
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Assets = ReplicatedStorage.Assets
 local RunService = game:GetService("RunService")
 local Knit = require(ReplicatedStorage.Packages.Knit)
+--Widgets
+local WeaponCustomWidget = require(game.StarterPlayer.StarterPlayerScripts.Source.UI_Widgets.WeaponCustomWidget)
 
 local PlayerPreviewController = Knit.CreateController({ Name = "PlayerPreviewController" })
 
 local playerCharacter
+local weaponEquipped
 
-function PlayerPreviewController:setHeadMouseBehavior(bool : boolean)
-	if (bool) then
+function PlayerPreviewController:setHeadMouseBehavior(bool: boolean)
+	if bool then
 		local attachment = Instance.new("Attachment")
 		attachment.Name = "Camera Follow"
-		attachment.CFrame = playerCharacter.Head.CFrame 
-		attachment.Parent = playerCharacter.Head 
+		attachment.CFrame = playerCharacter.Head.CFrame
+		attachment.Parent = playerCharacter.Head
 
 		local IKController = Instance.new("IKControl")
 		IKController.Parent = playerCharacter.Humanoid
@@ -23,16 +27,26 @@ function PlayerPreviewController:setHeadMouseBehavior(bool : boolean)
 		IKController.Target = attachment
 		IKController.Pole = nil
 		RunService.RenderStepped:Connect(function(deltaTime)
-			attachment.WorldPosition = CFrame.lookAt(playerCharacter.Head.CFrame.Position, Vector3.new(Mouse.Hit.Position.X, playerCharacter.HumanoidRootPart.CFrame.Position.Y, Mouse.Hit.Position.Z)).Position
+			attachment.WorldPosition = CFrame.lookAt(
+				playerCharacter.Head.CFrame.Position,
+				Vector3.new(
+					Mouse.Hit.Position.X,
+					playerCharacter.HumanoidRootPart.CFrame.Position.Y,
+					Mouse.Hit.Position.Z
+				)
+			).Position
 		end)
 	end
 end
 
-
-function PlayerPreviewController:spawnCharacterInMenu()
+function PlayerPreviewController:SpawnWeaponInCharacterMenu()
+	if weaponEquipped then
+		weaponEquipped:Destroy()
+	end
+	local DataService = Knit.GetService("DataService")
 	playerCharacter = Players.LocalPlayer.PlayerGui
-:WaitForChild("MainMenu").playerPreview.viewportFrame.WorldModel
-:WaitForChild("Dummy")
+		:WaitForChild("MainMenuGui").CharacterCanvas.ViewportFrame.WorldModel
+		:WaitForChild("Dummy")
 	local idleAnimation = Instance.new("Animation")
 	idleAnimation.AnimationId = "rbxassetid://782841498"
 	idleAnimation.Name = "Idle"
@@ -44,42 +58,44 @@ function PlayerPreviewController:spawnCharacterInMenu()
 	local longWeaponAnimationTrack = playerCharacter.Humanoid.Animator:LoadAnimation(longWeaponAnimation)
 	longWeaponAnimationTrack:Play()
 	--Spawn equipped weapon / power
-	local clonedRocketLauncher = workspace.RocketLauncher:Clone()
-	clonedRocketLauncher.Parent = playerCharacter.Parent
-	clonedRocketLauncher.RocketLauncher:SetPrimaryPartCFrame(
-		playerCharacter.PrimaryPart.CFrame + Vector3.new(-1.5, 0, 0)
-	)
-	--Weld
-	local weld = Instance.new("Weld")
-	weld.Parent = clonedRocketLauncher.Handle
-	weld.C0 = playerCharacter.RightHand.RightGripAttachment.CFrame
-	weld.C1 = CFrame.new(
-		clonedRocketLauncher.GripPos.x,
-		clonedRocketLauncher.GripPos.y,
-		clonedRocketLauncher.GripPos.z,
-		clonedRocketLauncher.GripRight.x,
-		clonedRocketLauncher.GripUp.x,
-		-clonedRocketLauncher.GripForward.x,
-		clonedRocketLauncher.GripRight.y,
-		clonedRocketLauncher.GripUp.y,
-		-clonedRocketLauncher.GripForward.y,
-		clonedRocketLauncher.GripRight.z,
-		clonedRocketLauncher.GripUp.z,
-		-clonedRocketLauncher.GripForward.z
-	)
-	weld.Part0 = playerCharacter.RightHand
-	weld.Part1 = clonedRocketLauncher.Handle
+	--Get equipped weapon
+	DataService:GetKeyValue("Loadout"):andThen(function(loadout : table)
+		weaponEquipped = Assets.Models.Weapons[loadout.WeaponEquipped]:Clone()
+		WeaponCustomWidget:ApplySavedCustomization(loadout.WeaponEquipped, weaponEquipped:FindFirstChildOfClass("Model"))
+		weaponEquipped.Parent = playerCharacter.Parent
+		weaponEquipped:FindFirstChildWhichIsA("Model", true).PrimaryPart.CFrame = playerCharacter.PrimaryPart.CFrame
+		--Weld
+		local weld = Instance.new("Weld")
+		weld.Parent = weaponEquipped.Handle
+		weld.C0 = playerCharacter.RightHand.RightGripAttachment.CFrame
+		weld.C1 = CFrame.new(
+			weaponEquipped.GripPos.x,
+			weaponEquipped.GripPos.y,
+			weaponEquipped.GripPos.z,
+			weaponEquipped.GripRight.x,
+			weaponEquipped.GripUp.x,
+			-weaponEquipped.GripForward.x,
+			weaponEquipped.GripRight.y,
+			weaponEquipped.GripUp.y,
+			-weaponEquipped.GripForward.y,
+			weaponEquipped.GripRight.z,
+			weaponEquipped.GripUp.z,
+			-weaponEquipped.GripForward.z
+		)
+		weld.Part0 = playerCharacter.RightHand
+		weld.Part1 = weaponEquipped.Handle
 	
-	-- self:setHeadMouseBehavior( true)
-
-	--Animate the selected weapon
-	local IKController = Instance.new("IKControl")
-	IKController.Parent = playerCharacter.Humanoid
-	IKController.ChainRoot = playerCharacter.LeftUpperArm
-	IKController.EndEffector = playerCharacter.LeftHand
-	IKController.Target = clonedRocketLauncher.RocketLauncher.Model.SecondHandleAttachment
-
+		-- self:setHeadMouseBehavior( true)
+	
+		--Animate the selected weapon
+		local IKController = Instance.new("IKControl")
+		IKController.Parent = playerCharacter.Humanoid
+		IKController.ChainRoot = playerCharacter.LeftUpperArm
+		IKController.EndEffector = playerCharacter.LeftHand
+		IKController.Target = weaponEquipped.Handle.SecondHandleAttachment
+	end)
 end
+
 
 function PlayerPreviewController:KnitStart() end
 

@@ -73,6 +73,8 @@ function WeaponsService:SendWeaponData(targetPlayer : Player, typeOfData : strin
 	self.Client.SendWeaponData:Fire(targetPlayer, typeOfData, dealerPosition)
 end
 
+
+
 function WeaponsService:KnitInit()
 end
 

@@ -8,12 +8,16 @@ local MovementService = Knit.CreateService {
 
 
 function MovementService:KnitStart()
-    
+
 end
 
 
 function MovementService:KnitInit()
-    
+
+end
+
+function MovementService:Dash(player)
+    --warn(Let them now)
 end
 
 

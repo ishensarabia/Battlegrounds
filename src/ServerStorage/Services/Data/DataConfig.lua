@@ -6,20 +6,28 @@ DataConfig.profileTemplate = {
 	Weapons = {
 		Rocket_Launcher = {
 			Owned = true,
-			Skin = "Default",
+			Rank = 0,
+			Prestige = "Beginner",
+			Customization = {}
 					
-		},
-		Stick = {
-			Owned = true,
-			Skin = "Default"
 		},
 		Crossbow = {
 			Owned = false,
-			Skin = "Default"
+			Rank = 0,
+			Prestige = "Beginner",
+			Customization = {}
 		},
 		Pistol = {
-			Owned = tr,
-			Skin = "Default"
+			Owned = true,
+			Rank = 0,
+			Prestige = "Beginner",
+			Customization = {}
+		},
+		["Rail-Rifle"] = {
+			Owned = true,
+			Rank = 0,
+			Prestige = "Beginner",
+			Customization = {}
 		},
 	},
 	Rank = 0,
@@ -34,6 +42,7 @@ DataConfig.profileTemplate = {
 		["Music"] = true,
 	},
 	DevProducts = {},
+	Loadout = {}
 }
 
 DataConfig.weaponTemplate = {

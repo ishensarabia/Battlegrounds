@@ -122,10 +122,16 @@ function MainMenu:render()
 				size = UDim2.fromScale(1, 1),
 				buttonsFrameSize = UDim2.fromScale(0.347, 0.504),
 				buttonsFramePosition = self.flipperPositionMotorsBindings.inventory_pos:map(function(value)
-					return self.props.inventory.position:Lerp(
-						self.props.inventory.position - UDim2.fromScale(1.33),
+					return self.props.inventory.buttonsFramePosition:Lerp(
+						self.props.inventory.buttonsFramePosition - UDim2.fromScale(1.33),
 						value
 				)
+				end),
+				inventoryFramePosition = self.flipperPositionMotorsBindings.inventory_pos:map(function(value)
+					return self.props.inventory.inventoryFramePosition:Lerp(
+						self.props.inventory.inventoryFramePosition - UDim2.fromScale(1.33),
+						value
+					)
 				end),
 				changeMenuStateCallback = function(_currentScreen)
 					self:setState({ currentScreen = _currentScreen })
@@ -218,8 +224,8 @@ function MainMenu:render()
 				size = UDim2.fromScale(1, 1),
 				buttonsFrameSize = UDim2.fromScale(0.347, 0.504),
 				buttonsFramePosition = self.flipperPositionMotorsBindings.inventory_pos:map(function(value)
-					return self.props.inventory.position:Lerp(
-						self.props.inventory.position - UDim2.fromScale(1.33),
+					return self.props.inventory.buttonsFramePosition:Lerp(
+						self.props.inventory.buttonsFramePosition - UDim2.fromScale(1.33),
 						value
 					)
 				end),
@@ -255,7 +261,6 @@ end
 
 function MainMenu:didMount()
 	local CameraController = Knit.GetController("CameraController")
-	local currencyService = Knit.GetService("CurrencyService")
 	local currentArenaInstance = workspace:WaitForChild("Arena")
 	local cutscenePoints = currentArenaInstance.Cutscene
 	--Set up main menu cutscene
@@ -267,7 +272,7 @@ function MainMenu:didMount()
 		end
 		warn("Main menu component state active : " .. tostring(self.state.active))
 	end)
-	--Set up respawn respawn
+	--Set up respawn menu
 	Players.LocalPlayer.CharacterAdded:Connect(function(character)
 		character:WaitForChild("Humanoid").Died:Connect(function()
 			self.flipperPositionGroupMotor:setGoal({

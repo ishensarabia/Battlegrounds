@@ -16,9 +16,9 @@ end
 function CameraController:TransitionBetweenPoints(points : Folder)
     local cameraPoints = points:GetChildren()
     for i = 1, #cameraPoints do
-        if (points[i]:IsA("BasePart") and self.isInMenu) then                
+        if (points[i]:IsA("BasePart") and self.isInMenu) then
+            task.wait()       
             camera.CameraType = Enum.CameraType.Scriptable
-
             local cameraTweenPromise = TweenService:Create(camera, TweenInfo.new(33), {CFrame = points[i].CFrame})
             self.activeTween = cameraTweenPromise
             cameraTweenPromise:Play()

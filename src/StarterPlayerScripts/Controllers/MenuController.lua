@@ -1,4 +1,9 @@
+local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local player = Players.LocalPlayer
+--Widgets
+local WeaponCustomWidget = require(game.StarterPlayer.StarterPlayerScripts.Source.UI_Widgets.WeaponCustomWidget)
+
 --Module dependencies
 local Knit = require(ReplicatedStorage.Packages.Knit)
 
@@ -26,6 +31,7 @@ function MenuController:Play()
     CameraController.isInMenu = false
     CameraController:CancelActiveTween()
     CameraController:SetCameraType("Custom")
+    Knit.GetService("PlayerService"):SpawnCharacter()
 end
 
 function MenuController:KnitInit()

@@ -469,7 +469,7 @@ function ShoulderCamera:onRenderStep(dt)
 	self.currentRecoil = self.currentRecoil - (self.currentRecoil * self.recoilDecay * dt)
 
 	if self:isHumanoidControllable() and self.rotateCharacterWithCamera then
-		self.currentHumanoid.AutoRotate = false
+		self.currentHumanoid.AutoRotate = true
 		self.currentRootPart.CFrame = CFrame.Angles(0, self.yaw, 0) + self.currentRootPart.Position -- rotate character to be upright and facing the same direction as camera
 		self:applyRootJointFix()
 	else

@@ -1,7 +1,7 @@
 local Knit = require(game.ReplicatedStorage.Packages.Knit)
 
 local UIController = Knit.CreateController { Name = "UIController" }
-local UIModules = script.Parent.Parent.UI
+local UIModules = script.Parent.Parent.UI_Widgets
 
 function UIController:KnitStart()
     for key, child in (UIModules:GetChildren()) do

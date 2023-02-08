@@ -47,6 +47,11 @@ function BackButton:render()
 					dampingRatio = 1,
 				}))
 				task.delay(0.163, function()
+					warn("Retract")
+					self.motor:setGoal(Flipper.Spring.new(0,{
+						frequency = 5,
+						dampingRatio = 1
+					}))
 					self.props.callback(self.props.retractCallback)
 				end)
 			end,

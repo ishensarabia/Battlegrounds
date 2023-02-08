@@ -34,16 +34,16 @@ local FLIPPER_SPRING_EXPAND = Flipper.Spring.new(1, {
 function InventoryFrame:init()
 	--Flipper motors
 	self.flipperGroupMotor = Flipper.GroupMotor.new({
-		positionAndSize = 0,
+		position = 0,
 	})
 	--Flipper bindings
-	local positionAndSizeMotorBinding, setPositionAndSizeMotorBinding =
-		Roact.createBinding(self.flipperGroupMotor:getValue().positionAndSize)
+	local positionMotorBinding, setPositionMotorBinding =
+		Roact.createBinding(self.flipperGroupMotor:getValue().position)
 	--Flipper connections
 	self.flipperMotorsBindings = {
-		positionAndSize = positionAndSizeMotorBinding,
+		position = positionMotorBinding,
 	}
-	self.flipperGroupMotor._motors.positionAndSize:onStep(setPositionAndSizeMotorBinding)
+	self.flipperGroupMotor._motors.position:onStep(setPositionMotorBinding)
 end
 
 function InventoryFrame:_loadInventoryItems() end
@@ -53,7 +53,7 @@ function InventoryFrame:_loadCategories() end
 function InventoryFrame:render()
 	--Retract animation of the inventory back to the menu
 	local function retractCallback()
-		self.flipperGroupMotor:setGoal({ positionAndSize = FLIPPER_SPRING_RETRACT })
+		self.flipperGroupMotor:setGoal({ position = FLIPPER_SPRING_RETRACT })
 	end
 	--Create category elements
 	local categoriesButtons = {}
@@ -88,13 +88,14 @@ function InventoryFrame:render()
 	for itemName, itemProps in self.props.inventoryItems do
 		inventoryItems[itemName] = Roact.createElement(WeaponFrame, {
 			itemName = itemName,
-			category = self.props.category,
+			itemType = self.props.inventoryType,
+			itemCategory = self.props.category,
 			selectWeapon = self.props.weaponSelectedCallback
 		})
 	end
 
 	--Initial motor expansion to animate the inventory coming on
-	self.flipperGroupMotor:setGoal({ positionAndSize = FLIPPER_SPRING_EXPAND })
+	self.flipperGroupMotor:setGoal({ position = FLIPPER_SPRING_EXPAND })
 	--Render inventory
 	return Roact.createElement("Frame", {
 		BackgroundColor3 = Color3.fromRGB(255, 255, 255),
@@ -104,7 +105,7 @@ function InventoryFrame:render()
 		title = Roact.createElement("TextLabel", {
 			RichText = true,
 			Font = Enum.Font.GothamBold,
-			Text = "WEAPONS",
+			Text = self.props.inventoryType,
 			TextColor3 = Color3.fromRGB(255, 255, 255),
 			TextScaled = true,
 			TextSize = 14,
@@ -112,7 +113,7 @@ function InventoryFrame:render()
 			TextWrapped = true,
 			BackgroundColor3 = Color3.fromRGB(255, 255, 255),
 			BackgroundTransparency = 1,
-			Position = UDim2.fromScale(0.511, 0.00407),
+			Position = UDim2.fromScale(0.46, 0.00407),
 			Size = UDim2.fromScale(0.142, 0.0759),
 		}),
 
@@ -120,7 +121,7 @@ function InventoryFrame:render()
 			BackgroundColor3 = Color3.fromRGB(255, 255, 255),
 			BackgroundTransparency = 1,
 			Position = UDim2.fromScale(0.027, 0.123),
-			Size = UDim2.fromOffset(1306, 321),
+			Size = UDim2.fromScale(0.969, 0.653),
 		}, {
 			Roact.createFragment(inventoryItems),
 		}),

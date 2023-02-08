@@ -57,7 +57,6 @@ end
 
 function Inventory:render()
 	if self.state.currentScreen == screens.HOME then
-		warn("Current screen: Home")
 		return Roact.createElement("Frame", {
 			ZIndex = 2,
 			BackgroundTransparency = 1,
@@ -104,7 +103,6 @@ function Inventory:render()
 			}),
 		})
 	elseif self.state.currentScreen == screens.INVENTORY then
-		warn("Current screen: Inventory")
 		return Roact.createElement("Frame", {
 			ZIndex = 2,
 			BackgroundTransparency = 1,
@@ -112,7 +110,7 @@ function Inventory:render()
 		}, {
 			--Inventory Frames
 			CurrentInventoryFrame = Roact.createElement(InventoryFrame, {
-				position = UDim2.fromScale(0.126, 0.0763),
+				position = self.props.inventoryFramePosition,
 				size = UDim2.fromScale(0.793, 0.837),
 				inventoryType = self.state.inventoryType,
 				inventoryItems = self.state.items,
@@ -163,9 +161,8 @@ function Inventory:render()
 						_callback()
 					end
 					task.delay(0.33, function()
-						self:setState({ currentScreen = "HOME" })
+						self:setState({ currentScreen = "INVENTORY" })
 						self.flipperPositionGroupMotor:setGoal({ buttonsFrame = FLIPPER_SPRING_RETRACT })
-						self.props.changeMenuStateCallback(screens.MENU)
 					end)
 				end,
 				weaponSelectedCallback = function()
