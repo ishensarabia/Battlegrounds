@@ -99,8 +99,7 @@ function DataService.Client:ApplyWeaponCustomization(
 	end
 end
 
-function DataService:GetWeaponCustomization(player, weaponID : string)
-	warn("Getting weapon custom")
+function DataService:GetWeaponCustomization(player, weaponID: string)
 	local profile = self.profiles[player]
 	local weaponData = profile.Data.Weapons
 	local weaponCustomization = {}
@@ -117,7 +116,6 @@ function DataService:GetWeaponCustomization(player, weaponID : string)
 			end
 		end
 	end
-	warn(weaponCustomization)
 	return weaponCustomization
 end
 
@@ -140,7 +138,7 @@ function DataService.Client:GetWeaponCustomization(player, weaponID: string)
 	return weaponCustomization
 end
 
-function DataService:GetWeaponEquipped(player, weapon : string)
+function DataService:GetWeaponEquipped(player, weapon: string)
 	local profile = self.profiles[player]
 	if profile then
 		return profile.Data.WeaponEquipped

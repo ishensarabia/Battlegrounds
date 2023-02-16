@@ -43,7 +43,7 @@ end
 
 function DestructibleObjectClient:_setUpAnimation()
     local buildingAnimation = Instance.new('Animation')
-    buildingAnimation.AnimationId = Animations['Building']
+    buildingAnimation.AnimationId = Animations.Building['Build']
     self._janitor:Add(buildingAnimation)
     
     Knit.Player.CharacterAdded:Wait()

@@ -27,7 +27,6 @@ function LoadoutService:SpawnLoadout(player)
         weaponEquipped.Parent = player.Backpack
 		--Check for customization
 		local weaponCustomization: table = DataService:GetWeaponCustomization(player, loadout.WeaponEquipped)
-        warn(weaponCustomization)
 		--If there's a customization generate the weapon parts
 		if weaponCustomization then
             warn("[LoadoutService] Weapon customization detected ")
@@ -44,6 +43,12 @@ end
 function LoadoutService:ApplyCustomizationValue(customizationValue, customNumberPart: number, customParts: table)
 	if typeof(customizationValue) == "Color3" then
 		local customPart = customParts[customNumberPart]
+		--Check for light emission and change the color value of it too
+		for index, value in customPart:GetChildren() do
+			if value:IsA("PointLight") then
+				value.Color = customizationValue
+			end
+		end
 		customPart.Color = customizationValue
 	end
 end
