@@ -1,8 +1,11 @@
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 local Players = game:GetService("Players")
 
 local IsServer = RunService:IsServer()
 local LocalPlayer = (not IsServer) and Players.LocalPlayer or nil
+
+local Knit = require(ReplicatedStorage.Packages.Knit)
 
 local NetworkingCallbacks = {}
 NetworkingCallbacks.WeaponsSystem = nil

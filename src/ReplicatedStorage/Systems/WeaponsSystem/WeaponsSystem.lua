@@ -298,6 +298,14 @@ function WeaponsSystem.onWeaponAdded(weaponInstance)
 	end
 end
 
+function WeaponsSystem.dash()
+	
+	WeaponsSystem.camera.isDashing = true
+	task.delay(1.2, function()
+		WeaponsSystem.camera.isDashing = false
+	end)
+end
+
 function WeaponsSystem.onWeaponRemoved(weaponInstance)
 	local weapon = WeaponsSystem.getWeaponForInstance(weaponInstance)
 	if weapon then

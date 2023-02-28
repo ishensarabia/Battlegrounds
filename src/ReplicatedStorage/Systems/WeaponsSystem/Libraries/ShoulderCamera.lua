@@ -1,4 +1,5 @@
 local ContextActionService = game:GetService("ContextActionService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local UserInputService = game:GetService("UserInputService")
 local TweenService = game:GetService("TweenService")
 local RunService = game:GetService("RunService")
@@ -6,6 +7,7 @@ local GuiService = game:GetService("GuiService")
 local Players = game:GetService("Players")
 
 local UserGameSettings = UserSettings():GetService("UserGameSettings")
+local Knit = require(ReplicatedStorage.Packages.Knit)
 
 local LocalPlayer = Players.LocalPlayer
 if RunService:IsClient() then
@@ -150,6 +152,7 @@ function ShoulderCamera.new(weaponsSystem)
 	self.zoomWalkSpeed = 8
 	self.normalWalkSpeed = 16
 	self.sprintingWalkSpeed = 24
+	self.dashingWalkSpeed =  0
 
 	-- Current state
 	self.enabled = false
@@ -331,7 +334,9 @@ function ShoulderCamera:onRenderStep(dt)
 		if self.slowZoomWalkEnabled and self.zoomAlpha > 0.1 then
 			self.desiredWalkSpeed = self.zoomWalkSpeed
 		end
-
+		if self.isDashing then
+			self.desiredWalkSpeed = self.dashingWalkSpeed
+		end
 		ShoulderCamera.SpringService:Target(self.currentHumanoid, 0.95, 4, { WalkSpeed = self.desiredWalkSpeed })
 	end
 
@@ -482,7 +487,8 @@ end
 
 -- This function keeps the held weapon from bouncing up and down too much when you move
 function ShoulderCamera:applyRootJointFix()
-	if self.rootJoint then
+	
+	if self.rootJoint and not self.isDashing then
 		local translationScale = self.zoomState and Vector3.new(0.25, 0.25, 0.25) or Vector3.new(0.5, 0.5, 0.5)
 		local rotationScale = self.zoomState and 0.15 or 0.2
 		local rootRotation = self.rootJoint.Part0.CFrame - self.rootJoint.Part0.CFrame.Position

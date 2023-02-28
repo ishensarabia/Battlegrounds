@@ -135,8 +135,13 @@ function MainMenuWidget:Initialize()
 	local dummy = ReplicatedStorage.Assets.Models.Dummy:Clone()
 	dummy.Parent = workspace
 	-- if not RunService:IsStudio() then
-	local playerDesc = Players:GetHumanoidDescriptionFromUserId(player.UserId)
-	dummy:WaitForChild("Humanoid"):ApplyDescription(playerDesc)
+	local playerDesc
+	local success, errorMessage = pcall(function()
+		playerDesc = Players:GetHumanoidDescriptionFromUserId(player.UserId)
+	end)
+	if playerDesc and success then		
+		dummy:WaitForChild("Humanoid"):ApplyDescription(playerDesc)
+	end
 	-- end
 	dummy.Parent = worldModel
 	local camera = Instance.new("Camera")

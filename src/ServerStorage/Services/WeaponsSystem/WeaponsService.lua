@@ -5,21 +5,25 @@ local WeaponsSystem = require(ReplicatedStorage.Source.Systems.WeaponsSystem.Wea
 local weaponsSystemFolder = ReplicatedStorage.Source.Systems.WeaponsSystem
 local weaponsSystemInitialized = false
 
-local WeaponsService = Knit.CreateService {
-    Name = "WeaponsService",
-    Client = 
-	{
-		SendWeaponData = Knit.CreateSignal()
+local WeaponsService = Knit.CreateService({
+	Name = "WeaponsService",
+	Client = {
+		SendWeaponData = Knit.CreateSignal(),
 	},
-}
+})
 
 local function initializeWeaponsSystemAssets()
 	if not weaponsSystemInitialized then
 		-- Enable/make visible all necessary assets
 		local effectsFolder = weaponsSystemFolder.Assets.Effects
 		local partNonZeroTransparencyValues = {
-			["BulletHole"] = 1, ["Explosion"] = 1, ["Pellet"] = 1, ["Scorch"] = 1,
-			["Bullet"] = 1, ["Plasma"] = 1, ["Railgun"] = 1,
+			["BulletHole"] = 1,
+			["Explosion"] = 1,
+			["Pellet"] = 1,
+			["Scorch"] = 1,
+			["Bullet"] = 1,
+			["Plasma"] = 1,
+			["Railgun"] = 1,
 		}
 		local decalNonZeroTransparencyValues = { ["ScorchMark"] = 0.25 }
 		local particleEmittersToDisable = { ["Smoke"] = true }
@@ -53,30 +57,56 @@ local function initializeWeaponsSystemAssets()
 				end
 			end
 		end
-		
+
 		weaponsSystemInitialized = true
 	end
 end
 
 function WeaponsService:KnitStart()
-    initializeWeaponsSystemAssets()
-	if (not WeaponsSystem.doingSetup and not WeaponsSystem.didSetup) then
+	initializeWeaponsSystemAssets()
+	if not WeaponsSystem.doingSetup and not WeaponsSystem.didSetup then
 		WeaponsSystem.setup()
 	end
 end
 
-function WeaponsService:GetCategoryWeaponsForPlayer(category : string, player : Player)
-	
-end
+function WeaponsService:GetCategoryWeaponsForPlayer(category: string, player: Player) end
 
-function WeaponsService:SendWeaponData(targetPlayer : Player, typeOfData : string, dealerPosition : Vector3)
+function WeaponsService:SendWeaponData(targetPlayer: Player, typeOfData: string, dealerPosition: Vector3)
 	self.Client.SendWeaponData:Fire(targetPlayer, typeOfData, dealerPosition)
 end
 
-
-
-function WeaponsService:KnitInit()
+function WeaponsService:SetIKForWeapon(player, instance: Instance)
+	warn("Setting weapon IK for weapon : " .. instance.Name .. " for player: " .. player.Name)
+	--Animate the selected weapon
+	if not self.IKSessions[player.UserId] then
+		local IKController = Instance.new("IKControl")
+		self.IKSessions[player.UserId] = IKController
+		IKController.Parent = player.Character.Humanoid
+		IKController.ChainRoot = player.Character.LeftUpperArm
+		IKController.EndEffector = player.Character.LeftHand
+		IKController.Target = instance.Handle.SecondHandleAttachment
+	end
 end
 
+function WeaponsService:SetIKState(player, state : boolean)
+	if self.IKSessions[player.UserId] then
+		self.IKSessions[player.UserId].Enabled = state
+	end
+end
+
+function WeaponsService.Client:SetIKState(player, state : boolean)
+	return self.Server:SetIKState(player, state)
+end
+
+function WeaponsService:CleanupIKForWeapon(player)
+	if self.IKSessions[player.UserId] then
+		self.IKSessions[player.UserId]:Destroy()
+		self.IKSessions[player.UserId] = nil
+	end
+end
+
+function WeaponsService:KnitInit()
+	self.IKSessions = {}
+end
 
 return WeaponsService

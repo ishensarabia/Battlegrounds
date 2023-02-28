@@ -60,39 +60,41 @@ function PlayerPreviewController:SpawnWeaponInCharacterMenu()
 	--Spawn equipped weapon / power
 	--Get equipped weapon
 	DataService:GetKeyValue("Loadout"):andThen(function(loadout : table)
-		weaponEquipped = Assets.Models.Weapons[loadout.WeaponEquipped]:Clone()
-		WeaponCustomWidget:ApplySavedCustomization(loadout.WeaponEquipped, weaponEquipped:FindFirstChildOfClass("Model"))
-		weaponEquipped.Parent = playerCharacter.Parent
-		weaponEquipped:FindFirstChildWhichIsA("Model", true).PrimaryPart.CFrame = playerCharacter.PrimaryPart.CFrame
-		--Weld
-		local weld = Instance.new("Weld")
-		weld.Parent = weaponEquipped.Handle
-		weld.C0 = playerCharacter.RightHand.RightGripAttachment.CFrame
-		weld.C1 = CFrame.new(
-			weaponEquipped.GripPos.x,
-			weaponEquipped.GripPos.y,
-			weaponEquipped.GripPos.z,
-			weaponEquipped.GripRight.x,
-			weaponEquipped.GripUp.x,
-			-weaponEquipped.GripForward.x,
-			weaponEquipped.GripRight.y,
-			weaponEquipped.GripUp.y,
-			-weaponEquipped.GripForward.y,
-			weaponEquipped.GripRight.z,
-			weaponEquipped.GripUp.z,
-			-weaponEquipped.GripForward.z
-		)
-		weld.Part0 = playerCharacter.RightHand
-		weld.Part1 = weaponEquipped.Handle
-	
-		-- self:setHeadMouseBehavior( true)
-	
-		--Animate the selected weapon
-		local IKController = Instance.new("IKControl")
-		IKController.Parent = playerCharacter.Humanoid
-		IKController.ChainRoot = playerCharacter.LeftUpperArm
-		IKController.EndEffector = playerCharacter.LeftHand
-		IKController.Target = weaponEquipped.Handle.SecondHandleAttachment
+		if loadout.WeaponEquipped then
+			weaponEquipped = Assets.Models.Weapons[loadout.WeaponEquipped]:Clone()
+			WeaponCustomWidget:ApplySavedCustomization(loadout.WeaponEquipped, weaponEquipped:FindFirstChildOfClass("Model"))
+			weaponEquipped.Parent = playerCharacter.Parent
+			weaponEquipped:FindFirstChildWhichIsA("Model", true).PrimaryPart.CFrame = playerCharacter.PrimaryPart.CFrame
+			--Weld
+			local weld = Instance.new("Weld")
+			weld.Parent = weaponEquipped.Handle
+			weld.C0 = playerCharacter.RightHand.RightGripAttachment.CFrame
+			weld.C1 = CFrame.new(
+				weaponEquipped.GripPos.x,
+				weaponEquipped.GripPos.y,
+				weaponEquipped.GripPos.z,
+				weaponEquipped.GripRight.x,
+				weaponEquipped.GripUp.x,
+				-weaponEquipped.GripForward.x,
+				weaponEquipped.GripRight.y,
+				weaponEquipped.GripUp.y,
+				-weaponEquipped.GripForward.y,
+				weaponEquipped.GripRight.z,
+				weaponEquipped.GripUp.z,
+				-weaponEquipped.GripForward.z
+			)
+			weld.Part0 = playerCharacter.RightHand
+			weld.Part1 = weaponEquipped.Handle
+		
+			-- self:setHeadMouseBehavior( true)
+		
+			--Animate the selected weapon
+			local IKController = Instance.new("IKControl")
+			IKController.Parent = playerCharacter.Humanoid
+			IKController.ChainRoot = playerCharacter.LeftUpperArm
+			IKController.EndEffector = playerCharacter.LeftHand
+			IKController.Target = weaponEquipped.Handle.SecondHandleAttachment
+		end
 	end)
 end
 

@@ -1,30 +1,55 @@
 --Service
+local Debris = game:GetService("Debris")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 local SoundService = game:GetService("SoundService")
 
 local Knit = require(ReplicatedStorage.Packages.Knit)
-
+local Sounds = {
+	buttonClick = "rbxassetid://4499400560",
+	Dash = "rbxassetid://8653395088",
+}
 local AudioService = Knit.CreateService({
 	Name = "AudioService",
-	Client = {
-		Sounds = {
-			buttonClick = "rbxassetid://4499400560",
-		},
-	},
+	Client = {},
 })
 
 function AudioService:KnitStart()
 	--Init the service
 end
 
-function AudioService.Client:PlaySound(player : Player,sound: string)
-	local soundToPlay = Instance.new("Sound")
-	soundToPlay.SoundId = self.Sounds[sound]
-	soundToPlay.Parent = player
-	soundToPlay:Play()
-	soundToPlay.Ended:Wait()
-	soundToPlay:Destroy()
+function AudioService:PlaySound(player, sound: string, soundProperties : table)
+	if not soundProperties then
+		soundProperties = {}
+		soundProperties.RollOffMode = Enum.RollOffMode.Linear
+		soundProperties.RollOffMaxDistance = 50
+		soundProperties.RollOffMinDistance = 10
+	end
+	if Sounds[sound] then
+		local soundToPlay = Instance.new("Sound")
+		soundToPlay.SoundId = Sounds[sound]
+		soundToPlay.RollOffMode = soundProperties.RollOffMode
+		soundToPlay.RollOffMaxDistance = soundProperties.RollOffMaxDistance
+		soundToPlay.RollOffMinDistance = soundProperties.RollfOffMinDistance
+		soundToPlay.Parent = player.Character.HumanoidRootPart
+		soundToPlay:Play()
+		soundToPlay.Ended:Wait()
+		soundToPlay:Destroy()
+	end
+end
+
+function AudioService.Client:PlaySound(player: Player, sound: string, isServer: boolean)
+	if isServer then
+		return self.Server:PlaySound(player, sound)
+	end
+	if Sounds[sound] then
+		local soundToPlay = Instance.new("Sound")
+		soundToPlay.SoundId = Sounds[sound]
+		soundToPlay.Parent = player
+		soundToPlay:Play()
+		soundToPlay.Ended:Wait()
+		soundToPlay:Destroy()
+	end
 end
 
 function AudioService:KnitInit()

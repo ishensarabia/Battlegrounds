@@ -1,5 +1,7 @@
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 local Players = game:GetService("Players")
+local Knit = require(ReplicatedStorage.Packages.Knit)
 
 local IsServer = RunService:IsServer()
 
@@ -260,6 +262,8 @@ function BaseWeapon:setEquipped(equipped)
 end
 
 function BaseWeapon:onEquippedChanged()
+	local WeaponService = Knit.GetService("WeaponsService")
+
 	if self.activeRenderStepName then
 		RunService:UnbindFromRenderStep(self.activeRenderStepName)
 		self.activeRenderStepName = nil
@@ -289,6 +293,13 @@ function BaseWeapon:onEquippedChanged()
 		end
 	end
 
+	if IsServer and self.equipped then		
+		WeaponService:SetIKForWeapon(self.player, self.instance)
+	end
+
+	if IsServer and not self.equipped then
+		WeaponService:CleanupIKForWeapon(self.player)
+	end
 	self:setActivated(false)
 end
 

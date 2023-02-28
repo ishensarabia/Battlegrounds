@@ -20,5 +20,9 @@ function WeaponsController:KnitInit()
     end
 end
 
+function WeaponsController:Dash()
+    WeaponSystem.dash()
+end
+
 
 return WeaponsController

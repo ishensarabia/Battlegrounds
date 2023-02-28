@@ -923,8 +923,8 @@ function BulletWeapon:onRenderStepped(dt)
 	if not self.equipped then return end
 
 	local tipCFrame = self.tipAttach.WorldCFrame
-
 	if self.player == Players.LocalPlayer then
+		--//Animation functionality//--
 		-- Retrieve aim point from camera and update player's aim animation
 		local aimTrack = self:getAnimTrack(self:getConfigValue("AimTrack", "RifleAim"))
 		local aimZoomTrack = self:getAnimTrack(self:getConfigValue("AimZoomTrack", "RifleAimDownSights"))
@@ -945,7 +945,7 @@ function BulletWeapon:onRenderStepped(dt)
 			if not aimTrack.IsPlaying and not self.reloading then
 				aimTrack:Play(0.15)
 				coroutine.wrap(function() -- prevent player from firing until gun is fully out
-					wait(self:getConfigValue("StartupTime", 0.2))
+					task.wait(self:getConfigValue("StartupTime", 0.2))
 					self.startupFinished = true
 				end)()
 			end
