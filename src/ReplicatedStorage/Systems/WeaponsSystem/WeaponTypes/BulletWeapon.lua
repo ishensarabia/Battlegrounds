@@ -802,7 +802,9 @@ function BulletWeapon:onHit(hitInfo)
 					-- Do damage to players/humanoids
 					local hitPlayer = Players:GetPlayerFromCharacter(humanoid.Parent)
 					if (hitPlayer and hitPlayer.Character) then
-						Knit.GetService("RagdollService"):ragdollPlayer(hitPlayer.Character, ragdollTime)
+						local direction = (hitPlayer.Character.HumanoidRootPart.Position - explosion.Position).Unit
+						hitPlayer.Character.HumanoidRootPart:ApplyImpulse(direction * 360)
+						Knit.GetService("RagdollService"):RagdollPlayer(hitPlayer.Character, ragdollTime, {explosionDirection = direction})
 					end
 					self.weaponsSystem.doDamage(humanoid, damageToDeal, nil, self.player)
 				end
@@ -811,6 +813,7 @@ function BulletWeapon:onHit(hitInfo)
 				self.weaponsSystem.doDamage(explodedPart, damageToDeal, nil, self.player)
 			end
 		end)
+		
 
 		explosion.Parent = workspace
 	end

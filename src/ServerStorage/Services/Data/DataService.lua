@@ -207,6 +207,7 @@ end
 function DataService:incrementIntValue(player, key: string, amount: number?)
 	assert(type(amount) == "number" or not amount, "Amount is not a number, please verify set parameters")
 	local profile = self.profiles[player]
+	assert(profile, "Profile not found, please verify player is in game")
 	assert(type(profile.Data[key] == "number"), "Data key is not an int value, please verify parameters values")
 	if amount then
 		if profile then

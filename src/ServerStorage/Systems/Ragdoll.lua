@@ -8,7 +8,7 @@ local character = script.Parent
 local lDModeOn
 --Configuration
 
-function Ragdoll.ragdollPlayer(character)	
+function Ragdoll.RagdollPlayer(character)	
 	local humanoid = character:WaitForChild("Humanoid")
 	humanoid.AutoRotate = false	
 	character.HumanoidRootPart.CollisionGroupId = 1
@@ -155,7 +155,7 @@ Players.PlayerAdded:Connect(function(player)
 			RagdollCounterSys.charactersDied.Value += 1
 			stopAnims(humanoid)
 			activateVelocity(player)
-			Ragdoll.ragdollPlayer(player.character)
+			Ragdoll.RagdollPlayer(player.character)
 			resyncClothes(player)
 			task.wait() --Without this physics may not activate on platformstand
 			deactivateVelocity(player)

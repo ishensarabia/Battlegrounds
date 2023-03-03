@@ -16,7 +16,7 @@ function ScoreService:KnitStart()
 	self.HitSessions = {}
 end
 
-function ScoreService:registerDamageDealt(dealer: Player, taker: Player, amount: number)
+function ScoreService:RegisterDamageDealt(dealer: Player, taker: Player, amount: number)
 	--Make sure dealer is not auto-inflicting
 	if dealer.UserId == taker.UserId then
 		return

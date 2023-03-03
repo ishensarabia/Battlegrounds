@@ -27,13 +27,12 @@ function PlayerService:KnitInit()
 	Players.PlayerAdded:Connect(function(player)
 		-- When a new player joins, listen for when their character is added to the game
 		player.CharacterAdded:Connect(function(character)
-			-- Disable the ragdoll state for the character's humanoid when it is created
-			character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.Ragdoll, false)
+
 
 			-- Disable autorotate
 			
 			-- Register the player's death when their character dies
-			character.Humanoid.Died:Connect(function(player)
+			character.Humanoid.Died:Connect(function()
 				self:RegisterDead(player)
 			end)
 			

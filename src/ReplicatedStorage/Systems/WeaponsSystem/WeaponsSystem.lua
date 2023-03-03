@@ -430,12 +430,15 @@ function WeaponsSystem.getPlayerFromHumanoid(humanoid)
 	end
 end
 
-local function _defaultDamageCallback(system, target : Humanoid, amount : number, damageType, dealer : Player, hitInfo, damageData)
-	if target:IsA("Humanoid") then
+local function _defaultDamageCallback(system, targetHumanoid : Humanoid, amount : number, damageType, dealer : Player, hitInfo, damageData)
+	if targetHumanoid:IsA("Humanoid") then
 		--Register  dealer in score service
-		local taker = Players:GetPlayerFromCharacter(target.Parent)
-		Knit.GetService("ScoreService"):registerDamageDealt(dealer, taker, amount)
-		target:TakeDamage(amount)
+		local taker = Players:GetPlayerFromCharacter(targetHumanoid.Parent)
+		if taker then
+			--If it's a player register dmage dealt	
+			Knit.GetService("ScoreService"):RegisterDamageDealt(dealer, taker, amount)
+		end
+		targetHumanoid:TakeDamage(amount)
 	end
 end
 

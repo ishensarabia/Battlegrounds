@@ -20,11 +20,10 @@ function AnimationController:PlayAnimation(animationName: string, playbackSpeed 
 	-- 		value:Destroy()
 	-- 	end
 	-- end
+	self._animationTracks[animationName]:Play()
 	if playbackSpeed then
-		warn("adjusting speed: " .. playbackSpeed)
 		self._animationTracks[animationName]:AdjustSpeed(playbackSpeed)
 	end
-	self._animationTracks[animationName]:Play()
 	return self._animationTracks[animationName]
 end
 

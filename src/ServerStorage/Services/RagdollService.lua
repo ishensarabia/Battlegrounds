@@ -35,7 +35,7 @@ function RagdollService:ragdollFreeze(character, state)
 		local upperTorso = character:WaitForChild("UpperTorso")
 		repeat 
 			local lastPos = upperTorso.Position
-			wait(self.ragdollFreezeTime.Value) --Time left before it checks body.
+			task.wait(self.ragdollFreezeTime.Value) --Time left before it checks body.
 			local newPos = upperTorso.Position
 			local distanceDiff = (lastPos - newPos).magnitude 		--print("DistanceDiff", distanceDiff)
 		until distanceDiff < 2 		--Distance a body must be close from its original check to be anchored
@@ -127,10 +127,11 @@ local function setRagdollMotors(character : Model, state : boolean)
 	end
 end
 
-function RagdollService:ragdollPlayer(character : Model, time : number)
+function RagdollService:RagdollPlayer(character : Model, time : number)
     local humanoid = character.Humanoid
 	local player = Players:GetPlayerFromCharacter(character)
 	humanoid:UnequipTools()
+	stopAnims(humanoid)
 	humanoid.AutoRotate = false	
 	character.HumanoidRootPart.CollisionGroupId = 1
 	character.HumanoidRootPart.CanCollide = false
@@ -166,8 +167,8 @@ function RagdollService:ragdollPlayer(character : Model, time : number)
 	end
 end
 
-function RagdollService.Client:ragdollPlayer(player, character)
-	return self.Server:ragdollPlayer(character)
+function RagdollService.Client:RagdollPlayer(player, character)
+	return self.Server:RagdollPlayer(character)
 end
 
 function RagdollService:KnitInit()
@@ -179,7 +180,6 @@ function RagdollService:KnitInit()
     Players.PlayerAdded:Connect(function(player)
         player.CharacterAdded:Connect(function(character)
             local humanoid = character:WaitForChild("Humanoid")
-            -- clientDiedEvent.OnServerEvent:Connect(activateVelocity)
 			
             humanoid.Died:Connect(function()
 				activateVelocity(player)
@@ -190,7 +190,7 @@ function RagdollService:KnitInit()
                 self.deadCharacters += 1
                 stopAnims(humanoid)
                 activateVelocity(player)
-                self:ragdollPlayer(player.character)
+                self:RagdollPlayer(player.character)
                 resyncClothes(player)
                 task.wait() --Without this physics may not activate on platformstand
                 deactivateVelocity(player)
