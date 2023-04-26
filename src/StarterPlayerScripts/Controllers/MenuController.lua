@@ -31,6 +31,7 @@ function MenuController:Play()
     CameraController.isInMenu = false
     CameraController:CancelActiveTween()
     CameraController:SetCameraType("Custom")
+    CameraController:ChangeMode("Play")
     Knit.GetService("PlayerService"):SpawnCharacter()
 end
 

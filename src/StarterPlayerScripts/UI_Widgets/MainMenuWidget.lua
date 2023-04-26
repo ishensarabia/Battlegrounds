@@ -9,6 +9,7 @@ local Knit = require(ReplicatedStorage.Packages.Knit)
 --Widgets
 local InventoryWidget = require(game.StarterPlayer.StarterPlayerScripts.Source.UI_Widgets.InventoryWidget)
 local ButtonWidget = require(game.StarterPlayer.StarterPlayerScripts.Source.UI_Widgets.ButtonWidget)
+local RespawnWidget = require(game.StarterPlayer.StarterPlayerScripts.Source.UI_Widgets.RespawnWidget)
 --Main
 local MainMenuWidget = {}
 local MainMenuGui
@@ -47,7 +48,8 @@ function MainMenuWidget:CloseMenu()
 	playerPreviewTween:Play()
 end
 
-local function showMenu()
+
+local function ShowMenu()
 	local inventoryButtonsFrameTween =
 		TweenService:Create(inventoryButtonsFrame, TweenInfo.new(0.325), { Position = UDim2.fromScale(0.87, 0.3) })
 	local playButtonTween =
@@ -59,6 +61,8 @@ local function showMenu()
 	inventoryButtonsFrameTween:Play()
 	playButtonTween:Play()
 	playerPreviewTween:Play()
+	active = true
+	game.Lighting.Blur.Enabled = true
 end
 
 local function setupMainMenuButtons()
@@ -71,14 +75,14 @@ local function setupMainMenuButtons()
 	weaponsInventoryButtonFrame.button.Activated:Connect(function()
 		local function callback()
 			MainMenuWidget:HideMenu()
-			InventoryWidget:OpenInventory("Weapons", showMenu, DEFAULT_CATEGORY)
+			InventoryWidget:OpenInventory("Weapons", ShowMenu, DEFAULT_CATEGORY)
 		end
 		ButtonWidget:OnActivation(weaponsInventoryButtonFrame, callback)
 	end)
 	abilitiesInventoryButtonFrame.button.Activated:Connect(function()
 		local function callback()
 			MainMenuWidget:HideMenu()
-			InventoryWidget:OpenInventory("Abilities", showMenu)
+			InventoryWidget:OpenInventory("Abilities", ShowMenu)
 		end
 		ButtonWidget:OnActivation(abilitiesInventoryButtonFrame, callback)
 	end)
@@ -157,6 +161,12 @@ function MainMenuWidget:Initialize()
 	end)
 
 	setupMainMenuButtons()
+	--Connect to death event
+	Players.LocalPlayer.CharacterAdded:Connect(function(character)
+		character:WaitForChild("Humanoid").Died:Connect(function()
+			RespawnWidget:Initialize(ShowMenu)
+		end)
+	end)
 	return true
 end
 

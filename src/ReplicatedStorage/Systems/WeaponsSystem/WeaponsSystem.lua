@@ -29,7 +29,7 @@ local REMOTE_EVENT_NAMES = {
 	"WeaponReloadRequest",
 	"WeaponReloaded",
 	"WeaponReloadCanceled",
-	"WeaponActivated"
+	"WeaponActivated",
 }
 local REMOTE_FUNCTION_NAMES = {}
 
@@ -43,7 +43,10 @@ do
 		xpcall(function()
 			coroutine.wrap(function()
 				local weaponType = require(weaponTypeModule)
-				assert(typeof(weaponType) == "table", string.format("WeaponType \"%s\" did not return a valid table", weaponTypeModule:GetFullName()))
+				assert(
+					typeof(weaponType) == "table",
+					string.format('WeaponType "%s" did not return a valid table', weaponTypeModule:GetFullName())
+				)
 				WEAPON_TYPES_LOOKUP[weaponTypeName] = weaponType
 			end)()
 		end, function(errMsg)
@@ -105,7 +108,7 @@ function WeaponsSystem.setup()
 			local callback = NetworkingCallbacks[remoteEventName]
 			if not callback then
 				--Connect a no-op function to ensure the queue doesn't pile up.
-				warn("There is no server callback implemented for the WeaponsSystem RemoteEvent \"%s\"!")
+				warn('There is no server callback implemented for the WeaponsSystem RemoteEvent "%s"!')
 				warn("A default no-op function will be implemented so that the queue cannot be abused.")
 				callback = function() end
 			end
@@ -122,7 +125,7 @@ function WeaponsSystem.setup()
 			local callback = NetworkingCallbacks[remoteFuncName]
 			if not callback then
 				--Connect a no-op function to ensure the queue doesn't pile up.
-				warn("There is no server callback implemented for the WeaponsSystem RemoteFunction \"%s\"!")
+				warn('There is no server callback implemented for the WeaponsSystem RemoteFunction "%s"!')
 				warn("A default no-op function will be implemented so that the queue cannot be abused.")
 				callback = function() end
 			end
@@ -140,9 +143,9 @@ function WeaponsSystem.setup()
 		WeaponsSystem.camera = ShoulderCamera.new(WeaponsSystem)
 		WeaponsSystem.gui = WeaponsGui.new(WeaponsSystem)
 
-			WeaponsSystem.camera:setSprintEnabled(true)
-		
-			WeaponsSystem.camera:setSlowZoomWalkEnabled(true)
+		WeaponsSystem.camera:setSprintEnabled(true)
+
+		WeaponsSystem.camera:setSlowZoomWalkEnabled(true)
 
 		local networkFolder = WeaponsSystemFolder:WaitForChild("Network", math.huge)
 
@@ -151,9 +154,11 @@ function WeaponsSystem.setup()
 				local remoteEvent = networkFolder:WaitForChild(remoteEventName, math.huge)
 				local callback = NetworkingCallbacks[remoteEventName]
 				if callback then
-					WeaponsSystem.connections[remoteEventName .. "Remote"] = remoteEvent.OnClientEvent:Connect(function(...)
-						callback(...)
-					end)
+					WeaponsSystem.connections[remoteEventName .. "Remote"] = remoteEvent.OnClientEvent:Connect(
+						function(...)
+							callback(...)
+						end
+					)
 				end
 				WeaponsSystem.remoteEvents[remoteEventName] = remoteEvent
 			end)()
@@ -170,7 +175,6 @@ function WeaponsSystem.setup()
 				WeaponsSystem.remoteFunctions[remoteFuncName] = remoteFunc
 			end)()
 		end
-
 		Players.LocalPlayer.CharacterAdded:Connect(WeaponsSystem.onCharacterAdded)
 		if Players.LocalPlayer.Character then
 			WeaponsSystem.onCharacterAdded(Players.LocalPlayer.Character)
@@ -181,8 +185,10 @@ function WeaponsSystem.setup()
 	end
 
 	--Setup weapon tools and listening
-	WeaponsSystem.connections.weaponAdded = CollectionService:GetInstanceAddedSignal(WEAPON_TAG):Connect(WeaponsSystem.onWeaponAdded)
-	WeaponsSystem.connections.weaponRemoved = CollectionService:GetInstanceRemovedSignal(WEAPON_TAG):Connect(WeaponsSystem.onWeaponRemoved)
+	WeaponsSystem.connections.weaponAdded = CollectionService:GetInstanceAddedSignal(WEAPON_TAG)
+		:Connect(WeaponsSystem.onWeaponAdded)
+	WeaponsSystem.connections.weaponRemoved = CollectionService:GetInstanceRemovedSignal(WEAPON_TAG)
+		:Connect(WeaponsSystem.onWeaponRemoved)
 
 	for _, instance in pairs(CollectionService:GetTagged(WEAPON_TAG)) do
 		WeaponsSystem.onWeaponAdded(instance)
@@ -253,7 +259,13 @@ function WeaponsSystem.createWeaponForInstance(weaponInstance)
 				local weaponTypeName = weaponTypeObj.Value
 				local weaponTypeFound = WEAPON_TYPES_LOOKUP[weaponTypeName]
 				if not weaponTypeFound then
-					warn(string.format("Cannot find the weapon type \"%s\" for the instance %s!", weaponTypeName, weaponInstance:GetFullName()))
+					warn(
+						string.format(
+							'Cannot find the weapon type "%s" for the instance %s!',
+							weaponTypeName,
+							weaponInstance:GetFullName()
+						)
+					)
 					return
 				end
 
@@ -299,7 +311,6 @@ function WeaponsSystem.onWeaponAdded(weaponInstance)
 end
 
 function WeaponsSystem.dash()
-	
 	WeaponsSystem.camera.isDashing = true
 	task.delay(1.2, function()
 		WeaponsSystem.camera.isDashing = false
@@ -393,7 +404,7 @@ function WeaponsSystem.setWeaponEquipped(weapon, equipped)
 			WeaponsSystem.camera:setZoomFactor(WeaponsSystem.currentWeapon:getConfigValue("ZoomFactor", 1.1))
 			WeaponsSystem.camera:setHasScope(WeaponsSystem.currentWeapon:getConfigValue("HasScope", false))
 		else
-			WeaponsSystem.camera:setEnabled(false)	
+			WeaponsSystem.camera:setEnabled(false)
 		end
 	end
 
@@ -430,19 +441,27 @@ function WeaponsSystem.getPlayerFromHumanoid(humanoid)
 	end
 end
 
-local function _defaultDamageCallback(system, targetHumanoid : Humanoid, amount : number, damageType, dealer : Player, hitInfo, damageData)
+local function _defaultDamageCallback(
+	system,
+	targetHumanoid: Humanoid,
+	amount: number,
+	damageType,
+	dealer: Player,
+	hitInfo,
+	damageData
+)
 	if targetHumanoid:IsA("Humanoid") then
 		--Register  dealer in score service
 		local taker = Players:GetPlayerFromCharacter(targetHumanoid.Parent)
 		if taker then
-			--If it's a player register dmage dealt	
+			--If it's a player register dmage dealt
 			Knit.GetService("ScoreService"):RegisterDamageDealt(dealer, taker, amount)
 		end
 		targetHumanoid:TakeDamage(amount)
 	end
 end
 
-function WeaponsSystem.doDamage(target, amount, damageType, dealer : Player, hitInfo, damageData)
+function WeaponsSystem.doDamage(target, amount, damageType, dealer: Player, hitInfo, damageData)
 	if not target or ancestorHasTag(target, "WeaponsSystemIgnore") then
 		return
 	end
@@ -452,8 +471,11 @@ function WeaponsSystem.doDamage(target, amount, damageType, dealer : Player, hit
 			local targetPlayer = Players:GetPlayerFromCharacter(target.Parent)
 			if dealerHumanoid and target ~= dealerHumanoid and targetPlayer then
 				-- Trigger the damage indicator
-				WeaponData:FireClient(targetPlayer, "HitByOtherPlayer", dealer.Character.HumanoidRootPart.CFrame.Position)
-				
+				WeaponData:FireClient(
+					targetPlayer,
+					"HitByOtherPlayer",
+					dealer.Character.HumanoidRootPart.CFrame.Position
+				)
 			end
 		end
 

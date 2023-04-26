@@ -1,4 +1,6 @@
 local DataConfig = {}
+--External configs
+DataConfig.BattlepassConfig = require(script.Parent.Battlepass.BattlepassConfig)
 
 DataConfig.profileTemplate = {
 	BattleCoins = 0,
@@ -42,7 +44,14 @@ DataConfig.profileTemplate = {
 		["Music"] = true,
 	},
 	DevProducts = {},
-	Loadout = {}
+	Loadout = {},
+	Battlepass = {
+		Season1 = {
+			Level = 0,
+			Experience = 0,
+			Owned = false,
+		},
+	},
 }
 
 DataConfig.weaponTemplate = {
@@ -55,5 +64,22 @@ DataConfig.powerTemplate = {
 	Customization = {},
 
 	Upgrades = {}
+}
+
+DataConfig.BattlepassData = {
+	Rewards = {
+		Season1 = {
+			[1] = {
+				[1] = {
+					rewardType = "BattleCoins",
+					rewardAmount = 600,
+				},
+				[2] = {
+					rewardType = "Experience_boost"
+
+				}
+			},
+		}
+	}
 }
 return DataConfig

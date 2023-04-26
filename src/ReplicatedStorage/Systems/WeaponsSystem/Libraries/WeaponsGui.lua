@@ -302,6 +302,10 @@ function WeaponsGui:onRenderStepped(dt)
 		return
 	end
 
+	if self.weaponsSystem.camera.isDashing then
+		self:setZoomed(false)
+	end
+	
 	if self.crosshairFrame and self.crosshairEnabled then
 		local crosshairSize = self.crosshairNormalSize * self.crosshairScale * self.crosshairWeaponScale
 		self.crosshairFrame.Size = UDim2.new(0, crosshairSize.X, 0, crosshairSize.Y)

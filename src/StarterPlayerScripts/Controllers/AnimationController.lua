@@ -15,16 +15,16 @@ function AnimationController:InitAnimation(character, animationName: string, ani
 end
 
 function AnimationController:PlayAnimation(animationName: string, playbackSpeed : number)
-	-- for index, value in Players.LocalPlayer.Character.Humanoid.Animator:GetPlayingAnimationTracks() do
-	-- 	if value.Name == "ToolNoneAnim," then
-	-- 		value:Destroy()
-	-- 	end
-	-- end
 	self._animationTracks[animationName]:Play()
 	if playbackSpeed then
 		self._animationTracks[animationName]:AdjustSpeed(playbackSpeed)
 	end
 	return self._animationTracks[animationName]
+end
+
+--Stop animation function
+function AnimationController:StopAnimation(animationName: string)
+	self._animationTracks[animationName]:Stop()
 end
 
 --Disable tool animation

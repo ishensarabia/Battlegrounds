@@ -2,6 +2,8 @@ local ContextActionService = game:GetService("ContextActionService")
 local Debris = game:GetService("Debris")
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
 local Knit = require(ReplicatedStorage.Packages.Knit)
 
 local MovementController = Knit.CreateController({ Name = "MovementController" })
@@ -29,55 +31,124 @@ local ANIM_SPEED_DICTIONARY = {
 }
 
 local DASH_FORCE = 23
+local DASH_STAMINA_COST = 10
+local isHolding = false
 
 function MovementController:KnitStart() end
 
 function MovementController:Dash(direction: string, vectorMultiplier: number)
-	-- Check if the dash action is already debounced
-	if not self.debounces.dash and character.Humanoid:GetState() == Enum.HumanoidStateType.Running then
-		character.Humanoid.JumpPower = 0
-		-- Mute the footsteps sound while dashing
-		local footstepsSound = Players.LocalPlayer.Character.HumanoidRootPart.Running
-		footstepsSound.Volume = 0
+	-- Check if the player has enough stamina to dash
+	if character:GetAttribute("Stamina") >= DASH_STAMINA_COST then
+		-- Check if the dash action is already debounced
+		if not self.debounces.dash and character.Humanoid:GetState() == Enum.HumanoidStateType.Running then
+			character.Humanoid.JumpPower = 0
+			-- Mute the footsteps sound while dashing
+			local footstepsSound = Players.LocalPlayer.Character.HumanoidRootPart.Running
+			footstepsSound.Volume = 0
 
-		-- Get necessary controllers and services
-		local AnimationController = Knit.GetController("AnimationController")
-		local WeaponsController = Knit.GetController("WeaponsController")
-		local VFXService = Knit.GetService("VFXService")
-		local AudioService = Knit.GetService("AudioService")
-		-- Play the dash animation and trigger necessary actions
-		local animationName = ANIM_NAME_DICTIONARY.DASH[direction]
-		local animationTrack =
-			AnimationController:PlayAnimation(animationName, ANIM_SPEED_DICTIONARY.DASH[animationName])
-		WeaponsController:Dash()
-		VFXService:Dash()
-		AudioService:PlaySound("Dash", true)
+			-- Get necessary controllers and services
+			local WeaponsController = Knit.GetController("WeaponsController")
+			local VFXService = Knit.GetService("VFXService")
+			local AudioService = Knit.GetService("AudioService")
+			-- Play the dash animation and trigger necessary actions
+			local animationName = ANIM_NAME_DICTIONARY.DASH[direction]
+			local animationTrack =
+				self.AnimationController:PlayAnimation(animationName, ANIM_SPEED_DICTIONARY.DASH[animationName])
+			WeaponsController:Dash()
+			VFXService:Dash()
+			AudioService:PlaySound("Dash", true)
 
-		-- Set the dash action to debounced state
-		self.debounces.dash = true
+			-- Set the dash action to debounced state
+			self.debounces.dash = true
 
-		-- Create a body velocity object to move the character
-		local linearVelocity = Instance.new("BodyVelocity")
-		linearVelocity.Parent = character.HumanoidRootPart
-		linearVelocity.MaxForce = Vector3.new(999999, 0, 999999)
+			-- Create a body velocity object to move the character
+			local linearVelocity = Instance.new("BodyVelocity")
+			linearVelocity.Parent = character.HumanoidRootPart
+			linearVelocity.MaxForce = Vector3.new(999999, 0, 999999)
 
-		-- Set the direction and speed of the dash based on input
-		if direction == DIRECTIONS.RIGHT or direction == DIRECTIONS.LEFT then
-			linearVelocity.Velocity = character.HumanoidRootPart.CFrame.RightVector * vectorMultiplier
+			-- Set the direction and speed of the dash based on input
+			if direction == DIRECTIONS.RIGHT or direction == DIRECTIONS.LEFT then
+				linearVelocity.Velocity = character.HumanoidRootPart.CFrame.RightVector * vectorMultiplier
+			end
+			if direction == DIRECTIONS.FORWARD or direction == DIRECTIONS.BACKWARDS then
+				linearVelocity.Velocity = character.HumanoidRootPart.CFrame.LookVector * vectorMultiplier
+			end
+
+			-- Delete the body velocity object after 0.3 seconds
+			Debris:AddItem(linearVelocity, 0.8)
+
+			self.StatsService:ExecuteAction("Dash")
+			-- Reset debounced state, enable IK and footsteps sound at the end of the dash animation
+			animationTrack.Ended:Connect(function()
+				self.debounces.dash = false
+				character.Humanoid.JumpPower = 31
+				footstepsSound.Volume = 1.0
+			end)
 		end
-		if direction == DIRECTIONS.FORWARD or direction == DIRECTIONS.BACKWARDS then
-			linearVelocity.Velocity = character.HumanoidRootPart.CFrame.LookVector * vectorMultiplier
+	end
+end
+
+function MovementController:OnJumpRequest()
+	local player = Players.LocalPlayer
+	local character = player.Character or player.CharacterAdded:Wait()
+	local humanoid = character:WaitForChild("Humanoid")
+	local rootPart = character:WaitForChild("HumanoidRootPart")
+	local function Climb()
+		local bodyVelocity = Instance.new("BodyVelocity")
+		bodyVelocity.Parent = character.HumanoidRootPart
+		rootPart.Anchored = false
+		bodyVelocity.MaxForce = Vector3.new(999999, 999999, 999999)
+		bodyVelocity.Velocity = rootPart.CFrame.LookVector * 5 + Vector3.new(0, 16, 0)
+		isHolding = false
+		Debris:AddItem(bodyVelocity, 0.5)
+		self.AnimationController:StopAnimation("Climb")
+		self.AnimationController:PlayAnimation("Climb_Up")
+		self.StatsService:ExecuteAction("Climb_Up")
+	end
+
+	if isHolding then
+		Climb()
+		return
+	end
+
+	if
+		humanoid:GetState() == Enum.HumanoidStateType.Jumping
+		or humanoid:GetState() == Enum.HumanoidStateType.Freefall
+	then
+		local head = character:WaitForChild("Head")
+
+		local raycastParams = RaycastParams.new()
+		raycastParams.FilterDescendantsInstances = { character }
+		raycastParams.FilterType = Enum.RaycastFilterType.Blacklist
+
+		local raycast = workspace:Raycast(head.CFrame.p, head.CFrame.LookVector * 3.33, raycastParams)
+		if raycast then
+			if
+				head.Position.Y >= (raycast.Instance.Position.Y + (raycast.Instance.Size.Y / 2)) - 1.9
+				and head.Position.Y <= raycast.Instance.Position.Y + (raycast.Instance.Size.Y / 2)
+			then
+				--Unequip the tools from the humanoid
+				player.Character.Humanoid:UnequipTools()
+				rootPart.Anchored = true
+				isHolding = true
+				self.AnimationController:PlayAnimation("Climb")
+				--Generate a loop to drain stamina while holding the jump button
+				local staminaDrainLoop
+				staminaDrainLoop = RunService.Heartbeat:Connect(function()
+					if character:GetAttribute("Stamina") < 1 then
+						rootPart.Anchored = false
+						isHolding = false
+						self.AnimationController:StopAnimation("Climb")
+						staminaDrainLoop:Disconnect()
+					end
+					if isHolding then
+						self.StatsService:ExecuteAction("Climb")
+					else
+						staminaDrainLoop:Disconnect()
+					end
+				end)
+			end
 		end
-
-		-- Delete the body velocity object after 0.3 seconds
-		Debris:AddItem(linearVelocity, 0.8)
-
-		-- Reset debounced state, enable IK and footsteps sound at the end of the dash animation
-		animationTrack.Ended:Connect(function()
-			self.debounces.dash = false
-			character.Humanoid.JumpPower = 31
-			footstepsSound.Volume = 1.0
-		end)
 	end
 end
 
@@ -85,6 +156,9 @@ function MovementController:KnitInit()
 	--Bind the actions to the character
 	self.debounces = {}
 	self.debounces.dash = false
+	--Get the necessary controllers and services
+	self.AnimationController = Knit.GetController("AnimationController")
+	self.StatsService = Knit.GetService("StatsService")
 	Players.LocalPlayer.CharacterAdded:Connect(function(_character)
 		-- Disable the ragdoll state for the character's humanoid when it is created
 		_character:WaitForChild("Humanoid"):SetStateEnabled(Enum.HumanoidStateType.Ragdoll, false)
@@ -110,6 +184,10 @@ function MovementController:KnitInit()
 		ContextActionService:SetPosition(ACTION_DASH, UDim2.new({ 0.916, 0 }, { 0.439, 0 }))
 		ContextActionService:SetDescription(ACTION_DASH, "Dash movement")
 		ContextActionService:SetTitle(ACTION_DASH, ACTION_DASH)
+		--Hook the user input service to the jump action
+		UserInputService.JumpRequest:Connect(function()
+			self:OnJumpRequest()
+		end)
 	end)
 end
 

@@ -28,37 +28,47 @@ local CONTROLLABLE_HUMANOID_STATES = {
 	[Enum.HumanoidStateType.Freefall] = true,
 	[Enum.HumanoidStateType.Jumping] = true,
 	[Enum.HumanoidStateType.Swimming] = true,
-	[Enum.HumanoidStateType.Landed] = true
+	[Enum.HumanoidStateType.Landed] = true,
 }
 
 -- Gamepad thumbstick utilities
 local k = 0.5
 local lowerK = 0.9
 local function SCurveTransform(t)
-	t = math.clamp(t, -1,1)
+	t = math.clamp(t, -1, 1)
 	if t >= 0 then
-		return (k*t) / (k - t + 1)
+		return (k * t) / (k - t + 1)
 	end
-	return -((lowerK*-t) / (lowerK + t + 1))
+	return -((lowerK * -t) / (lowerK + t + 1))
 end
 
 local DEADZONE = 0.25
 local function toSCurveSpace(t)
-	return (1 + DEADZONE) * (2*math.abs(t) - 1) - DEADZONE
+	return (1 + DEADZONE) * (2 * math.abs(t) - 1) - DEADZONE
 end
 
 local function fromSCurveSpace(t)
-	return t/2 + 0.5
+	return t / 2 + 0.5
 end
 
 -- Applies a nonlinear transform to the thumbstick position to serve as the acceleration for camera rotation.
 -- See https://www.desmos.com/calculator/xw2ytjpzco for a visual reference.
 local function gamepadLinearToCurve(thumbstickPosition)
 	return Vector2.new(
-		math.clamp(math.sign(thumbstickPosition.X) * fromSCurveSpace(SCurveTransform(toSCurveSpace(math.abs(thumbstickPosition.X)))), -1, 1),
-		math.clamp(math.sign(thumbstickPosition.Y) * fromSCurveSpace(SCurveTransform(toSCurveSpace(math.abs(thumbstickPosition.Y)))), -1, 1))
+		math.clamp(
+			math.sign(thumbstickPosition.X)
+				* fromSCurveSpace(SCurveTransform(toSCurveSpace(math.abs(thumbstickPosition.X)))),
+			-1,
+			1
+		),
+		math.clamp(
+			math.sign(thumbstickPosition.Y)
+				* fromSCurveSpace(SCurveTransform(toSCurveSpace(math.abs(thumbstickPosition.Y)))),
+			-1,
+			1
+		)
+	)
 end
-
 
 -- Remove back accessories since they frequently block the camera
 local function isBackAccessory(instance)
@@ -118,7 +128,6 @@ if RunService:IsClient() then
 	LocalPlayer.CharacterRemoving:Connect(onCharacterRemoving)
 end
 
-
 local ShoulderCamera = {}
 ShoulderCamera.__index = ShoulderCamera
 ShoulderCamera.SpringService = nil
@@ -127,6 +136,8 @@ function ShoulderCamera.new(weaponsSystem)
 	local self = setmetatable({}, ShoulderCamera)
 	self.weaponsSystem = weaponsSystem
 
+	--Get required services
+	self.StatsService = Knit.GetService("StatsService")
 	-- Configuration parameters (constants)
 	self.fieldOfView = 70
 	self.minPitch = math.rad(-75) -- min degrees camera can angle down
@@ -144,7 +155,7 @@ function ShoulderCamera.new(weaponsSystem)
 	self.touchSensitivity = Vector2.new(1 / 100, 1 / 100)
 	self.zoomedTouchSensitivity = Vector2.new(1 / 200, 1 / 200)
 	self.touchDelayTime = 0.25 -- max time for a touch to count as a tap (to shoot the weapon instead of control camera),
-	                           -- also the amount of time players have to start a second touch after releasing the first time to trigger automatic fire
+	-- also the amount of time players have to start a second touch after releasing the first time to trigger automatic fire
 	self.recoilDecay = 2 -- higher number means faster recoil decay rate
 	self.rotateCharacterWithCamera = true
 	self.gamepadSensitivityModifier = Vector2.new(0.85, 0.65)
@@ -152,7 +163,7 @@ function ShoulderCamera.new(weaponsSystem)
 	self.zoomWalkSpeed = 8
 	self.normalWalkSpeed = 16
 	self.sprintingWalkSpeed = 24
-	self.dashingWalkSpeed =  0
+	self.dashingWalkSpeed = 0
 
 	-- Current state
 	self.enabled = false
@@ -219,9 +230,18 @@ function ShoulderCamera.new(weaponsSystem)
 	self.random = Random.new()
 
 	--Bindings
-	ContextActionService:BindAction(SPRINT_ACTION_NAME, function(...) self:onSprintAction(...) end, false, unpack(self.sprintInputs))
-	RunService:BindToRenderStep(CAMERA_RENDERSTEP_NAME, Enum.RenderPriority.Camera.Value - 1, function(dt) self:onRenderStep(dt) end)
-	
+	ContextActionService:BindAction(SPRINT_ACTION_NAME, function(...)
+		self:onSprintAction(...)
+	end, false, unpack(self.sprintInputs))
+	RunService:BindToRenderStep(CAMERA_RENDERSTEP_NAME, Enum.RenderPriority.Camera.Value - 1, function(dt)
+		self:onRenderStep(dt)
+	end)
+	RunService:BindToRenderStep(SPRINT_ACTION_NAME, Enum.RenderPriority.Camera.Value, function()
+		if self.sprintingInputActivated then
+			self.StatsService:ExecuteAction("Sprint")
+		end
+	end)
+
 	return self
 end
 
@@ -232,14 +252,46 @@ function ShoulderCamera:setEnabled(enabled)
 	self.enabled = enabled
 
 	if self.enabled then
-		ContextActionService:BindAction(ZOOM_ACTION_NAME, function(...) self:onZoomAction(...) end, false, unpack(self.zoomInputs))
+		ContextActionService:BindAction(ZOOM_ACTION_NAME, function(...)
+			self:onZoomAction(...)
+		end, false, unpack(self.zoomInputs))
 
-		table.insert(self.eventConnections, LocalPlayer.CharacterAdded:Connect(function(character) self:onCurrentCharacterChanged(character) end))
-		table.insert(self.eventConnections, LocalPlayer.CharacterRemoving:Connect(function() self:onCurrentCharacterChanged(nil) end))
-		table.insert(self.eventConnections, workspace:GetPropertyChangedSignal("CurrentCamera"):Connect(function() self:onCurrentCameraChanged(workspace.CurrentCamera) end))
-		table.insert(self.eventConnections, UserInputService.InputBegan:Connect(function(inputObj, wasProcessed) self:onInputBegan(inputObj, wasProcessed) end))
-		table.insert(self.eventConnections, UserInputService.InputChanged:Connect(function(inputObj, wasProcessed) self:onInputChanged(inputObj, wasProcessed) end))
-		table.insert(self.eventConnections, UserInputService.InputEnded:Connect(function(inputObj, wasProcessed) self:onInputEnded(inputObj, wasProcessed) end))
+		table.insert(
+			self.eventConnections,
+			LocalPlayer.CharacterAdded:Connect(function(character)
+				self:onCurrentCharacterChanged(character)
+			end)
+		)
+		table.insert(
+			self.eventConnections,
+			LocalPlayer.CharacterRemoving:Connect(function()
+				self:onCurrentCharacterChanged(nil)
+			end)
+		)
+		table.insert(
+			self.eventConnections,
+			workspace:GetPropertyChangedSignal("CurrentCamera"):Connect(function()
+				self:onCurrentCameraChanged(workspace.CurrentCamera)
+			end)
+		)
+		table.insert(
+			self.eventConnections,
+			UserInputService.InputBegan:Connect(function(inputObj, wasProcessed)
+				self:onInputBegan(inputObj, wasProcessed)
+			end)
+		)
+		table.insert(
+			self.eventConnections,
+			UserInputService.InputChanged:Connect(function(inputObj, wasProcessed)
+				self:onInputChanged(inputObj, wasProcessed)
+			end)
+		)
+		table.insert(
+			self.eventConnections,
+			UserInputService.InputEnded:Connect(function(inputObj, wasProcessed)
+				self:onInputEnded(inputObj, wasProcessed)
+			end)
+		)
 
 		self:onCurrentCharacterChanged(LocalPlayer.Character)
 		self:onCurrentCameraChanged(workspace.CurrentCamera)
@@ -279,8 +331,6 @@ function ShoulderCamera:setEnabled(enabled)
 			self.currentCamera.CameraSubject = self.currentHumanoid
 		end
 
-		self:updateZoomState()
-
 		self.yaw = 0
 		self.pitch = 0
 
@@ -295,11 +345,12 @@ function ShoulderCamera:setEnabled(enabled)
 end
 
 function ShoulderCamera:onRenderStep(dt)
-	if (not self.enabled or
-	   not self.currentCamera or
-	   not self.currentCharacter or
-	   not self.currentHumanoid or
-	   not self.currentRootPart)
+	if
+		not self.enabled
+		or not self.currentCamera
+		or not self.currentCharacter
+		or not self.currentHumanoid
+		or not self.currentRootPart
 	then
 		return
 	end
@@ -317,6 +368,9 @@ function ShoulderCamera:onRenderStep(dt)
 	self:processGamepadInput(dt)
 
 	-- Smoothly zoom to desired values
+	if self.isDashing then
+		self.zoomState = false
+	end
 	if self.hasScope then
 		ShoulderCamera.SpringService:Target(self, 0.8, 8, { zoomAlpha = self.zoomState and 1 or 0 })
 		ShoulderCamera.SpringService:Target(self.currentCamera, 0.8, 8, { FieldOfView = self.desiredFieldOfView })
@@ -328,8 +382,16 @@ function ShoulderCamera:onRenderStep(dt)
 	-- Handle walk speed changes
 	if self.sprintEnabled or self.slowZoomWalkEnabled then
 		self.desiredWalkSpeed = self.normalWalkSpeed
-		if self.sprintEnabled and (self.sprintingInputActivated or self:sprintFromTouchInput() or self:sprintFromGamepadInput()) and not self.zoomState then
+		if
+			self.sprintEnabled
+			and (self.sprintingInputActivated or self:sprintFromTouchInput() or self:sprintFromGamepadInput())
+			and not self.zoomState
+			and self.currentCharacter:GetAttribute("Stamina") > 0
+		then
 			self.desiredWalkSpeed = self.sprintingWalkSpeed
+		end
+		if self.currentCharacter:GetAttribute("Stamina") < 1 then
+			self.desiredWalkSpeed = self.normalWalkSpeed
 		end
 		if self.slowZoomWalkEnabled and self.zoomAlpha > 0.1 then
 			self.desiredWalkSpeed = self.zoomWalkSpeed
@@ -349,9 +411,8 @@ function ShoulderCamera:onRenderStep(dt)
 	local yOffset = CFrame.new(0, self.normalOffset.Y, 0)
 	local zOffset = CFrame.new(0, 0, self.normalOffset.Z)
 	local collisionRadius = self:getCollisionRadius()
-	local cameraYawRotationAndXOffset =
-		yawRotation * 		-- First rotate around the Y axis (look left/right)
-		xOffset 			-- Then perform the desired offset (so camera is centered to side of player instead of directly on player)
+	local cameraYawRotationAndXOffset = yawRotation -- First rotate around the Y axis (look left/right)
+		* xOffset -- Then perform the desired offset (so camera is centered to side of player instead of directly on player)
 	local cameraFocus = rootPartUnrotatedCFrame * cameraYawRotationAndXOffset
 
 	-- Handle/Calculate side correction when player is adjacent to a wall (so camera doesn't go in the wall)
@@ -364,9 +425,15 @@ function ShoulderCamera:onRenderStep(dt)
 		hitPoint = hitPoint + (hitNormal * collisionRadius)
 		sideCorrectionGoalVector = hitPoint - cameraFocus.p
 		if sideCorrectionGoalVector.Magnitude >= self.lastSideCorrectionMagnitude then -- make it easy for camera to pop closer to player (move left)
-			if currentTime > self.lastSideCorrectionReachedTime + self.timeUntilRevertSideCorrection and self.lastSideCorrectionMagnitude ~= 0 then
+			if
+				currentTime > self.lastSideCorrectionReachedTime + self.timeUntilRevertSideCorrection
+				and self.lastSideCorrectionMagnitude ~= 0
+			then
 				self.timeUntilRevertSideCorrection = self.defaultTimeUntilRevertSideCorrection * 2 -- double time until revert if popping in repeatedly
-			elseif self.lastSideCorrectionMagnitude == 0 and self.timeUntilRevertSideCorrection ~= self.defaultTimeUntilRevertSideCorrection then
+			elseif
+				self.lastSideCorrectionMagnitude == 0
+				and self.timeUntilRevertSideCorrection ~= self.defaultTimeUntilRevertSideCorrection
+			then
 				self.timeUntilRevertSideCorrection = self.defaultTimeUntilRevertSideCorrection
 			end
 			self.lastSideCorrectionMagnitude = sideCorrectionGoalVector.Magnitude
@@ -379,11 +446,14 @@ function ShoulderCamera:onRenderStep(dt)
 		self.isRevertingSideCorrection = true
 	end
 	if self.isRevertingSideCorrection then -- make it hard/slow for camera to revert side correction (move right)
-		if sideCorrectionGoalVector.Magnitude > self.lastSideCorrectionMagnitude - 1 and sideCorrectionGoalVector.Magnitude ~= 0 then
+		if
+			sideCorrectionGoalVector.Magnitude > self.lastSideCorrectionMagnitude - 1
+			and sideCorrectionGoalVector.Magnitude ~= 0
+		then
 			self.lastSideCorrectionReachedTime = currentTime -- reset timer if occlusion significantly increased since last frame
 		end
 		if currentTime > self.lastSideCorrectionReachedTime + self.timeUntilRevertSideCorrection then
-			local sideCorrectionChangeAmount = dt * (vecToFocus.Magnitude) * self.revertSideCorrectionSpeedMultiplier
+			local sideCorrectionChangeAmount = dt * vecToFocus.Magnitude * self.revertSideCorrectionSpeedMultiplier
 			self.lastSideCorrectionMagnitude = self.lastSideCorrectionMagnitude - sideCorrectionChangeAmount
 			if sideCorrectionGoalVector.Magnitude >= self.lastSideCorrectionMagnitude then
 				self.lastSideCorrectionMagnitude = sideCorrectionGoalVector.Magnitude
@@ -399,17 +469,19 @@ function ShoulderCamera:onRenderStep(dt)
 	self.currentCamera.Focus = cameraFocus
 
 	-- Calculate and apply CFrame for camera
-	local cameraCFrameInSubjectSpace =
-		cameraYawRotationAndXOffset *
-		pitchRotation * 	-- rotate around the X axis (look up/down)
-		yOffset *			-- move camera up/vertically
-		zOffset				-- move camera back
+	local cameraCFrameInSubjectSpace = cameraYawRotationAndXOffset
+		* pitchRotation -- rotate around the X axis (look up/down)
+		* yOffset -- move camera up/vertically
+		* zOffset -- move camera back
 	self.currentCFrame = rootPartUnrotatedCFrame * cameraCFrameInSubjectSpace
 
 	-- Move camera forward if zoomed in
 	if self.zoomAlpha > 0 then
 		local trueZoomedOffset = math.max(self.zoomedOffsetDistance - self.lastOcclusionDistance, 0) -- don't zoom too far in if already occluded
-		self.currentCFrame = self.currentCFrame:lerp(self.currentCFrame + trueZoomedOffset * self.currentCFrame.LookVector.Unit, self.zoomAlpha)
+		self.currentCFrame = self.currentCFrame:lerp(
+			self.currentCFrame + trueZoomedOffset * self.currentCFrame.LookVector.Unit,
+			self.zoomAlpha
+		)
 	end
 
 	self.currentCamera.CFrame = self.currentCFrame
@@ -426,7 +498,7 @@ function ShoulderCamera:onRenderStep(dt)
 		end
 		if currentTime > self.lastOcclusionReachedTime + self.timeUntilZoomOut and self.lastOcclusionDistance ~= 0 then
 			self.timeUntilZoomOut = self.defaultTimeUntilZoomOut * 2 -- double time until zoom out if popping in repeatedly
-		elseif self.lastOcclusionDistance == 0  and self.timeUntilZoomOut ~= self.defaultTimeUntilZoomOut then
+		elseif self.lastOcclusionDistance == 0 and self.timeUntilZoomOut ~= self.defaultTimeUntilZoomOut then
 			self.timeUntilZoomOut = self.defaultTimeUntilZoomOut
 		end
 
@@ -444,11 +516,16 @@ function ShoulderCamera:onRenderStep(dt)
 		end
 
 		-- If occlusion pops camera in to almost first person for a short time, pop out instantly
-		if currentTime < self.timeLastPoppedWayIn + self.defaultTimeUntilZoomOut and self.lastOcclusionDistance / self.normalOffset.Z > 0.8 then
+		if
+			currentTime < self.timeLastPoppedWayIn + self.defaultTimeUntilZoomOut
+			and self.lastOcclusionDistance / self.normalOffset.Z > 0.8
+		then
 			self.lastOcclusionDistance = occlusionDistance
 			self.lastOcclusionReachedTime = currentTime
 			self.isZoomingOut = false
-		elseif currentTime >= self.timeLastPoppedWayIn + self.defaultTimeUntilZoomOut and self.timeLastPoppedWayIn ~= 0 then
+		elseif
+			currentTime >= self.timeLastPoppedWayIn + self.defaultTimeUntilZoomOut and self.timeLastPoppedWayIn ~= 0
+		then
 			self.timeLastPoppedWayIn = 0
 		end
 	end
@@ -487,7 +564,6 @@ end
 
 -- This function keeps the held weapon from bouncing up and down too much when you move
 function ShoulderCamera:applyRootJointFix()
-	
 	if self.rootJoint and not self.isDashing then
 		local translationScale = self.zoomState and Vector3.new(0.25, 0.25, 0.25) or Vector3.new(0.5, 0.5, 0.5)
 		local rotationScale = self.zoomState and 0.15 or 0.2
@@ -497,10 +573,14 @@ function ShoulderCamera:applyRootJointFix()
 		local leadRotation = rootRotation:toObjectSpace(yawRotation)
 		local rotationFix = self.rootRigAttach.CFrame
 		if self:isHumanoidControllable() then
-			rotationFix = self.rootJoint.Transform:inverse() * leadRotation * rotation:Lerp(CFrame.new(), 1 - rotationScale) + (self.rootJoint.Transform.Position * translationScale)
+			rotationFix = self.rootJoint.Transform:inverse()
+					* leadRotation
+					* rotation:Lerp(CFrame.new(), 1 - rotationScale)
+				+ (self.rootJoint.Transform.Position * translationScale)
 		end
 
-		self.rootJoint.C0 = CFrame.new(self.rootJoint.C0.Position, self.rootJoint.C0.Position + rotationFix.LookVector.Unit)
+		self.rootJoint.C0 =
+			CFrame.new(self.rootJoint.C0.Position, self.rootJoint.C0.Position + rotationFix.LookVector.Unit)
 	end
 end
 
@@ -605,11 +685,13 @@ function ShoulderCamera:onCurrentCameraChanged(camera)
 			self.eventConnections.cameraTypeChanged:Disconnect()
 			self.eventConnections.cameraTypeChanged = nil
 		end
-		self.eventConnections.cameraTypeChanged = self.currentCamera:GetPropertyChangedSignal("CameraType"):Connect(function()
-			if self.enabled then
-				self.currentCamera.CameraType = Enum.CameraType.Scriptable
-			end
-		end)
+		self.eventConnections.cameraTypeChanged = self.currentCamera
+			:GetPropertyChangedSignal("CameraType")
+			:Connect(function()
+				if self.enabled then
+					self.currentCamera.CameraType = Enum.CameraType.Scriptable
+				end
+			end)
 	end
 end
 
@@ -637,7 +719,8 @@ end
 
 function ShoulderCamera:penetrateCast(ray, ignoreList)
 	local tries = 0
-	local hitPart, hitPoint, hitNormal, hitMaterial = nil, ray.Origin + ray.Direction, Vector3.new(0, 1, 0), Enum.Material.Air
+	local hitPart, hitPoint, hitNormal, hitMaterial =
+		nil, ray.Origin + ray.Direction, Vector3.new(0, 1, 0), Enum.Material.Air
 	while tries < 50 do
 		tries = tries + 1
 		hitPart, hitPoint, hitNormal, hitMaterial = workspace:FindPartOnRayWithIgnoreList(ray, ignoreList, false, true)
@@ -724,7 +807,6 @@ function ShoulderCamera:onSprintAction(actionName, inputState, inputObj)
 	self.sprintingInputActivated = inputState == Enum.UserInputState.Begin
 end
 
-
 -- Zoom related functions
 
 function ShoulderCamera:isZoomed()
@@ -749,13 +831,18 @@ function ShoulderCamera:resetZoomFactor()
 end
 
 function ShoulderCamera:setForceZoomed(zoomed)
-	if self.forcedZoomed == zoomed then return end
+	if self.forcedZoomed == zoomed then
+		return
+	end
 	self.forcedZoomed = zoomed
 	self:updateZoomState()
 end
 
 function ShoulderCamera:setZoomedFromInput(zoomedFromInput)
-	if self.zoomedFromInput == zoomedFromInput or (self.currentHumanoid and self.currentHumanoid:GetState() == Enum.HumanoidStateType.Dead) then
+	if
+		self.zoomedFromInput == zoomedFromInput
+		or (self.currentHumanoid and self.currentHumanoid:GetState() == Enum.HumanoidStateType.Dead)
+	then
 		return
 	end
 
@@ -779,7 +866,9 @@ function ShoulderCamera:updateZoomState()
 	self.currentTouchSensitivity = isZoomed and self.zoomedTouchSensitivity or self.touchSensitivity
 
 	if self.weaponsSystem and self.weaponsSystem.gui then
-		self.weaponsSystem.gui:setCrosshairScaleTarget(self.zoomState and self.zoomedCrosshairScale or self.normalCrosshairScale)
+		self.weaponsSystem.gui:setCrosshairScaleTarget(
+			self.zoomState and self.zoomedCrosshairScale or self.normalCrosshairScale
+		)
 		self.weaponsSystem.gui:setCrosshairEnabled(not self.zoomState or not self.hasScope)
 		self.weaponsSystem.gui:setScopeEnabled(self.zoomState and self.hasScope)
 		if self.currentTool then
@@ -793,7 +882,13 @@ function ShoulderCamera:updateZoomState()
 end
 
 function ShoulderCamera:onZoomAction(actionName, inputState, inputObj)
-	if not self.enabled or not self.canZoom or not self.currentCamera or not self.currentCharacter or not self.weaponsSystem.currentWeapon then
+	if
+		not self.enabled
+		or not self.canZoom
+		or not self.currentCamera
+		or not self.currentCharacter
+		or not self.weaponsSystem.currentWeapon
+	then
 		self:setZoomedFromInput(false)
 		return Enum.ContextActionResult.Pass
 	end
@@ -801,7 +896,6 @@ function ShoulderCamera:onZoomAction(actionName, inputState, inputObj)
 	self:setZoomedFromInput(inputState == Enum.UserInputState.Begin)
 	return Enum.ContextActionResult.Sink
 end
-
 
 -- Recoil related functions
 
@@ -812,7 +906,6 @@ end
 function ShoulderCamera:addRecoil(recoilAmount)
 	self.currentRecoil = self.currentRecoil + recoilAmount
 end
-
 
 -- Input related functions
 
@@ -840,7 +933,9 @@ function ShoulderCamera:processGamepadInput(dt)
 			local elapsed = (currentTime - self.lastThumbstickTime) * 10
 			self.currentGamepadSpeed = self.currentGamepadSpeed + (6 * ((elapsed ^ 2) / 0.7))
 
-			if self.currentGamepadSpeed > 6 then self.currentGamepadSpeed = 6 end
+			if self.currentGamepadSpeed > 6 then
+				self.currentGamepadSpeed = 6
+			end
 
 			if self.lastGamepadVelocity then
 				local velocity = (gamepadPan - self.lastThumbstickPos) / (currentTime - self.lastThumbstickTime)
@@ -861,7 +956,10 @@ function ShoulderCamera:processGamepadInput(dt)
 		self.lastThumbstickTime = currentTime
 
 		local yawInput = -gamepadPan.X * finalConstant * self.gamepadSensitivityModifier.X
-		local pitchInput = finalConstant * gamepadPan.Y * GameSettings:GetCameraYInvertValue() * self.gamepadSensitivityModifier.Y
+		local pitchInput = finalConstant
+			* gamepadPan.Y
+			* GameSettings:GetCameraYInvertValue()
+			* self.gamepadSensitivityModifier.Y
 
 		self:applyInput(yawInput, pitchInput)
 	end
@@ -871,7 +969,13 @@ function ShoulderCamera:handleTouchToolFiring()
 	if self.touchObj then
 		if self.lastTapEndTime then -- and not (self.zoomState and self.hasScope) then
 			local touchTime = tick() - self.lastTapEndTime
-			if touchTime < self.touchDelayTime and self.currentTool and self.touchPanAccumulator.Magnitude < 0.5 and not self.firingTool and not self.applyingTouchPan then
+			if
+				touchTime < self.touchDelayTime
+				and self.currentTool
+				and self.touchPanAccumulator.Magnitude < 0.5
+				and not self.firingTool
+				and not self.applyingTouchPan
+			then
 				self.firingTool = true
 				self.currentTool:Activate()
 			end
@@ -963,7 +1067,12 @@ function ShoulderCamera:onInputEnded(inputObj, wasProcessed)
 			local touchTime = tick() - self.touchStartTime
 			if self.currentTool and self.firingTool then
 				self.currentTool:Deactivate()
-			elseif self.zoomState and self.hasScope and touchTime < self.touchDelayTime and not self.applyingTouchPan then
+			elseif
+				self.zoomState
+				and self.hasScope
+				and touchTime < self.touchDelayTime
+				and not self.applyingTouchPan
+			then
 				self.currentTool:Activate() -- this makes sure to shoot the sniper with a single tap when it is zoomed in
 				self.currentTool:Deactivate()
 			end

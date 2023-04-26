@@ -45,7 +45,7 @@ end
 function DataService:KnitStart()
 	-- Initialize profiles table to store
 	self.profiles = {}
-	self.profileStore = ProfileService.GetProfileStore("TestingAlpha_99", DataConfig.profileTemplate)
+	self.profileStore = ProfileService.GetProfileStore("TestingAlpha?9", DataConfig.profileTemplate)
 	Players.PlayerRemoving:Connect(function(player)
 		self:onPlayerRemoving(player)
 	end)
@@ -195,7 +195,7 @@ function DataService.WipeData(player)
 	player:Kick("Your data has been wiped")
 end
 
-function DataService:setKeyValue(player, key: string, newValue: any)
+function DataService:SetKeyValue(player, key: string, newValue: any)
 	local profile = self.profiles[player]
 	if profile then
 		if profile.Data[key] then
