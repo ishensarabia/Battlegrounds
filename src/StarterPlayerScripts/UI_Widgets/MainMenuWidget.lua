@@ -8,6 +8,7 @@ local Assets = ReplicatedStorage.Assets
 local Knit = require(ReplicatedStorage.Packages.Knit)
 --Widgets
 local InventoryWidget = require(game.StarterPlayer.StarterPlayerScripts.Source.UI_Widgets.InventoryWidget)
+local BattlepassWidget = require(game.StarterPlayer.StarterPlayerScripts.Source.UI_Widgets.BattlepassWidget)
 local ButtonWidget = require(game.StarterPlayer.StarterPlayerScripts.Source.UI_Widgets.ButtonWidget)
 local RespawnWidget = require(game.StarterPlayer.StarterPlayerScripts.Source.UI_Widgets.RespawnWidget)
 --Main
@@ -16,6 +17,7 @@ local MainMenuGui
 --Variables
 local playerPreviewViewportFrame
 local inventoryButtonsFrame
+local battlepassButtonFrame
 local mainFrame
 local playButton
 local active = true
@@ -29,9 +31,12 @@ function MainMenuWidget:HideMenu()
 		TweenService:Create(playButton, TweenInfo.new(0.325), { Position = UDim2.fromScale(1, 0.781) })
 	local playerPreviewTween =
 		TweenService:Create(playerPreviewViewportFrame, TweenInfo.new(0.325), { Position = UDim2.fromScale(1, 0) })
+	local battlepassButtonTween =
+		TweenService:Create(battlepassButtonFrame, TweenInfo.new(0.325), { Position = UDim2.fromScale(1, 0.64) })
 	inventoryButtonsFrameTween:Play()
 	playButtonTween:Play()
 	playerPreviewTween:Play()
+	battlepassButtonTween:Play()
 end
 
 function MainMenuWidget:CloseMenu()
@@ -42,12 +47,14 @@ function MainMenuWidget:CloseMenu()
 	local playerPreviewTween =
 		TweenService:Create(playerPreviewViewportFrame, TweenInfo.new(0.325), { Position = UDim2.fromScale(1, 0) })
 	local mainFrameTween = TweenService:Create(mainFrame, TweenInfo.new(0.325), { Position = UDim2.fromScale(1, 0) })
+	local battlepassButtonTween =
+	TweenService:Create(battlepassButtonFrame, TweenInfo.new(0.325), { Position = UDim2.fromScale(1, 0.781) })
 	mainFrameTween:Play()
 	inventoryButtonsFrameTween:Play()
 	playButtonTween:Play()
 	playerPreviewTween:Play()
+	battlepassButtonTween:Play()
 end
-
 
 local function ShowMenu()
 	local inventoryButtonsFrameTween =
@@ -58,9 +65,12 @@ local function ShowMenu()
 		TweenService:Create(playerPreviewViewportFrame, TweenInfo.new(0.325), { Position = UDim2.fromScale(0.026, 0) })
 	local mainFrameTween = TweenService:Create(mainFrame, TweenInfo.new(0.325), { Position = UDim2.fromScale(0, 0) })
 	mainFrameTween:Play()
+	local battlepassButtonTween =
+		TweenService:Create(battlepassButtonFrame, TweenInfo.new(0.325), { Position = UDim2.fromScale(0.042, 0.64) })
 	inventoryButtonsFrameTween:Play()
 	playButtonTween:Play()
 	playerPreviewTween:Play()
+	battlepassButtonTween:Play()
 	active = true
 	game.Lighting.Blur.Enabled = true
 end
@@ -68,9 +78,10 @@ end
 local function setupMainMenuButtons()
 	local weaponsInventoryButtonFrame = MainMenuGui.InventoryButtonsFrame.WeaponsButtonFrame.ButtonFrame
 	local abilitiesInventoryButtonFrame = MainMenuGui.InventoryButtonsFrame.AbilitiesButtonFrame.ButtonFrame
-	--Init variables
+	--Init button variables
 	inventoryButtonsFrame = MainMenuGui.InventoryButtonsFrame
 	playButton = MainMenuGui.PlayButton
+	battlepassButtonFrame = MainMenuGui.BattlepassButtonFrame
 
 	weaponsInventoryButtonFrame.button.Activated:Connect(function()
 		local function callback()
@@ -86,6 +97,16 @@ local function setupMainMenuButtons()
 		end
 		ButtonWidget:OnActivation(abilitiesInventoryButtonFrame, callback)
 	end)
+
+	--Battlepass button
+	battlepassButtonFrame.button.Activated:Connect(function()
+		local function callback()
+			MainMenuWidget:HideMenu()
+			BattlepassWidget:OpenBattlepass(ShowMenu)
+		end
+		ButtonWidget:OnActivation(battlepassButtonFrame, callback)
+	end)
+
 	playButton.Activated:Connect(function()
 		local function callback()
 			MainMenuWidget:CloseMenu()
@@ -143,7 +164,7 @@ function MainMenuWidget:Initialize()
 	local success, errorMessage = pcall(function()
 		playerDesc = Players:GetHumanoidDescriptionFromUserId(player.UserId)
 	end)
-	if playerDesc and success then		
+	if playerDesc and success then
 		dummy:WaitForChild("Humanoid"):ApplyDescription(playerDesc)
 	end
 	-- end

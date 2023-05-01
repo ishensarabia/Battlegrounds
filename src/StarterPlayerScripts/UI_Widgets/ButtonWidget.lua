@@ -27,7 +27,9 @@ function ButtonWidget:OnActivation(button: GuiButton, callback, customSoundName 
         )
     end
 	buttonTween:Play()
-    buttonTween.Completed:Connect(callback)
+    if callback then        
+        buttonTween.Completed:Connect(callback)
+    end
     return buttonTween
 end
 
