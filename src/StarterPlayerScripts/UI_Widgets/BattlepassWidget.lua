@@ -18,6 +18,7 @@ local BattlepassGui
 local BattlepassPreviewGui
 --Gui objects
 local currentLevelFrame
+local rewardsFrame
 local battlepassLabelFrame
 
 function BattlepassWidget:Initialize()
@@ -38,6 +39,7 @@ function BattlepassWidget:Initialize()
 	--Initialize the battlepass gui variables
 	currentLevelFrame = BattlepassGui.MainFrame.CurrentLevelFrame
 	battlepassLabelFrame = BattlepassGui.MainFrame.BattlepassLabelFrame
+	rewardsFrame = BattlepassGui.MainFrame.RewardsFrame
 	--Disable the screen guis
 	BattlepassPreviewGui.Enabled = false
 	BattlepassGui.Enabled = false
@@ -51,8 +53,59 @@ function BattlepassWidget:Initialize()
 	BattlepassWidget.MainFrame = game.Players.LocalPlayer.PlayerGui.BattlepassGui.MainFrame
 	--Hide the main frame with position
 	BattlepassWidget.MainFrame.Position = UDim2.fromScale(1, 0)
+	--Connect any events
+	BattlepassService.LevelUp:Connect(function(newLevel)	
+		--Assign the current level
+		currentLevelFrame.BarFrame.currentLevelText.Text = newLevel
+		--Assign the next level
+		currentLevelFrame.BarFrame.nextLevelText.Text = newLevel + 1
+	end)
 
 	return BattlepassWidget
+end
+
+function BattlepassWidget:GenerateRewards()
+	BattlepassService:GetSeasonRewards():andThen(function(seasonRewards)
+		for rank, rankRewardsTable in seasonRewards do
+			local battlepassRewardFrame = Assets.GuiObjects.Frames.BattlepassRewardFrame:Clone()
+			--Name the frame with the rank
+			battlepassRewardFrame.Name = rank
+			--Assign the rank text
+			battlepassRewardFrame.RankText.Text = rank
+			--Assign the current rank to the progress bar
+			battlepassRewardFrame.ProgressBarFrame.BarFrame.currentRankText.Text = rank
+			--Set the bar size to 0
+			battlepassRewardFrame.ProgressBarFrame.BarFrame.ProgressBar.Size = UDim2.fromScale(0, 0.9)
+			battlepassRewardFrame.Parent = BattlepassWidget.MainFrame.RewardsFrame
+			--Generate the item rewards frames for each rank and separate them to premium rewards and free rewards
+			warn(rankRewardsTable.battlepass, rankRewardsTable.freepass)
+			for _, rewardInfo in rankRewardsTable.battlepass do
+				local rewardFrame = Assets.GuiObjects.Frames.BattlepassRewardItemFrame:Clone()
+				rewardFrame.Parent = battlepassRewardFrame.PremiumRewardsFrame
+				--Assign the reward name
+				rewardFrame.ItemName.Text = rewardInfo.rewardType
+				--Assign the color to the itemframe according to the reward rarity
+				rewardFrame.ItemFrame.ImageColor3 = rewardInfo.rarityColor
+			end
+			for _, rewardInfo in rankRewardsTable.freepass do
+				local rewardFrame = Assets.GuiObjects.Frames.BattlepassRewardItemFrame:Clone()
+				rewardFrame.Parent = battlepassRewardFrame.FreeRewardsFrame
+				--Assign the reward name and type
+				rewardFrame.ItemName.Text = rewardInfo.rewardType
+				--Assign the color to the itemframe according to the reward rarity
+				rewardFrame.ItemFrame.ImageColor3 = rewardInfo.rarityColor
+			end
+			--Assign the correct UIGridLayout cell size for the premium rewards according to the amount of rewards
+			if #battlepassRewardFrame.PremiumRewardsFrame:GetChildren() <= 3 then
+				battlepassRewardFrame.PremiumRewardsFrame.UIGridLayout.CellSize = UDim2.fromScale(0.3, 1)
+			end
+
+			if #battlepassRewardFrame.PremiumRewardsFrame:GetChildren() > 3 then
+				battlepassRewardFrame.PremiumRewardsFrame.UIGridLayout.CellSize = UDim2.fromScale(0.24, 1)
+			end
+
+		end
+	end)
 end
 
 function BattlepassWidget:OpenBattlepass(callback: Function)
@@ -76,36 +129,28 @@ function BattlepassWidget:OpenBattlepass(callback: Function)
 		currentLevelFrame.BarFrame.currentLevelText.Text = currentSeasonData.Level
 		--Assign the next level
 		currentLevelFrame.BarFrame.nextLevelText.Text = currentSeasonData.Level + 1
-		--Assign the current xp
-		currentLevelFrame.BarFrame.XPText.Text = currentSeasonData.Experience
-		--Generate the rewards frame
-		BattlepassService:GetSeasonRewards():andThen(function(seasonRewards)
-			for rank, rankRewardsTable in seasonRewards do
-				warn(rank, rankRewardsTable)
-				local battlepassRewardFrame = Assets.GuiObjects.Frames.BattlepassRewardFrame:Clone()
-				--Assign the rank text
-				battlepassRewardFrame.RankText.Text = rank
-				--Assign the current rank to the progress bar
-				battlepassRewardFrame.ProgressBarFrame.BarFrame.currentRankText.Text = rank
-				battlepassRewardFrame.Parent = BattlepassWidget.MainFrame.RewardsFrame
-				--Generate the item rewards frames for each rank and separate them to premium rewards and free rewards
-				for _, rewardInfo in rankRewardsTable.battlepass do
-					local rewardFrame = Assets.GuiObjects.Frames.BattlepassRewardItemFrame:Clone()
-					rewardFrame.Parent = battlepassRewardFrame.PremiumRewardsFrame
-					--Assign the reward name
-					rewardFrame.ItemName.Text = rewardInfo.rewardType
-					--Assign the color to the itemframe according to the reward rarity
-					rewardFrame.ItemFrame.ImageColor3 = rewardInfo.rarityColor
-				end
-				for _, rewardInfo in rankRewardsTable.freepass do
-					local rewardFrame = Assets.GuiObjects.Frames.BattlepassRewardItemFrame:Clone()
-					rewardFrame.Parent = battlepassRewardFrame.FreeRewardsFrame
-					--Assign the reward name and type
-					rewardFrame.ItemName.Text = rewardInfo.rewardType
-					--Assign the color to the itemframe according to the reward rarity
-					rewardFrame.ItemFrame.ImageColor3 = rewardInfo.rarityColor
-				end
+		--Generate the rewards frame if they don't exist
+		if #BattlepassWidget.MainFrame.RewardsFrame:GetChildren() <= 1 then
+			BattlepassWidget:GenerateRewards()
+		end
+		--Update the progress bars
+		BattlepassService:GetExperienceNeededForNextLevel():andThen(function(experienceNeeded)
+			currentLevelFrame.BarFrame.LevelBar.Size = UDim2.fromScale(
+				(currentSeasonData.Experience / experienceNeeded) * 1,
+				currentLevelFrame.BarFrame.LevelBar.Size.Y.Scale
+			)
+			--Assign the current xp
+			currentLevelFrame.BarFrame.XPText.Text = currentSeasonData.Experience .. "/" .. experienceNeeded
+			--Fill the progress bar of previous levels
+			for i = 1, currentSeasonData.Level do
+				rewardsFrame[i].ProgressBarFrame.BarFrame.ProgressBar.Size = UDim2.fromScale(1, 0.9)
 			end
+			--Get the current level to update the progress bar of the item reward rank
+			local currentRank = currentSeasonData.Level
+			rewardsFrame[currentRank].ProgressBarFrame.BarFrame.ProgressBar.Size = UDim2.fromScale(
+				(currentSeasonData.Experience / experienceNeeded) * 1,
+				rewardsFrame[currentRank].ProgressBarFrame.BarFrame.ProgressBar.Size.Y.Scale
+			)
 		end)
 	end)
 end
@@ -118,7 +163,7 @@ function BattlepassWidget:CloseBattlepass()
 	mainFrameTween.Completed:Connect(function()
 		BattlepassGui.Enabled = false
 		BattlepassWidget.callback()
-		BattlepassService:AddExperience(10)
+		BattlepassService:AddExperience(100)
 	end)
 end
 

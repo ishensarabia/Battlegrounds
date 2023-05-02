@@ -90,6 +90,171 @@ BattlepassConfig.rewards = {
 				},
 			},
 		},
+		[3] = {
+			freepass = {
+				[1] = {
+					rewardType = BattlepassConfig.RewardTypes.BattleCoins,
+					rewardAmount = 1000,
+					rarity = BattlepassConfig.Rarity.Common,
+					rarityColor = BattlepassConfig.RarityColors[BattlepassConfig.Rarity.Common],
+				},
+			},
+			battlepass = {
+				[1] = {
+					rewardType = BattlepassConfig.RewardTypes.BattleGems,
+					rewardAmount = 100,
+					rarity = BattlepassConfig.Rarity.Common,
+					rarityColor = BattlepassConfig.RarityColors[BattlepassConfig.Rarity.Common],
+				},
+				[2] = {
+					rewardType = BattlepassConfig.RewardTypes.Experience_Boost,
+					rarity = BattlepassConfig.Rarity.Rare,
+					rarityColor = BattlepassConfig.RarityColors[BattlepassConfig.Rarity.Rare],
+				},
+				[3] = {
+					rewardType = BattlepassConfig.RewardTypes.Crate,
+					crateRarity = "Rare",
+					rarity = BattlepassConfig.Rarity.Rare,
+					rarityColor = BattlepassConfig.RarityColors[BattlepassConfig.Rarity.Rare],
+				},
+			},
+		},
+		[4] = {
+			freepass = {
+				[1] = {
+					rewardType = BattlepassConfig.RewardTypes.BattleCoins,
+					rewardAmount = 1000,
+					rarity = BattlepassConfig.Rarity.Common,
+					rarityColor = BattlepassConfig.RarityColors[BattlepassConfig.Rarity.Common],
+				},
+			},
+			battlepass = {
+				[1] = {
+					rewardType = BattlepassConfig.RewardTypes.BattleGems,
+					rewardAmount = 100,
+					rarity = BattlepassConfig.Rarity.Common,
+					rarityColor = BattlepassConfig.RarityColors[BattlepassConfig.Rarity.Common],
+				},
+				[2] = {
+					rewardType = BattlepassConfig.RewardTypes.Experience_Boost,
+					rarity = BattlepassConfig.Rarity.Rare,
+					rarityColor = BattlepassConfig.RarityColors[BattlepassConfig.Rarity.Rare],
+				},
+				[3] = {
+					rewardType = BattlepassConfig.RewardTypes.Crate,
+					crateRarity = "Rare",
+					rarity = BattlepassConfig.Rarity.Rare,
+					rarityColor = BattlepassConfig.RarityColors[BattlepassConfig.Rarity.Rare],
+				},
+			},
+		},
+		[5] = {
+			freepass = {},
+			battlepass = {
+				[1] = {
+					rewardType = BattlepassConfig.RewardTypes.BattleGems,
+					rewardAmount = 100,
+					rarity = BattlepassConfig.Rarity.Common,
+					rarityColor = BattlepassConfig.RarityColors[BattlepassConfig.Rarity.Common],
+				},
+				[2] = {
+					rewardType = BattlepassConfig.RewardTypes.Experience_Boost,
+					rarity = BattlepassConfig.Rarity.Rare,
+					rarityColor = BattlepassConfig.RarityColors[BattlepassConfig.Rarity.Rare],
+				},
+				[3] = {
+					rewardType = BattlepassConfig.RewardTypes.Crate,
+					crateRarity = "Rare",
+					rarity = BattlepassConfig.Rarity.Rare,
+					rarityColor = BattlepassConfig.RarityColors[BattlepassConfig.Rarity.Rare],
+				},
+			},
+		},
+		[6] = {
+			freepass = {},
+			battlepass = {
+				[1] = {
+					rewardType = BattlepassConfig.RewardTypes.BattleCoins,
+					rewardAmount = 1000,
+					rarity = BattlepassConfig.Rarity.Common,
+					rarityColor = BattlepassConfig.RarityColors[BattlepassConfig.Rarity.Common],
+				},
+				[2] = {
+					rewardType = BattlepassConfig.RewardTypes.BattleGems,
+					rewardAmount = 100,
+					rarity = BattlepassConfig.Rarity.Common,
+					rarityColor = BattlepassConfig.RarityColors[BattlepassConfig.Rarity.Common],
+				},
+				[3] = {
+					rewardType = BattlepassConfig.RewardTypes.Experience_Boost,
+					rarity = BattlepassConfig.Rarity.Rare,
+					rarityColor = BattlepassConfig.RarityColors[BattlepassConfig.Rarity.Rare],
+				},
+				[4] = {
+					rewardType = BattlepassConfig.RewardTypes.Crate,
+					crateRarity = "Rare",
+					rarity = BattlepassConfig.Rarity.Rare,
+					rarityColor = BattlepassConfig.RarityColors[BattlepassConfig.Rarity.Rare],
+				},
+			},
+		},
+		[7] = {
+			freepass = {
+				[1] = {
+					rewardType = BattlepassConfig.RewardTypes.BattleCoins,
+					rewardAmount = 1000,
+					rarity = BattlepassConfig.Rarity.Common,
+					rarityColor = BattlepassConfig.RarityColors[BattlepassConfig.Rarity.Common],
+				},
+			},
+			battlepass = {
+				[1] = {
+					rewardType = BattlepassConfig.RewardTypes.BattleGems,
+					rewardAmount = 100,
+					rarity = BattlepassConfig.Rarity.Common,
+					rarityColor = BattlepassConfig.RarityColors[BattlepassConfig.Rarity.Common],
+				},
+				[2] = {
+					rewardType = BattlepassConfig.RewardTypes.Experience_Boost,
+					rarity = BattlepassConfig.Rarity.Rare,
+					rarityColor = BattlepassConfig.RarityColors[BattlepassConfig.Rarity.Rare],
+				},
+				[3] = {
+					rewardType = BattlepassConfig.RewardTypes.Crate,
+					crateRarity = "Rare",
+					rarity = BattlepassConfig.Rarity.Rare,
+					rarityColor = BattlepassConfig.RarityColors[BattlepassConfig.Rarity.Rare],
+				},
+			},
+		},
+		[8] = {
+			freepass = {},
+			battlepass = {
+				[1] = {
+					rewardType = BattlepassConfig.RewardTypes.BattleCoins,
+					rewardAmount = 1000,
+					rarity = BattlepassConfig.Rarity.Common,
+					rarityColor = BattlepassConfig.RarityColors[BattlepassConfig.Rarity.Common],
+				},
+				[2] = {
+					rewardType = BattlepassConfig.RewardTypes.BattleGems,
+					rewardAmount = 100,
+					rarity = BattlepassConfig.Rarity.Common,
+					rarityColor = BattlepassConfig.RarityColors[BattlepassConfig.Rarity.Common],
+				},
+				[3] = {
+					rewardType = BattlepassConfig.RewardTypes.Experience_Boost,
+					rarity = BattlepassConfig.Rarity.Rare,
+					rarityColor = BattlepassConfig.RarityColors[BattlepassConfig.Rarity.Rare],
+				},
+				[4] = {
+					rewardType = BattlepassConfig.RewardTypes.Crate,
+					crateRarity = "Rare",
+					rarity = BattlepassConfig.Rarity.Rare,
+					rarityColor = BattlepassConfig.RarityColors[BattlepassConfig.Rarity.Rare],
+				},
+			},
+		},
 	},
 }
 
