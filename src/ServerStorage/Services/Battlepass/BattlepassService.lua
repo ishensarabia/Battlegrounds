@@ -1,3 +1,4 @@
+local MarketplaceService = game:GetService("MarketplaceService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local ServerStorage = game:GetService("ServerStorage")
 local Knit = require(ReplicatedStorage.Packages.Knit)
@@ -76,6 +77,15 @@ end
 
 function BattlepassService.Client:GetExperienceNeededForNextLevel(player : Player)
 	return self.Server:GetExperienceNeededForNextLevel(player)
+end
+
+function BattlepassService:BuyBattlepass()
+	
+end
+
+function BattlepassService.Client:BuyBattlepass(player : Player)
+	local battlepassData = self.Server:GetBattlepassData(player)
+	MarketplaceService:PromptProductPurchase(player, BattlepassConfig.seasonDevProdctsDictionary[battlepassData.currentSeason])
 end
 
 return BattlepassService

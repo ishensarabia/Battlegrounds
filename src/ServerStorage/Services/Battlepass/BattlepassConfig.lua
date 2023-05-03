@@ -23,6 +23,17 @@ BattlepassConfig.RarityColors = {
 	[BattlepassConfig.Rarity.Legendary] = Color3.fromRGB(255, 0, 0),
 }
 
+BattlepassConfig.seasonDevProdctsDictionary = {
+	Season_1 = 1532101515,
+}
+
+BattlepassConfig.rewardTypesImages = {
+	[BattlepassConfig.RewardTypes.BattleCoins] = "rbxassetid://1532101515",
+	[BattlepassConfig.RewardTypes.BattleGems] = "rbxassetid://1532101515",
+	[BattlepassConfig.RewardTypes.Experience_Boost] = "rbxassetid://1532101515",
+	[BattlepassConfig.RewardTypes.Crate] = "rbxassetid://1532101515",
+}
+
 BattlepassConfig.weaponTemplate = {
 	Customization = {},
 
@@ -108,12 +119,6 @@ BattlepassConfig.rewards = {
 				},
 				[2] = {
 					rewardType = BattlepassConfig.RewardTypes.Experience_Boost,
-					rarity = BattlepassConfig.Rarity.Rare,
-					rarityColor = BattlepassConfig.RarityColors[BattlepassConfig.Rarity.Rare],
-				},
-				[3] = {
-					rewardType = BattlepassConfig.RewardTypes.Crate,
-					crateRarity = "Rare",
 					rarity = BattlepassConfig.Rarity.Rare,
 					rarityColor = BattlepassConfig.RarityColors[BattlepassConfig.Rarity.Rare],
 				},

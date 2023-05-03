@@ -16,19 +16,24 @@ local BattlepassService = Knit.GetService("BattlepassService")
 --Screen guis
 local BattlepassGui
 local BattlepassPreviewGui
+local BattlepassGiftGui
 --Gui objects
 local currentLevelFrame
 local rewardsFrame
+local buyButtonFrame
+local giftButtonFrame
 local battlepassLabelFrame
 
 function BattlepassWidget:Initialize()
 	--Initialize the screen guis
+	--Battlepass gui
 	if not game.Players.LocalPlayer.PlayerGui:FindFirstChild("BattlepassGui") then
 		BattlepassGui = Assets.GuiObjects.ScreenGuis.BattlepassGui or game.Players.LocalPlayer.PlayerGui.BattlepassGui
 		BattlepassGui.Parent = game.Players.LocalPlayer.PlayerGui
 	else
 		BattlepassGui = game.Players.LocalPlayer.PlayerGui.BattlepassGui
 	end
+	--Battlepass preview gui
 	if not game.Players.LocalPlayer.PlayerGui:FindFirstChild("BattlepassPreviewGui") then
 		BattlepassPreviewGui = Assets.GuiObjects.ScreenGuis.BattlepassPreviewGui
 			or game.Players.LocalPlayer.PlayerGui.BattlepassPreviewGui
@@ -36,18 +41,28 @@ function BattlepassWidget:Initialize()
 	else
 		BattlepassPreviewGui = game.Players.LocalPlayer.PlayerGui.BattlepassPreviewGui
 	end
+	--Battlepass gift gui
+	if not game.Players.LocalPlayer.PlayerGui:FindFirstChild("BattlepassGiftGui") then
+		BattlepassGiftGui = Assets.GuiObjects.ScreenGuis.BattlepassGiftGui or game.Players.LocalPlayer.PlayerGui.BattlepassGiftGui
+		BattlepassGiftGui.Parent = game.Players.LocalPlayer.PlayerGui
+	else
+		BattlepassGiftGui = game.Players.LocalPlayer.PlayerGui.BattlepassGiftGui
+	end
 	--Initialize the battlepass gui variables
 	currentLevelFrame = BattlepassGui.MainFrame.CurrentLevelFrame
 	battlepassLabelFrame = BattlepassGui.MainFrame.BattlepassLabelFrame
 	rewardsFrame = BattlepassGui.MainFrame.RewardsFrame
+	buyButtonFrame = BattlepassGui.MainFrame.BuyButtonFrame
+	giftButtonFrame = BattlepassGui.MainFrame.GiftButtonFrame
 	--Disable the screen guis
 	BattlepassPreviewGui.Enabled = false
 	BattlepassGui.Enabled = false
+	BattlepassGiftGui.Enabled = false
 
 	--Set up the back button
 	local backButtonFrame = BattlepassGui.BackButtonFrame
 	backButtonFrame.Button.Activated:Connect(function()
-		ButtonWidget:OnActivation(backButtonFrame.Button)
+		ButtonWidget:OnActivation(backButtonFrame)
 		BattlepassWidget:CloseBattlepass()
 	end)
 	BattlepassWidget.MainFrame = game.Players.LocalPlayer.PlayerGui.BattlepassGui.MainFrame
@@ -61,7 +76,76 @@ function BattlepassWidget:Initialize()
 		currentLevelFrame.BarFrame.nextLevelText.Text = newLevel + 1
 	end)
 
+
+	buyButtonFrame.button.Activated:Connect(function()
+		ButtonWidget:OnActivation(buyButtonFrame)
+		BattlepassService:BuyBattlepass()
+	end)
+
+	--Gift battlepass gui connections
+	giftButtonFrame.button.Activated:Connect(function()
+		ButtonWidget:OnActivation(giftButtonFrame)
+		BattlepassWidget:OpenGiftBattlepass()
+	end)
+
+	BattlepassGiftGui.MainFrame.TextBox.FocusLost:Connect(function()
+		local success, userToGiftID = pcall(function()
+			return Players:GetUserIdFromNameAsync(BattlepassGiftGui.MainFrame.TextBox.Text)
+		end)
+		if success then
+			if userToGiftID then
+				local success2, result = pcall(function()
+					return Players:GetUserThumbnailAsync(userToGiftID, Enum.ThumbnailType.HeadShot, Enum.ThumbnailSize.Size420x420)
+				end)
+				if success2 then
+					BattlepassGiftGui.MainFrame.PlayerThumbnail.Image = result
+				else
+					-- Handle error for Get User Thumbnail
+					BattlepassGiftGui.MainFrame.ErrorLabel.Text = "Failed to load user's thumbnail."
+					BattlepassGiftGui.MainFrame.ErrorLabel.Visible = true
+					task.delay(2.3, function()
+						BattlepassGiftGui.MainFrame.ErrorLabel.Visible = false
+					end)
+				end
+			end
+		else
+			-- Handle error for Get User Id
+			BattlepassGiftGui.MainFrame.ErrorLabel.Text = "Invalid username."
+			BattlepassGiftGui.MainFrame.ErrorLabel.Visible = true
+			task.delay(2.3, function()
+				BattlepassGiftGui.MainFrame.ErrorLabel.Visible = false
+			end)
+		end
+	end)
+
+	--Close button
+	BattlepassGiftGui.MainFrame.CloseButtonFrame.Button.Activated:Connect(function()
+		ButtonWidget:OnActivation(BattlepassGiftGui.MainFrame.CloseButtonFrame)
+		BattlepassWidget:CloseGiftBattlepass()
+	end)
+
+	--Hide the battlepass gift frame for animation
+	BattlepassGiftGui.MainFrame.Position = UDim2.fromScale(BattlepassGiftGui.MainFrame.Position.X.Scale, -1)
+
 	return BattlepassWidget
+end
+
+function BattlepassWidget:OpenGiftBattlepass()
+	BattlepassGiftGui.Enabled = true
+	BattlepassGiftGui.MainFrame.TextBox.Text = ""
+	BattlepassGiftGui.MainFrame.PlayerThumbnail.Image = ""
+	--Tween the frame in
+	TweenService:Create(BattlepassGiftGui.MainFrame, TweenInfo.new(0.5), {Position = UDim2.fromScale(BattlepassGiftGui.MainFrame.Position.X.Scale, 0.215)}):Play()
+end
+
+function BattlepassWidget:CloseGiftBattlepass()
+	--Tween the frame out
+	local frameOutTween = TweenService:Create(BattlepassGiftGui.MainFrame, TweenInfo.new(0.5), {Position = UDim2.fromScale(BattlepassGiftGui.MainFrame.Position.X.Scale, -1)})
+	frameOutTween:Play()
+	frameOutTween.Completed:Connect(function()
+		BattlepassGiftGui.Enabled = false
+		BattlepassGiftGui.MainFrame.PlayerThumbnail.Image = ""
+	end)
 end
 
 function BattlepassWidget:GenerateRewards()
@@ -78,7 +162,6 @@ function BattlepassWidget:GenerateRewards()
 			battlepassRewardFrame.ProgressBarFrame.BarFrame.ProgressBar.Size = UDim2.fromScale(0, 0.9)
 			battlepassRewardFrame.Parent = BattlepassWidget.MainFrame.RewardsFrame
 			--Generate the item rewards frames for each rank and separate them to premium rewards and free rewards
-			warn(rankRewardsTable.battlepass, rankRewardsTable.freepass)
 			for _, rewardInfo in rankRewardsTable.battlepass do
 				local rewardFrame = Assets.GuiObjects.Frames.BattlepassRewardItemFrame:Clone()
 				rewardFrame.Parent = battlepassRewardFrame.PremiumRewardsFrame
@@ -94,16 +177,17 @@ function BattlepassWidget:GenerateRewards()
 				rewardFrame.ItemName.Text = rewardInfo.rewardType
 				--Assign the color to the itemframe according to the reward rarity
 				rewardFrame.ItemFrame.ImageColor3 = rewardInfo.rarityColor
+				--Assign the correct image to the itemframe
 			end
 			--Assign the correct UIGridLayout cell size for the premium rewards according to the amount of rewards
-			if #battlepassRewardFrame.PremiumRewardsFrame:GetChildren() <= 3 then
+			if #battlepassRewardFrame.PremiumRewardsFrame:GetChildren() <= 6 then
 				battlepassRewardFrame.PremiumRewardsFrame.UIGridLayout.CellSize = UDim2.fromScale(0.3, 1)
 			end
 
-			if #battlepassRewardFrame.PremiumRewardsFrame:GetChildren() > 3 then
+			if #battlepassRewardFrame.PremiumRewardsFrame:GetChildren() > 6 then
 				battlepassRewardFrame.PremiumRewardsFrame.UIGridLayout.CellSize = UDim2.fromScale(0.24, 1)
 			end
-
+			
 		end
 	end)
 end
