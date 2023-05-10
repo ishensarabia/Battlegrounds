@@ -37,6 +37,10 @@ function BattlepassService.Client:GetSeasonRewards(player: Player)
 	return seasonRewards
 end
 
+function BattlepassService.Client:GetBattlepassConfig()
+	return BattlepassConfig
+end
+
 function BattlepassService:GetSeasonExperience(player: Player)
 	local battlepassData = self:GetBattlepassData(player)
 	local seasonExperience = battlepassData.Experience
