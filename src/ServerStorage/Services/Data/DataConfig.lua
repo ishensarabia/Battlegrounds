@@ -53,6 +53,10 @@ DataConfig.profileTemplate = {
 			Owned = false,
 		},
 	},
+	Challenges = {
+		Weekly = {},
+		Daily = {},
+	}
 }
 
 DataConfig.weaponTemplate = {

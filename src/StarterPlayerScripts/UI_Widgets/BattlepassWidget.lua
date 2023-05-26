@@ -117,7 +117,7 @@ function BattlepassWidget:OpenGiftBattlepass()
 	):Play()
 	--Connect the focus gained event
 	BattlepassGiftGui.MainFrame.TextBox.Focused:Connect(function()
-		BattlepassGiftGui.MainFrame.PlayerThumbnail.Image = "" 
+		BattlepassGiftGui.MainFrame.PlayerThumbnail.Image = ""
 	end)
 
 	--Connect the focus lost event
@@ -127,6 +127,15 @@ function BattlepassWidget:OpenGiftBattlepass()
 		end)
 		if success then
 			if userToGiftID then
+				--Check if the user is not the player
+				if userToGiftID == player.UserId then
+					BattlepassGiftGui.MainFrame.ErrorLabel.Text = "You cannot gift yourself the battlepass."
+					BattlepassGiftGui.MainFrame.ErrorLabel.Visible = true
+					task.delay(2.3, function()
+						BattlepassGiftGui.MainFrame.ErrorLabel.Visible = false
+					end)
+					return
+				end
 				local success2, result = pcall(function()
 					return Players:GetUserThumbnailAsync(
 						userToGiftID,
@@ -262,6 +271,7 @@ function BattlepassWidget:GenerateRewards(currentSeason)
 	end)
 end
 
+---@diagnostic disable-next-line: undefined-type
 function BattlepassWidget:OpenBattlepass(callback: Function)
 	BattlepassGui.Enabled = true
 	--Set the callback
@@ -270,6 +280,13 @@ function BattlepassWidget:OpenBattlepass(callback: Function)
 	local mainFrameTween =
 		TweenService:Create(BattlepassWidget.MainFrame, TweenInfo.new(0.325), { Position = UDim2.fromScale(0, 0) })
 	mainFrameTween:Play()
+	--Tween battlepass preview gui position
+	local previewGuiTween = TweenService:Create(
+		BattlepassPreviewGui.MainFrame,
+		TweenInfo.new(0.325),
+		{ Position = BattlepassPreviewGui.MainFrame:GetAttribute("TargetPosition") }
+	)
+	previewGuiTween:Play()
 	--Get the battlepass data
 	BattlepassService:GetBattlepassData(player):andThen(function(battlepassData)
 		--Get the current battlepass season
@@ -317,8 +334,16 @@ function BattlepassWidget:CloseBattlepass()
 	local mainFrameTween =
 		TweenService:Create(BattlepassWidget.MainFrame, TweenInfo.new(0.325), { Position = UDim2.fromScale(1, 0) })
 	mainFrameTween:Play()
+	--Tween battlepass preview gui position
+	local previewGuiTween = TweenService:Create(
+		BattlepassPreviewGui.MainFrame,
+		TweenInfo.new(0.325),
+		{ Position = UDim2.fromScale(1, BattlepassPreviewGui.MainFrame.Position.Y.Scale) }
+	)
+	previewGuiTween:Play()
 	mainFrameTween.Completed:Connect(function()
 		BattlepassGui.Enabled = false
+		BattlepassPreviewGui.Enabled = false
 		BattlepassWidget.callback()
 		BattlepassService:AddExperience(100)
 	end)

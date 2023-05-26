@@ -9,6 +9,7 @@ local Knit = require(ReplicatedStorage.Packages.Knit)
 --Widgets
 local InventoryWidget = require(game.StarterPlayer.StarterPlayerScripts.Source.UI_Widgets.InventoryWidget)
 local BattlepassWidget = require(game.StarterPlayer.StarterPlayerScripts.Source.UI_Widgets.BattlepassWidget)
+local ChallengesWidget = require(game.StarterPlayer.StarterPlayerScripts.Source.UI_Widgets.ChallengesWidget)
 local ButtonWidget = require(game.StarterPlayer.StarterPlayerScripts.Source.UI_Widgets.ButtonWidget)
 local RespawnWidget = require(game.StarterPlayer.StarterPlayerScripts.Source.UI_Widgets.RespawnWidget)
 --Main
@@ -18,6 +19,7 @@ local MainMenuGui
 local playerPreviewViewportFrame
 local inventoryButtonsFrame
 local battlepassButtonFrame
+local challengesButtonFrame
 local mainFrame
 local playButton
 local active = true
@@ -33,6 +35,9 @@ function MainMenuWidget:HideMenu()
 		TweenService:Create(playerPreviewViewportFrame, TweenInfo.new(0.325), { Position = UDim2.fromScale(1, 0) })
 	local battlepassButtonTween =
 		TweenService:Create(battlepassButtonFrame, TweenInfo.new(0.325), { Position = UDim2.fromScale(1, 0.64) })
+	local challengesButtonTween =
+		TweenService:Create(challengesButtonFrame, TweenInfo.new(0.325), { Position = UDim2.fromScale(1, 0.41) })
+	challengesButtonTween:Play()
 	inventoryButtonsFrameTween:Play()
 	playButtonTween:Play()
 	playerPreviewTween:Play()
@@ -48,7 +53,10 @@ function MainMenuWidget:CloseMenu()
 		TweenService:Create(playerPreviewViewportFrame, TweenInfo.new(0.325), { Position = UDim2.fromScale(1, 0) })
 	local mainFrameTween = TweenService:Create(mainFrame, TweenInfo.new(0.325), { Position = UDim2.fromScale(1, 0) })
 	local battlepassButtonTween =
-	TweenService:Create(battlepassButtonFrame, TweenInfo.new(0.325), { Position = UDim2.fromScale(1, 0.781) })
+		TweenService:Create(battlepassButtonFrame, TweenInfo.new(0.325), { Position = UDim2.fromScale(1, 0.781) })
+	local challengesButtonTween =
+		TweenService:Create(challengesButtonFrame, TweenInfo.new(0.325), { Position = UDim2.fromScale(1, 0.41) })
+	challengesButtonTween:Play()
 	mainFrameTween:Play()
 	inventoryButtonsFrameTween:Play()
 	playButtonTween:Play()
@@ -67,6 +75,9 @@ local function ShowMenu()
 	mainFrameTween:Play()
 	local battlepassButtonTween =
 		TweenService:Create(battlepassButtonFrame, TweenInfo.new(0.325), { Position = UDim2.fromScale(0.042, 0.64) })
+	local challengesButtonTween =
+		TweenService:Create(challengesButtonFrame, TweenInfo.new(0.325), { Position = UDim2.fromScale(0.042, 0.41) })
+	challengesButtonTween:Play()
 	inventoryButtonsFrameTween:Play()
 	playButtonTween:Play()
 	playerPreviewTween:Play()
@@ -82,6 +93,7 @@ local function setupMainMenuButtons()
 	inventoryButtonsFrame = MainMenuGui.InventoryButtonsFrame
 	playButton = MainMenuGui.PlayButton
 	battlepassButtonFrame = MainMenuGui.BattlepassButtonFrame
+	challengesButtonFrame = MainMenuGui.ChallengesButtonFrame
 
 	weaponsInventoryButtonFrame.button.Activated:Connect(function()
 		local function callback()
@@ -107,6 +119,14 @@ local function setupMainMenuButtons()
 		ButtonWidget:OnActivation(battlepassButtonFrame, callback)
 	end)
 
+	--Challenges button
+	challengesButtonFrame.button.Activated:Connect(function()
+		local function callback()
+			ChallengesWidget:OpenChallenges()
+		end
+		ButtonWidget:OnActivation(challengesButtonFrame, callback)
+	end)
+
 	playButton.Activated:Connect(function()
 		local function callback()
 			MainMenuWidget:CloseMenu()
@@ -127,12 +147,11 @@ function MainMenuWidget:Initialize()
 	mainFrame = MainMenuGui.MainFrame
 	MainMenuGui.Parent = player.PlayerGui
 
-	--To do parent the components here and delete RoactHandlers
 	local battleCoinsFrame = mainFrame.BattleCoinsFrame
 	local battleGemsFrame = mainFrame.BattleGemsFrame
 	playerPreviewViewportFrame = PlayerGui.MainMenuGui.CharacterCanvas.ViewportFrame
 	local CameraController = Knit.GetController("CameraController")
-
+	--Set up currencies
 	local currencyService = Knit.GetService("CurrencyService")
 	currencyService:GetCurrencyValue("BattleCoins"):andThen(function(currencyValue)
 		battleCoinsFrame.AmountLabel.Text = currencyValue
@@ -140,6 +159,15 @@ function MainMenuWidget:Initialize()
 	currencyService:GetCurrencyValue("BattleGems"):andThen(function(currencyValue)
 		battleGemsFrame.AmountLabel.Text = currencyValue
 	end)
+	--Connect to currency updates
+	currencyService.CurrencyChanged:Connect(function(currencyName, newCurrencyValue)
+		if currencyName == "BattleCoins" then
+			battleCoinsFrame.AmountLabel.Text = newCurrencyValue
+		elseif currencyName == "BattleGems" then
+			battleGemsFrame.AmountLabel.Text = newCurrencyValue
+		end
+	end)
+
 	--Set up main menu cutscene
 	local currentArenaInstance = workspace:WaitForChild("Arena")
 	local cutscenePoints = currentArenaInstance.Cutscene
@@ -150,6 +178,7 @@ function MainMenuWidget:Initialize()
 			CameraController:TransitionBetweenPoints(cutscenePoints)
 		end
 	end)
+
 	--Set up respawn menu
 	Players.LocalPlayer.CharacterAdded:Connect(function(character)
 		character:WaitForChild("Humanoid").Died:Connect(function() end)

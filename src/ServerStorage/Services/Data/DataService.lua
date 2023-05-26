@@ -45,7 +45,7 @@ end
 function DataService:KnitStart()
 	-- Initialize profiles table to store
 	self.profiles = {}
-	self.profileStore = ProfileService.GetProfileStore("TestingAlpha_999", DataConfig.profileTemplate)
+	self.profileStore = ProfileService.GetProfileStore("Development_Alpha_0.22", DataConfig.profileTemplate)
 	Players.PlayerRemoving:Connect(function(player)
 		self:onPlayerRemoving(player)
 	end)
@@ -203,6 +203,14 @@ function DataService:SetKeyValue(player, key: string, newValue: any)
 		end
 	end
 end
+
+function DataService:AddBattlecoins(player, amount: number)
+	local profile = self.profiles[player]
+	if profile then
+		profile.Data.Battlecoins += amount
+	end
+end
+
 
 function DataService:incrementIntValue(player, key: string, amount: number?)
 	assert(type(amount) == "number" or not amount, "Amount is not a number, please verify set parameters")

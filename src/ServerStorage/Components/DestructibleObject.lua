@@ -8,6 +8,7 @@ local Players = game:GetService("Players")
 --Services
 local ServerStorage = game:GetService("ServerStorage")
 local TweenService = game:GetService("TweenService")
+
 --Module dependencies
 --Class
 local DestructibleObject = Component.new({
@@ -28,16 +29,15 @@ function DestructibleObject:Construct()
 end
 
 function DestructibleObject:DestroyObject(player)
-	local DataService = Knit.GetService("DataService")
 	--Make sure the object is constructed before destroying it
 	if not self.isConstructed then
 		return
 	end
-	
+	self.isConstructed = false
+	local DataService = Knit.GetService("DataService")
+
 	DataService:incrementIntValue(player, "DestroyedObjects")
-	DataService:incrementIntValue(player, "Rank")
-	warn("Object broke by player: " .. player.UserId)
-	warn("Players data: ", DataService:GetProfileData(player))
+	Knit.GetService("ChallengesService"):CheckForChallengeCompletion(player, "DestroyObjects", 1)
 	--Setup proximity prompts
 	for index, child in pairs(self.Instance.Interactable:GetChildren()) do
 		if child:IsA("BasePart") then
@@ -73,9 +73,8 @@ function DestructibleObject:DestroyObject(player)
 			child.Anchored = false
 		end
 	end
-	
+
 	self:_setBuildTime()
-	self.isConstructed = false
 end
 
 function DestructibleObject:Start()
@@ -98,8 +97,7 @@ function DestructibleObject:_setBuildPromptTime()
 	local promptTime = 0
 	for index, child in pairs(self.Instance:GetChildren()) do
 		if child:IsA("BasePart") then
-			local magnitude =
-				(child.CFrame.Position - self._partsCFrames[child:GetAttribute("PartIndex")].Position).Magnitude
+			local magnitude = (child.CFrame.Position - self._partsCFrames[child:GetAttribute("PartIndex")].Position).Magnitude
 			if magnitude > 13 then
 				local length = #self.Instance:GetChildren() / index / #self.Instance:GetChildren()
 				promptTime += length
@@ -127,8 +125,7 @@ function DestructibleObject:ConstructObject(player)
 	self.isBeingConstructed = true
 	for index, child in pairs(self.Instance:GetChildren()) do
 		if child:IsA("BasePart") then
-			local magnitude =
-				(child.CFrame.Position - self._partsCFrames[child:GetAttribute("PartIndex")].Position).Magnitude
+			local magnitude = (child.CFrame.Position - self._partsCFrames[child:GetAttribute("PartIndex")].Position).Magnitude
 			if magnitude > 25 then
 				local length = #self.Instance:GetChildren() / index / #self.Instance:GetChildren()
 				buildTime += length
@@ -145,18 +142,10 @@ function DestructibleObject:ConstructObject(player)
 				self._tweenPromises[child:GetAttribute("PartIndex")] = promise
 			else
 				if magnitude > 5 then
-                    child.CanCollide = false
-					local handPromise = TweenObject.TweenBasePart(
-						child,
-						TweenInfo.new(buildTime),
-						{
-							CFrame = player.Character.HumanoidRootPart.CFrame + Vector3.new(
-								0,
-								0,
-								math.random(-9, -3)
-							),
-						}
-					)
+					child.CanCollide = false
+					local handPromise = TweenObject.TweenBasePart(child, TweenInfo.new(buildTime), {
+						CFrame = player.Character.HumanoidRootPart.CFrame + Vector3.new(0, 0, math.random(-9, -3)),
+					})
 					self._handsTweenPromises[child:GetAttribute("PartIndex")] = handPromise
 					handPromise:andThen(function()
 						local promise = TweenObject.TweenBasePart(
@@ -170,8 +159,8 @@ function DestructibleObject:ConstructObject(player)
 			end
 			--Cleanup part
 			child.Anchored = self._shouldAnchor
-			child.AssemblyLinearVelocity = Vector3.new(0,0,0)
-			child.AssemblyAngularVelocity = Vector3.new(0,0,0)
+			child.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
+			child.AssemblyAngularVelocity = Vector3.new(0, 0, 0)
 		end
 	end
 
