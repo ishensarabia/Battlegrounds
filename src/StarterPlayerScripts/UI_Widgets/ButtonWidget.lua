@@ -10,7 +10,7 @@ local ButtonWidget = {}
 
 local buttonTweenInfo = TweenInfo.new(0.15, Enum.EasingStyle.Linear, Enum.EasingDirection.InOut, 0, true, 0)
 
-function ButtonWidget:OnActivation(button: GuiButton, callback, customSoundName : string)
+function ButtonWidget:OnActivation(button: GuiButton, callback, customSoundName : string, params : table)
 	Knit.GetController("AudioController"):PlaySound(customSoundName or "click")
     local buttonTween
     if button.Size.X.Scale < 0.2 then

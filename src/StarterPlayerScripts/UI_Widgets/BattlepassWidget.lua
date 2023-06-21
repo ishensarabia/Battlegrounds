@@ -224,6 +224,7 @@ local function CreateItemRewardFrame(battlepassConfig: table, rewardInfo: table,
 
 	--Connect the mouse enter and leave events
 	rewardFrame.ItemIcon.MouseEnter:Connect(function()
+		warn("Mouse enter")
 		if not BattlepassPreviewGui.Enabled then
 			BattlepassPreviewGui.Enabled = true
 		end
@@ -345,7 +346,6 @@ function BattlepassWidget:CloseBattlepass()
 		BattlepassGui.Enabled = false
 		BattlepassPreviewGui.Enabled = false
 		BattlepassWidget.callback()
-		BattlepassService:AddExperience(100)
 	end)
 end
 

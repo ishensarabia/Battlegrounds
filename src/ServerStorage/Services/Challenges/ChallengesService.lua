@@ -19,6 +19,7 @@ function ChallengesService:KnitStart()
 	--services
 	self._dataService = Knit.GetService("DataService")
 	self._currencyService = Knit.GetService("CurrencyService")
+	self._battlepassService = Knit.GetService("BattlepassService")
 
 	Players.PlayerAdded:Connect(function(player)
 		self:InitializePlayer(player)
@@ -40,24 +41,47 @@ end
 function ChallengesService:InitializePlayer(player)
 	--Check for active challenges
 	local challengesData = self._dataService:GetKeyValue(player, "Challenges")
+	local dailyStringToFormat = "Daily challenges generated at: %x, which is a %A, and the time is %X."
+	local weeklyStringToFormat = "Weekly challenges generated at: %x, which is a %A, and the time is %X."
+
+	local dailyChallengesGeneratedAt = os.date(dailyStringToFormat, challengesData.DailyGeneratedAt)
+	local weeklyChallengesGeneratedAt = os.date(weeklyStringToFormat, challengesData.WeeklyGeneratedAt)
+
+	warn(weeklyChallengesGeneratedAt)
+	warn(dailyChallengesGeneratedAt)
 	--If there's no weekly or daily challenges, generate them
-	if #challengesData.Weekly == 0 then
+	if
+		(#challengesData.Weekly == 0 and not challengesData.WeeklyGeneratedAt)
+		or (
+			#challengesData.Weekly < ChallengesConfig.MaxChallengesPerType.Weekly
+			and (os.time() - challengesData.WeeklyGeneratedAt) / 3600 >= 168
+		)
+	then
 		challengesData.Weekly =
 			self:GenerateChallenges(player, ChallengesConfig.ChallengesTypes.Weekly, challengesData.Weekly)
+		--Register the challenges generation time
+		challengesData.WeeklyGeneratedAt = os.time()
 	else
-		warn("Weekly challenges already exist")
+		-- warn("Weekly challenges already exist")
 	end
-	if #challengesData.Daily == 0 then
+	
+	if
+		(#challengesData.Daily == 0 and not challengesData.DailyGeneratedAt)
+		or (
+			#challengesData.Daily < ChallengesConfig.MaxChallengesPerType.Daily
+			and (os.time() - challengesData.DailyGeneratedAt) / 3600 >= 24
+		)
+	then
 		challengesData.Daily =
 			self:GenerateChallenges(player, ChallengesConfig.ChallengesTypes.Daily, challengesData.Daily)
+		--Register the challenges generation time
+		challengesData.DailyGeneratedAt = os.time()
 	else
-		warn("Daily challenges already exist")
+		-- warn("Daily challenges already exist")
 	end
 	--Fire the signal to the client
 	self.Client.ChallengesInitialized:Fire(player, challengesData)
 end
-
-local function GetChallengeInData() end
 
 local function CheckIfChallengeIsAlreadyOnData(challenge, challengesData, challengeToReplace)
 	if challenge.name == challengeToReplace.name then
@@ -71,51 +95,43 @@ local function CheckIfChallengeIsAlreadyOnData(challenge, challengesData, challe
 	return false
 end
 
-function ChallengesService:CheckForChallengeCompletion(player: Player, typeOfProgression: string, amount)
-	if typeOfProgression == "DestroyObjects" then
-		--Make sure the player has a challenge that requires destroying objects
-		local challengesData = self._dataService:GetKeyValue(player, "Challenges")
-		for _, challenge in challengesData.Daily do
-			if challenge.typeOfProgression == typeOfProgression then
-				--Check if the challenge has progress if not, set it to 0
-				if not challenge.progression then
-					challenge.progression = 0
-				end
-				--Check if the challenge is already completed
-				if challenge.isCompleted then
-					return
-				end
-				--Update the challenge progression
-				challenge.progression = math.clamp(challenge.progression + amount, 1, challenge.goal)
-				--Check if the challenge is already completed
-				if challenge.progression >= challenge.goal then
-					challenge.isCompleted = true
-					--Fire the signal to the client
-					warn("Challenge completed")
-					self.Client.ChallengeCompleted:Fire(player, challenge, ChallengesConfig.ChallengesTypes.Daily)
-				end
-				--Fire the signal to the client
-				self.Client.ChallengeProgressionUpdated:Fire(player, challenge, ChallengesConfig.ChallengesTypes.Daily)
+function ChallengesService:UpdateChallengeProgression(player: Player, typeOfProgression: string, amount: number)
+	--Make sure the player has a challenge that requires destroying objects
+	local challengesData = self._dataService:GetKeyValue(player, "Challenges")
+	local function UpdateChallengeProgression(challenge, typeOfChallenge: string)
+		if challenge.typeOfProgression == typeOfProgression then
+			--Check if the challenge has progress if not, set it to 0
+			if not challenge.progression then
+				challenge.progression = 0
+			end
+			--Check if the challenge is already completed
+			if challenge.isCompleted then
 				return
 			end
+			--Update the challenge progression
+			challenge.progression = math.clamp(challenge.progression + amount, 1, challenge.goal)
+			--Check if the challenge is already completed
+			if challenge.progression >= challenge.goal then
+				challenge.isCompleted = true
+				--Fire the signal to the client
+				warn("Challenge completed")
+				self.Client.ChallengeCompleted:Fire(player, challenge, typeOfChallenge)
+			end
+			--Fire the signal to the client
+			self.Client.ChallengeProgressionUpdated:Fire(player, challenge, typeOfChallenge)
+			return
 		end
 	end
-	if typeOfProgression == "Knockouts" then
-		local challengesData = self._dataService:GetKeyValue(player, "Challenges")
-		for _, challenge in challengesData.Weekly do
-			if challenge.typeOfProgression == typeOfProgression then
-				--Check if the challenge is already completed
-				if challenge.isCompleted then
-					return
-				end
-				--Check if the challenge is already completed
-				if challenge.progression >= challenge.goal then
-					challenge.isCompleted = true
-					--Fire the signal to the client
-					self.Client.ChallengeCompleted:Fire(player, challenge)
-					return
-				end
-			end
+	--Daily challenges
+	for _, challenge in challengesData.Daily do
+		if challenge.typeOfProgression == typeOfProgression then
+			UpdateChallengeProgression(challenge, ChallengesConfig.ChallengesTypes.Daily)
+		end
+	end
+	--Weekly challenges
+	for _, challenge in challengesData.Weekly do
+		if challenge.typeOfProgression == typeOfProgression then
+			UpdateChallengeProgression(challenge, ChallengesConfig.ChallengesTypes.Weekly)
 		end
 	end
 end
@@ -132,10 +148,15 @@ function ChallengesService:ClaimChallenge(player, challenge: table, challengeTyp
 					if reward.rewardType == "BattleCoins" or reward.rewardType == "BattleGems" then
 						self._currencyService:AddCurrency(player, reward.rewardType, reward.rewardAmount)
 					end
+					if reward.rewardType == "BattlepassExp" then
+						self._battlepassService:AddBattlepassExperience(player, reward.rewardAmount)
+					end
 				end
-				_challenge = nil
+				table.remove(challengesData[challengeType], index)
 				--Fire the signal to the client
 				self.Client.ChallengeClaimed:Fire(player, challenge, challengeType)
+				--Set the new challengesData
+				self._dataService:SetKeyValue(player, "Challenges", challengesData)
 				return true
 			end
 		end

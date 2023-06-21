@@ -3,11 +3,13 @@ local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 local TweenService = game:GetService("TweenService")
+local UserInputService = game:GetService("UserInputService")
 local Packages = game.ReplicatedStorage.Packages
 local Assets = ReplicatedStorage.Assets
 local Knit = require(ReplicatedStorage.Packages.Knit)
 --Modules
 local ViewportModel = require(ReplicatedStorage.Source.Modules.Util.ViewportModel)
+local DragToRotateViewportFrame = require(ReplicatedStorage.Source.Modules.Util.DragToRotateViewportFrame)
 --Widgets
 local WeaponCustomWidget = require(game.StarterPlayer.StarterPlayerScripts.Source.UI_Widgets.WeaponCustomWidget)
 local ButtonWidget = require(game.StarterPlayer.StarterPlayerScripts.Source.UI_Widgets.ButtonWidget)
@@ -21,8 +23,10 @@ local customizationButtonsFrame
 local itemInfoFrame
 local equipButtonFrame
 local viewportFrame
-local camera = Instance.new("Camera")
 local itemViewportModel
+local dtrViewportFrame
+--Connections
+local viewportConnection
 
 local customizationButtonsTweenInfo =
 	TweenInfo.new(0.363, Enum.EasingStyle.Circular, Enum.EasingDirection.InOut, 0, false)
@@ -108,7 +112,6 @@ function WeaponPreviewWidget:Initialize()
 	customizationButtonsFrame = itemPreviewFrame.ItemButtons
 	equipButtonFrame = itemPreviewFrame.EquipButtonFrame
 	viewportFrame = itemPreviewFrame.ViewportFrame
-	camera.Parent = weaponPreviewGui
 	itemPreviewFrame.Position = UDim2.fromScale(1, 0.104)
 	itemInfoFrame.Position = UDim2.fromScale(-1, 0.112)
 	weaponPreviewGui.Parent = game.Players.LocalPlayer.PlayerGui
@@ -128,8 +131,8 @@ function WeaponPreviewWidget:ClosePreview()
 	closePreviewTween.Completed:Connect(function()
 		itemViewportModel = nil
 		viewportFrame:ClearAllChildren()
+		viewportConnection:Disconnect()
 		weaponPreviewGui.Enabled = false
-		WeaponPreviewWidget.viewportConnection:Disconnect()
 		WeaponCustomWidget:CloseCustomization("Skins")
 		WeaponCustomWidget:CloseCustomization("Color")
 	end)
@@ -137,16 +140,19 @@ end
 
 function WeaponPreviewWidget:OpenPreview(weaponID: string, callback)
 	weaponPreviewGui.Enabled = true
+	local camera = Instance.new("Camera")
+	camera.Parent = weaponPreviewGui
+	dtrViewportFrame = DragToRotateViewportFrame.New(viewportFrame, camera)
 	TweenService:Create(itemPreviewFrame, TweenInfo.new(0.363), { Position = UDim2.fromScale(0, 0) }):Play()
 	ShowCustomizationAndEquipButtons()
 	--Set up item frame properties
 	local formattedWeaponName = string.gsub(weaponID, "_", " ")
 	itemInfoFrame.ItemTitleFrame.Title.Text = string.upper(formattedWeaponName)
-	itemInfoFrame.Description.Text = Assets.Models.Weapons.Preview[weaponID]:GetAttribute("Description")
+	itemInfoFrame.Description.Text = ReplicatedStorage.Weapons.Preview[weaponID]:GetAttribute("Description")
 	--Generate world models
-	local worldModel = Instance.new("WorldModel")
-	worldModel.Parent = viewportFrame
-	local weaponModel = Assets.Models.Weapons.Preview[weaponID]:Clone()
+	-- local worldModel = Instance.new("WorldModel")
+	-- worldModel.Parent = viewportFrame
+	local weaponModel = ReplicatedStorage.Weapons.Preview[weaponID]:Clone()
 	--Check if the item is a tool get the model
 	if weaponModel:IsA("Tool") then
 		weaponModel = weaponModel:FindFirstChildOfClass("Model"):Clone()
@@ -158,19 +164,37 @@ function WeaponPreviewWidget:OpenPreview(weaponID: string, callback)
 	--Set up customization
 	WeaponPreviewWidget.itemModel = weaponModel
 	WeaponPreviewWidget.weaponID = weaponID
-	weaponModel.Parent = worldModel
-	itemViewportModel = ViewportModel.new(viewportFrame, camera)
-	itemViewportModel:SetModel(weaponModel)
-	local theta = 0
-	local orientation
-	local cf, size = weaponModel:GetBoundingBox()
-	local distance = itemViewportModel:GetFitDistance(cf.Position)
-	WeaponPreviewWidget.viewportConnection = RunService.RenderStepped:Connect(function(dt)
-		theta = theta + math.rad(20 * dt)
-		orientation = CFrame.fromEulerAnglesYXZ(math.rad(-6), theta, 0)
-		camera.CFrame = CFrame.new(cf.Position) * orientation * CFrame.new(0, 0, distance)
+	-- weaponModel.Parent = worldModel
+
+	dtrViewportFrame:SetModel(weaponModel)
+	dtrViewportFrame.MouseMode = "Default"
+
+	viewportConnection = viewportFrame.InputBegan:Connect(function(inputObject)
+		if
+			inputObject.UserInputType == Enum.UserInputType.MouseButton1
+			or inputObject.UserInputType == Enum.UserInputType.Touch
+		then
+			dtrViewportFrame:BeginDragging()
+
+			inputObject.Changed:Connect(function()
+				if inputObject.UserInputState == Enum.UserInputState.End then
+					dtrViewportFrame:StopDragging()
+				end
+			end)
+		end
 	end)
-	viewportFrame.CurrentCamera = camera
+	-- itemViewportModel = ViewportModel.new(viewportFrame, camera)
+	-- itemViewportModel:SetModel(weaponModel)
+	-- local theta = 0
+	-- local orientation
+	-- local cf, size = weaponModel:GetBoundingBox()
+	-- local distance = itemViewportModel:GetFitDistance(cf.Position)
+	-- WeaponPreviewWidget.viewportConnection = RunService.RenderStepped:Connect(function(dt)
+	-- 	theta = theta + math.rad(20 * dt)
+	-- 	orientation = CFrame.fromEulerAnglesYXZ(math.rad(-6), theta, 0)
+	-- 	camera.CFrame = CFrame.new(cf.Position) * orientation * CFrame.new(0, 0, distance)
+	-- end)
+	-- viewportFrame.CurrentCamera = camera
 end
 
 return WeaponPreviewWidget:Initialize()

@@ -37,7 +37,7 @@ function DestructibleObject:DestroyObject(player)
 	local DataService = Knit.GetService("DataService")
 
 	DataService:incrementIntValue(player, "DestroyedObjects")
-	Knit.GetService("ChallengesService"):CheckForChallengeCompletion(player, "DestroyObjects", 1)
+	Knit.GetService("ChallengesService"):UpdateChallengeProgression(player, "DestroyObjects", 1)
 	--Setup proximity prompts
 	for index, child in pairs(self.Instance.Interactable:GetChildren()) do
 		if child:IsA("BasePart") then
@@ -169,6 +169,9 @@ function DestructibleObject:ConstructObject(player)
 			child.CanCollide = true
 		end
 	end
+
+	warn("Object constructed by " .. player.Name .. " in " .. buildTime .. " seconds")
+	Knit.GetService("ChallengesService"):UpdateChallengeProgression(player, "BuildObjects", 1)
 end
 
 function DestructibleObject:CancelConstruction()

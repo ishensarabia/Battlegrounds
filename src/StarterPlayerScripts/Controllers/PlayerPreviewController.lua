@@ -61,7 +61,7 @@ function PlayerPreviewController:SpawnWeaponInCharacterMenu()
 	--Get equipped weapon
 	DataService:GetKeyValue("Loadout"):andThen(function(loadout : table)
 		if loadout.WeaponEquipped then
-			weaponEquipped = Assets.Models.Weapons[loadout.WeaponEquipped]:Clone()
+			weaponEquipped = ReplicatedStorage.Weapons[loadout.WeaponEquipped]:Clone()
 			WeaponCustomWidget:ApplySavedCustomization(loadout.WeaponEquipped, weaponEquipped:FindFirstChildOfClass("Model"))
 			weaponEquipped.Parent = playerCharacter.Parent
 			weaponEquipped:FindFirstChildWhichIsA("Model", true).PrimaryPart.CFrame = playerCharacter.PrimaryPart.CFrame

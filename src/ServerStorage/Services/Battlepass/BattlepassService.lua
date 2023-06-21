@@ -51,14 +51,14 @@ function BattlepassService.Client:GetSeasonExperince(player)
 	return self.Server:GetSeasonExperience(player)
 end
 
-function BattlepassService:AddExperience(player, amount: number)
+function BattlepassService:AddBattlepassExperience(player, amount: number)
 	local battlepassData = self._dataService:GetKeyValue(player, "Battlepass")
     battlepassData[battlepassData.currentSeason].Experience = math.clamp(battlepassData[battlepassData.currentSeason].Experience + amount, 0, self:GetExperienceNeededForNextLevel(player))
 	self:CheckLevelUp(player)
 end
 
-function BattlepassService.Client:AddExperience(player, amount: number)
-    return self.Server:AddExperience(player, amount)
+function BattlepassService.Client:AddBattlepassExperience(player, amount: number)
+    return self.Server:AddBattlepassExperience(player, amount)
 end
 
 function BattlepassService:GetExperienceNeededForNextLevel(player)

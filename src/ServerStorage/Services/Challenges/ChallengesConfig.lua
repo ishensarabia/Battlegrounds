@@ -13,7 +13,7 @@ ChallengesConfig.MaxChallengesPerType = {
 ChallengesConfig.RewardTypeIcons = {
 	BattleCoins = "rbxassetid://10835882861",
 	BattleGems = "rbxassetid://10835980573",
-	BattlePassExp = "rbxassetid://13474525765",
+	BattlepassExp = "rbxassetid://13474525765",
 }
 
 ChallengesConfig.challenges = {
@@ -33,7 +33,7 @@ ChallengesConfig.challenges = {
 					rewardAmount = 10,
 				},
 				{
-					rewardType = "BattlePassExp",
+					rewardType = "BattlepassExp",
 					rewardAmount = 100,
 				},
 			},
@@ -53,7 +53,7 @@ ChallengesConfig.challenges = {
 					rewardAmount = 10,
 				},
 				{
-					rewardType = "BattlePassExp",
+					rewardType = "BattlepassExp",
 					rewardAmount = 100,
 				},
 			},
@@ -73,7 +73,7 @@ ChallengesConfig.challenges = {
 					rewardAmount = 10,
 				},
 				{
-					rewardType = "BattlePassExp",
+					rewardType = "BattlepassExp",
 					rewardAmount = 100,
 				},
 			},
@@ -93,7 +93,7 @@ ChallengesConfig.challenges = {
 					rewardAmount = 10,
 				},
 				{
-					rewardType = "BattlePassExp",
+					rewardType = "BattlepassExp",
 					rewardAmount = 100,
 				},
 			},
@@ -113,7 +113,7 @@ ChallengesConfig.challenges = {
 					rewardAmount = 10,
 				},
 				{
-					rewardType = "BattlePassExp",
+					rewardType = "BattlepassExp",
 					rewardAmount = 100,
 				},
 			},
@@ -133,7 +133,7 @@ ChallengesConfig.challenges = {
 					rewardAmount = 10,
 				},
 				{
-					rewardType = "BattlePassExp",
+					rewardType = "BattlepassExp",
 					rewardAmount = 100,
 				},
 			},
@@ -153,7 +153,7 @@ ChallengesConfig.challenges = {
 					rewardAmount = 10,
 				},
 				{
-					rewardType = "BattlePassExp",
+					rewardType = "BattlepassExp",
 					rewardAmount = 100,
 				},
 			},
@@ -173,7 +173,7 @@ ChallengesConfig.challenges = {
 					rewardAmount = 10,
 				},
 				{
-					rewardType = "BattlePassExp",
+					rewardType = "BattlepassExp",
 					rewardAmount = 100,
 				},
 			},
@@ -193,7 +193,7 @@ ChallengesConfig.challenges = {
 					rewardAmount = 10,
 				},
 				{
-					rewardType = "BattlePassExp",
+					rewardType = "BattlepassExp",
 					rewardAmount = 100,
 				},
 			},
@@ -213,7 +213,7 @@ ChallengesConfig.challenges = {
 					rewardAmount = 30,
 				},
 				{
-					rewardType = "BattlePassExp",
+					rewardType = "BattlepassExp",
 					rewardAmount = 330,
 				},
 			},
@@ -233,7 +233,7 @@ ChallengesConfig.challenges = {
 					rewardAmount = 20,
 				},
 				{
-					rewardType = "BattlePassExp",
+					rewardType = "BattlepassExp",
 					rewardAmount = 300,
 				},
 			},
@@ -256,7 +256,7 @@ ChallengesConfig.challenges = {
 					rewardAmount = 100,
 				},
 				{
-					rewardType = "BattlePassExp",
+					rewardType = "BattlepassExp",
 					rewardAmount = 1000,
 				},
 			},
@@ -276,7 +276,7 @@ ChallengesConfig.challenges = {
 					rewardAmount = 100,
 				},
 				{
-					rewardType = "BattlePassExp",
+					rewardType = "BattlepassExp",
 					rewardAmount = 1000,
 				},
 			},
@@ -296,7 +296,7 @@ ChallengesConfig.challenges = {
 					rewardAmount = 100,
 				},
 				{
-					rewardType = "BattlePassExp",
+					rewardType = "BattlepassExp",
 					rewardAmount = 1000,
 				},
 			},
@@ -316,7 +316,7 @@ ChallengesConfig.challenges = {
 					rewardAmount = 100,
 				},
 				{
-					rewardType = "BattlePassExp",
+					rewardType = "BattlepassExp",
 					rewardAmount = 1000,
 				},
 			},
@@ -336,7 +336,7 @@ ChallengesConfig.challenges = {
 					rewardAmount = 100,
 				},
 				{
-					rewardType = "BattlePassExp",
+					rewardType = "BattlepassExp",
 					rewardAmount = 1000,
 				},
 			},
@@ -356,7 +356,7 @@ ChallengesConfig.challenges = {
 					rewardAmount = 100,
 				},
 				{
-					rewardType = "BattlePassExp",
+					rewardType = "BattlepassExp",
 					rewardAmount = 1000,
 				},
 			},

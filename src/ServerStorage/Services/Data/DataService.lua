@@ -26,6 +26,14 @@ local function DeepCopy(original)
 	return copy
 end
 
+local function getDictionaryLegnth(t)
+	local n = 0
+	for _ in pairs(t) do
+		n = n + 1
+	end
+	return n
+end
+
 local function MergeDataWithTemplate(data, template)
 	for k, v in template do
 		if type(k) == "string" then -- Only string keys will be merged
@@ -45,7 +53,7 @@ end
 function DataService:KnitStart()
 	-- Initialize profiles table to store
 	self.profiles = {}
-	self.profileStore = ProfileService.GetProfileStore("Development_Alpha_0.22", DataConfig.profileTemplate)
+	self.profileStore = ProfileService.GetProfileStore("Development_Alpha_0.31", DataConfig.profileTemplate)
 	Players.PlayerRemoving:Connect(function(player)
 		self:onPlayerRemoving(player)
 	end)
@@ -81,37 +89,89 @@ function DataService.Client:GetKeyValue(player, key: string)
 	return self.Server:GetKeyValue(player, key)
 end
 
-function DataService.Client:ApplyWeaponCustomization(
+function DataService.Client:SaveWeaponCustomization(
 	player,
 	weaponID: string,
-	customPartNumber: number,
+	customPartName: string,
 	customizationValue,
 	customizationCategory: string
 )
 	if customizationValue then
 		local weaponData = self.Server:GetKeyValue(player, "Weapons")
+
 		if customizationCategory == "Color" then
-			weaponData[weaponID].Customization[customPartNumber] = {
-				Color = { Red = customizationValue.R, Green = customizationValue.G, Blue = customizationValue.B },
-			}
+			--Check if the player removed the color
+			if customizationValue == "RemoveColor" then
+				weaponData[weaponID].Customization[customPartName].Color = nil
+			else
+				--Check if the customization has a skin to not overwrite it
+				if weaponData[weaponID].Customization[customPartName] then
+					if weaponData[weaponID].Customization[customPartName].Skin then
+						weaponData[weaponID].Customization[customPartName] = {
+							Color = customizationValue,
+							Skin = weaponData[weaponID].Customization[customPartName].Skin,
+						}
+					else
+						weaponData[weaponID].Customization[customPartName] = {
+							Color = customizationValue,
+						}
+					end
+				else
+					weaponData[weaponID].Customization[customPartName] = {
+						Color = customizationValue,
+					}
+				end
+			end
 		end
+
+		if customizationCategory == "Skins" then
+			--Check if the player removed the skin
+			if customizationValue == "RemoveSkin" then
+				weaponData[weaponID].Customization[customPartName].Skin = nil
+			else
+				--Check if the customization has a color to not overwrite it
+				if weaponData[weaponID].Customization[customPartName] then
+					if weaponData[weaponID].Customization[customPartName].Color then
+						weaponData[weaponID].Customization[customPartName] = {
+							Color = weaponData[weaponID].Customization[customPartName].Color,
+							Skin = customizationValue,
+						}
+					else
+						weaponData[weaponID].Customization[customPartName] = {
+							Skin = customizationValue,
+						}
+					end
+				else
+					weaponData[weaponID].Customization[customPartName] = {
+						Skin = customizationValue,
+					}
+				end
+			end
+		end
+
 		warn(weaponData)
+		self.Server:SetKeyValue(player, "Weapons", weaponData)
 	end
 end
 
 function DataService:GetWeaponCustomization(player, weaponID: string)
-	local profile = self.profiles[player]
-	local weaponData = profile.Data.Weapons
+	local weaponData = self:GetKeyValue(player, "Weapons")
 	local weaponCustomization = {}
-	if weaponData[weaponID].Customization and #weaponData[weaponID].Customization > 0 then
-		for partNumber, customizationValue in weaponData[weaponID].Customization do
-			if customizationValue.Color then
-				weaponCustomization[partNumber] = {
+	local dictionaryLength = getDictionaryLegnth(weaponData[weaponID].Customization)
+	if weaponData[weaponID].Customization and dictionaryLength > 0 then
+		for partName, customizationData: table in weaponData[weaponID].Customization do
+			if customizationData.Color then
+				weaponCustomization[partName] = {
 					Color = Color3.new(
-						customizationValue.Color.Red,
-						customizationValue.Color.Green,
-						customizationValue.Color.Blue
+						customizationData.Color.Red,
+						customizationData.Color.Green,
+						customizationData.Color.Blue
 					),
+				}
+			end
+			if customizationData.Skin then
+				weaponCustomization[partName] = {
+					Skin = customizationData.Skin,
 				}
 			end
 		end
@@ -122,15 +182,21 @@ end
 function DataService.Client:GetWeaponCustomization(player, weaponID: string)
 	local weaponData = self.Server:GetKeyValue(player, "Weapons")
 	local weaponCustomization = {}
-	if weaponData[weaponID].Customization and #weaponData[weaponID].Customization > 0 then
-		for partNumber, customizationValue in weaponData[weaponID].Customization do
-			if customizationValue.Color then
-				weaponCustomization[partNumber] = {
+	local dictionaryLength = getDictionaryLegnth(weaponData[weaponID].Customization)
+	if weaponData[weaponID].Customization and dictionaryLength > 0 then
+		for partName, customizationData: table in weaponData[weaponID].Customization do
+			if customizationData.Color then
+				weaponCustomization[partName] = {
 					Color = Color3.new(
-						customizationValue.Color.Red,
-						customizationValue.Color.Green,
-						customizationValue.Color.Blue
+						customizationData.Color.Red,
+						customizationData.Color.Green,
+						customizationData.Color.Blue
 					),
+				}
+			end
+			if customizationData.Skin then
+				weaponCustomization[partName] = {
+					Skin = customizationData.Skin,
 				}
 			end
 		end
@@ -211,6 +277,46 @@ function DataService:AddBattlecoins(player, amount: number)
 	end
 end
 
+function DataService:AddCrate(player, crateName: string, needsValue: boolean?)
+	local profile = self.profiles[player]
+	if profile then
+		if profile.Data.Crates[crateName] then
+			profile.Data.Crates[crateName] += 1
+		else
+			profile.Data.Crates[crateName] = 1
+		end
+	end
+
+	if needsValue then
+		return profile.Data.Crates[crateName]
+	end
+end
+
+function DataService:AddSkin(player, skinName: string)
+	local profile = self.profiles[player]
+	if profile then
+		if profile.Data.Skins[skinName] then
+			profile.Data.Skins[skinName] += 1
+		else
+			profile.Data.Skins[skinName] = 1
+		end
+	end
+end
+
+function DataService:RemoveCrate(player, crateName: string, needsValue: boolean?)
+	local profile = self.profiles[player]
+	if profile then
+		if profile.Data.Crates[crateName] then
+			profile.Data.Crates[crateName] -= 1
+		else
+			profile.Data.Crates[crateName] = 0
+		end
+	end
+
+	if needsValue then
+		return profile.Data.Crates[crateName]
+	end
+end
 
 function DataService:incrementIntValue(player, key: string, amount: number?)
 	assert(type(amount) == "number" or not amount, "Amount is not a number, please verify set parameters")

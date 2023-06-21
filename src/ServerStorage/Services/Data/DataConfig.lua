@@ -32,6 +32,8 @@ DataConfig.profileTemplate = {
 			Customization = {}
 		},
 	},
+	Skins = {},
+	Colors = {},
 	Rank = 0,
 	Abilities = {},
 	Knockouts = 0,
@@ -56,7 +58,8 @@ DataConfig.profileTemplate = {
 	Challenges = {
 		Weekly = {},
 		Daily = {},
-	}
+	},
+	Crates = {}
 }
 
 DataConfig.weaponTemplate = {

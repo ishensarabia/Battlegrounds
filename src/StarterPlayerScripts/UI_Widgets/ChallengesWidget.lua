@@ -15,7 +15,7 @@ local ChallengesWidget = {}
 local REWARD_TYPE_ICONS = {
 	BattleCoins = "rbxassetid://10835882861",
 	BattleGems = "rbxassetid://10835980573",
-	BattlePassExp = "rbxassetid://13474525765",
+	BattlepassExp = "rbxassetid://13474525765",
 }
 --Screen guis
 local ChallengesGui
@@ -33,7 +33,7 @@ local function CreateChallengeFrame(challenge: table, challengeType: string, ind
 	--Generate the rewards
 	for i, reward: table in challenge.rewards do
 		local rewardFrame = Assets.GuiObjects.Frames.ChallengeRewardFrame:Clone()
-		rewardFrame.RewardImage.Image = REWARD_TYPE_ICONS[reward.rewardType]
+		rewardFrame.RewardImage.Image = REWARD_TYPE_ICONS[reward.rewardType] or ""
 		rewardFrame.RewardAmount.Text = reward.rewardAmount
 		rewardFrame.LayoutOrder = i
 		rewardFrame.Parent = challengeFrame.RewardsFrame

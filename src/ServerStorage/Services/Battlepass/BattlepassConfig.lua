@@ -22,6 +22,7 @@ BattlepassConfig.Rarity = {
 	Rare = "Rare",
 	Epic = "Epic",
 	Legendary = "Legendary",
+	Mythic = "Mythic",
 }
 
 --Images
@@ -34,10 +35,11 @@ BattlepassConfig.RewardIcons = {
 
 --Rarity to color of rewards dictionary
 BattlepassConfig.RarityColors = {
-	[BattlepassConfig.Rarity.Common] = Color3.fromRGB(52, 130, 247),
-	[BattlepassConfig.Rarity.Rare] = Color3.fromRGB(0, 255, 0),
-	[BattlepassConfig.Rarity.Epic] = Color3.fromRGB(255, 208, 0),
-	[BattlepassConfig.Rarity.Legendary] = Color3.fromRGB(255, 0, 0),
+	[BattlepassConfig.Rarity.Common] = Color3.fromRGB(39, 180, 126),
+	[BattlepassConfig.Rarity.Rare] = Color3.fromRGB(0, 132, 255),
+	[BattlepassConfig.Rarity.Epic] = Color3.fromRGB(223, 226, 37),
+	[BattlepassConfig.Rarity.Legendary] = Color3.fromRGB(174, 56, 204),
+	[BattlepassConfig.Rarity.Mythic] = Color3.fromRGB(184, 17, 17),
 }
 
 BattlepassConfig.seasonDevProdctsDictionary = {
