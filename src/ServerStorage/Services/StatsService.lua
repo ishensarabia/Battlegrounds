@@ -31,7 +31,7 @@ function StatsService:KnitStart()
 					character:SetAttribute("UsingStamina", false)
 				end
 				if stamina < MAX_STAMINA and not character:GetAttribute("UsingStamina") then
-					character:SetAttribute("Stamina", math.clamp(stamina + 0.05, 0, MAX_STAMINA))
+					character:SetAttribute("Stamina", math.clamp(stamina + 0.1, 0, MAX_STAMINA))
 				end
 			end)
 		end)
@@ -84,6 +84,21 @@ function StatsService:ExecuteAction(player, actionName: string)
 		end
 		character:SetAttribute("UsingStamina", false)
 	end
+	if actionName == "Slide" then
+		if stamina > 0 then
+			character:SetAttribute("Stamina", math.clamp(stamina - 0.3, 0, MAX_STAMINA))
+			character:SetAttribute("UsingStamina", true)
+		end
+	end
+end
+
+function StatsService:StopAction(player, actionName : string)
+	local character = player.Character
+	character:SetAttribute("UsingStamina", false)
+end
+
+function StatsService.Client:StopAction(player, actionName : string)
+	self.Server:StopAction(player, actionName)
 end
 
 function StatsService.Client:ExecuteAction(player, actionName: string)

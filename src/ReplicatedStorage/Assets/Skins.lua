@@ -1,34 +1,175 @@
 local skins = {
-    ["Alter-Ego"] = "rbxassetid://13643596771",
-	Venomus = "rbxassetid://358113752",
-	["All-Seeing Eye"] = "rbxassetid://358279560",
-	["Abstract Peach"] = "rbxassetid://13655041050",
-	["Royal Ornate"] = "rbxassetid://13620123374",
-	Pineapple = "rbxassetid://13655576502",
-	Duckies = "rbxassetid://358413518",
-	Totopos = "rbxassetid://358284720",
-	["Digital Disturbance"] = "rbxassetid://358113994",
-	Connections = "rbxassetid://358209640",
-	["Party Time"] = "rbxassetid://358113881",
-	Cherries = "rbxassetid://13662981938",
-	Steampunk = "rbxassetid://13663622687",
-	Darkness = "rbxassetid://13664411385",
-	["Void Scars"] = "rbxassetid://13664464931",
-	Constellation = "rbxassetid://13664532889",
-	Bowies = "rbxassetid://13664668442",
-	["Industrial Space"] = "rbxassetid://13664822366",
-	["Coffins & Skulls"] = "rbxassetid://13665000362",
-	["Rainbow Bats"] = "rbxassetid://13664947705",
-	["Sugar-Haze"] = "rbxassetid://13665979274",
-	["Forest Camo"] = "rbxassetid://13666123351",
-	["Snow Camo"] = "rbxassetid://13667523981",
-	["Desert Camo"] = "rbxassetid://13667570547",
-	["Shark Camo"] = "rbxassetid://13667632021",
-	["Punk Spirit"] = "rbxassetid://13667613116",
-	["Ghost Camo"] = "rbxassetid://13667665573",
-	Kraken = "rbxassetid://390097022",
-	["Monkey Rage"] = "rbxassetid://13667787552",
-	Dragonfruits = "rbxassetid://13667938944",
+    AlterEgo = {
+        skinID = "rbxassetid://13643596771",
+        rarity = "Rare",
+        name = "Alter-Ego",
+    },
+    Venomus = {
+        skinID = "rbxassetid://358113752",
+        rarity = "Mythic",
+        name = "Venomus",
+    },
+    AllSeeingEye = {
+        skinID = "rbxassetid://358279560",
+        rarity = "Mythic",
+        name = "All-Seeing Eye",
+    },
+    AbstractPeach = {
+        skinID = "rbxassetid://13655041050",
+        rarity = "Legendary",
+        name = "Abstract Peach",
+    },
+    RoyalOrnate = {
+        skinID = "rbxassetid://13620123374",
+        rarity = "Epic",
+        name = "Royal Ornate",
+    },
+    Pineapple = {
+        skinID = "rbxassetid://13655576502",
+        rarity = "Common",
+        name = "Pineapple",
+    },
+    Duckies = {
+        skinID = "rbxassetid://358413518",
+        rarity = "Common",
+        name = "Duckies",
+    },
+    Totopos = {
+        skinID = "rbxassetid://358284720",
+        rarity = "Rare",
+        name = "Totopos",
+    },
+    DigitalDisturbance = {
+        skinID = "rbxassetid://358113994",
+        rarity = "Epic",
+        name = "Digital Disturbance",
+    },
+    Connections = {
+        skinID = "rbxassetid://358209640",
+        rarity = "Epic",
+        name = "Connections",
+    },
+    PartyTime = {
+        skinID = "rbxassetid://358113881",
+        rarity = "Rare",
+        name = "Party Time",
+    },
+    Cherries = {
+        skinID = "rbxassetid://13662981938",
+        rarity = "Common",
+        name = "Cherries",
+    },
+    Steampunk = {
+        skinID = "rbxassetid://13663622687",
+        rarity = "Rare",
+        name = "Steampunk",
+    },
+    Darkness = {
+        skinID = "rbxassetid://13664411385",
+        rarity = "Common",
+        name = "Darkness",
+    },
+    VoidScars = {
+        skinID = "rbxassetid://13664464931",
+        rarity = "Legendary",
+        name = "Void Scars",
+    },
+    Constellation = {
+        skinID = "rbxassetid://13664532889",
+        rarity = "Rare",
+        name = "Constellation",
+    },
+    Bowies = {
+        skinID = "rbxassetid://13664668442",
+        rarity = "Common",
+        name = "Bowies",
+    },
+    IndustrialSpace = {
+        skinID = "rbxassetid://13664822366",
+        rarity = "Rare",
+        name = "Industrial Space",
+    },
+    CoffinsSkulls = {
+        skinID = "rbxassetid://13665000362",
+        rarity = "Epic",
+        name = "Coffins & Skulls",
+    },
+    RainbowBats = {
+        skinID = "rbxassetid://13664947705",
+        rarity = "Rare",
+        name = "Rainbow Bats",
+    },
+    SugarHaze = {
+        skinID = "rbxassetid://13665979274",
+        rarity = "Epic",
+        name = "Sugar-Haze",
+    },
+    ForestCamo = {
+        skinID = "rbxassetid://13666123351",
+        rarity = "Common",
+        name = "Forest Camo",
+    },
+    SnowCamo = {
+        skinID = "rbxassetid://13667523981",
+        rarity = "Common",
+        name = "Snow Camo",
+    },
+    DesertCamo = {
+        skinID = "rbxassetid://13667570547",
+        rarity = "Common",
+        name = "Desert Camo",
+    },
+    SharkCamo = {
+        skinID = "rbxassetid://13667632021",
+        rarity = "Epic",
+        name = "Shark Camo",
+    },
+    PunkSpirit = {
+        skinID = "rbxassetid://13667613116",
+        rarity = "Legendary",
+        name = "Punk Spirit",
+    },
+    GhostCamo = {
+        skinID = "rbxassetid://13667665573",
+        rarity = "Legendary",
+        name = "Ghost Camo",
+    },
+    Kraken = {
+        skinID = "rbxassetid://390097022",
+        rarity = "Mythic",
+        name = "Kraken",
+    },
+    MonkeyRage = {
+        skinID = "rbxassetid://13667787552",
+        rarity = "Legendary",
+        name = "Monkey Rage",
+    },
+    Dragonfruits = {
+        skinID = "rbxassetid://13667938944",
+        rarity = "Rare",
+        name = "Dragonfruits",
+    },
+	Melancoly = {
+		skinID = "rbxassetid://13829565984",
+		rarity = "Legendary",
+		name = "Melancoly",
+	},
+    MayanFigures = {
+        skinID = "rbxassetid://13867946001",
+        rarity = "Mythic",
+        name = "Mayan Figures",
+    },
+    SpiderSense = {
+        skinID = "rbxassetid://13874149361",
+        rarity = "Epic",
+        name = "Spider Sense",
+    },
+    SpiderSpirit = {
+        skinID = "rbxassetid://13874336571",
+        rarity = "Legendary",
+        name = "Spider Spirit",
+    }
 }
+
 
 return skins

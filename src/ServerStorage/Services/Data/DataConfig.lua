@@ -1,7 +1,6 @@
 local DataConfig = {}
 --External configs
 DataConfig.BattlepassConfig = require(script.Parent.Parent.Battlepass.BattlepassConfig)
-
 DataConfig.profileTemplate = {
 	BattleCoins = 0,
 	BattleGems = 0,
@@ -10,26 +9,25 @@ DataConfig.profileTemplate = {
 			Owned = true,
 			Rank = 0,
 			Prestige = "Beginner",
-			Customization = {}
-					
+			Customization = {},
 		},
 		Crossbow = {
 			Owned = false,
 			Rank = 0,
 			Prestige = "Beginner",
-			Customization = {}
+			Customization = {},
 		},
 		Pistol = {
 			Owned = true,
 			Rank = 0,
 			Prestige = "Beginner",
-			Customization = {}
+			Customization = {},
 		},
 		["Rail-Rifle"] = {
 			Owned = true,
 			Rank = 0,
 			Prestige = "Beginner",
-			Customization = {}
+			Customization = {},
 		},
 	},
 	Skins = {},
@@ -46,20 +44,33 @@ DataConfig.profileTemplate = {
 		["Music"] = true,
 	},
 	DevProducts = {},
-	Loadout = {},
+	Loadout = {
+		WeaponEquipped = "Pistol",
+	},
 	Battlepass = {
 		currentSeason = "Season_1",
 		Season_1 = {
 			Level = 1,
 			Experience = 0,
 			Owned = false,
+			ClaimedLevels = {},
 		},
 	},
 	Challenges = {
 		Weekly = {},
 		Daily = {},
 	},
-	Crates = {}
+	Crates = {},
+	Emotes = {
+		EmotesOwned = {
+			"Sleep",
+			"Club Dance",
+		},
+		EmotesEquipped = {
+
+		},
+
+	},
 }
 
 DataConfig.weaponTemplate = {
@@ -71,7 +82,7 @@ DataConfig.weaponTemplate = {
 DataConfig.powerTemplate = {
 	Customization = {},
 
-	Upgrades = {}
+	Upgrades = {},
 }
 
 return DataConfig

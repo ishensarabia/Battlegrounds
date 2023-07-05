@@ -4,6 +4,8 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local TweenService = game:GetService("TweenService")
 local Assets = ReplicatedStorage.Assets
 local Knit = require(ReplicatedStorage.Packages.Knit)
+--Modules
+local DragToRotateViewportFrame = require(ReplicatedStorage.Source.Modules.Util.DragToRotateViewportFrame)
 --Main
 local BattlepassWidget = {}
 local player = Players.LocalPlayer
@@ -11,6 +13,10 @@ local player = Players.LocalPlayer
 local ButtonWidget = require(game.StarterPlayer.StarterPlayerScripts.Source.UI_Widgets.ButtonWidget)
 --Services
 local BattlepassService = Knit.GetService("BattlepassService")
+local DataService = Knit.GetService("DataService")
+--Controllers
+local UIController = Knit.GetController("UIController")
+local WeaponCustomizationController = Knit.GetController("WeaponCustomizationController")
 --variables
 local battlepassConfig
 local currentRewardFrameInPreview
@@ -25,6 +31,9 @@ local rewardsFrame
 local buyButtonFrame
 local giftButtonFrame
 local battlepassLabelFrame
+local viewportFrame
+--Connections
+local viewportConnection
 
 function BattlepassWidget:Initialize()
 	--Initialize the screen guis
@@ -57,6 +66,7 @@ function BattlepassWidget:Initialize()
 	rewardsFrame = BattlepassGui.MainFrame.RewardsFrame
 	buyButtonFrame = BattlepassGui.MainFrame.BuyButtonFrame
 	giftButtonFrame = BattlepassGui.MainFrame.GiftButtonFrame
+	viewportFrame = BattlepassPreviewGui.MainFrame.PreviewViewportFrame
 	--Disable the screen guis
 	BattlepassPreviewGui.Enabled = false
 	BattlepassGui.Enabled = false
@@ -73,10 +83,44 @@ function BattlepassWidget:Initialize()
 	BattlepassWidget.MainFrame.Position = UDim2.fromScale(1, 0)
 	--Connect any events
 	BattlepassService.LevelUp:Connect(function(newLevel)
+		--Make sure the reward frame exists
+		if not rewardsFrame[newLevel] then
+			return
+		end
 		--Assign the current level
 		currentLevelFrame.BarFrame.currentLevelText.Text = newLevel
 		--Assign the next level
 		currentLevelFrame.BarFrame.nextLevelText.Text = newLevel + 1
+		rewardsFrame[newLevel].ClaimFrame.Visible = true
+		local shineTween = UIController:AnimateShineForFrame(rewardsFrame[newLevel].ClaimFrame, false, true)
+		--Connect the claim button
+		rewardsFrame[newLevel].ClaimFrame.ClaimButton.Activated:Connect(function()
+			ButtonWidget:OnActivation(rewardsFrame[newLevel].ClaimFrame.ClaimButton, function()
+				BattlepassService:ClaimBattlepassReward(newLevel)
+				rewardsFrame[newLevel].ClaimFrame.ClaimButton:Destroy()
+				UIController:StopAnimationForTween(shineTween)
+				rewardsFrame[newLevel].ClaimFrame.ClaimedText.Visible = true
+			end)
+		end)
+	end)
+
+	BattlepassService.BattlepassExperienceAdded:Connect(function(currentSeasonData)
+		--Update the progress bars
+		BattlepassService:GetExperienceNeededForNextLevel():andThen(function(experienceNeeded)
+			currentLevelFrame.BarFrame.LevelBar.Size = UDim2.fromScale(
+				(currentSeasonData.Experience / experienceNeeded) * 1,
+				currentLevelFrame.BarFrame.LevelBar.Size.Y.Scale
+			)
+			----Fill the progress bar of previous levels
+			for i = 1, currentSeasonData.Level do
+				if not currentSeasonData.ClaimedLevels[i] and currentSeasonData.Level >= i then
+					rewardsFrame[i].ProgressBarFrame.BarFrame.ProgressBar.Size = UDim2.fromScale(1, 0.9)
+					rewardsFrame[i].ClaimFrame.Visible = true
+				end
+			end
+			--Assign the current xp
+			currentLevelFrame.BarFrame.XPText.Text = currentSeasonData.Experience .. "/" .. experienceNeeded
+		end)
 	end)
 
 	buyButtonFrame.button.Activated:Connect(function()
@@ -180,80 +224,248 @@ function BattlepassWidget:CloseGiftBattlepass()
 end
 
 function BattlepassWidget:DisplayPreview(rewardInfo: table, level)
-	BattlepassWidget.CurrentRewardItem = nil
-	--Assign the reward type to the preview frame
-	BattlepassPreviewGui.MainFrame.PreviewDescriptionFrame.RewardType.Text = rewardInfo.rewardType:gsub("_", " ")
-	--Assign the correct reward name
-	BattlepassPreviewGui.MainFrame.PreviewDescriptionFrame.RewardName.Text = rewardInfo.rewardType:gsub("_", " ")
-	--Assign the correct reward description
-	BattlepassPreviewGui.MainFrame.PreviewDescriptionFrame.RewardDescription.Text =
+	--Clean up viewport connection after displaying a new preview
+	if viewportConnection then
+		BattlepassPreviewGui.MainFrame.PreviewViewportFrame:ClearAllChildren()
+		viewportConnection:Disconnect()
+	end
+	if rewardInfo.rewardType == battlepassConfig.RewardTypes.Skin then
+		BattlepassPreviewGui.MainFrame.PreviewViewportFrame.Visible = true
+		BattlepassPreviewGui.MainFrame.RewardImage.Visible = false
+		BattlepassWidget.CurrentRewardItem = nil
+		--Assign the reward type to the preview frame
+		BattlepassPreviewGui.MainFrame.PreviewDescriptionFrame.RewardType.Text = rewardInfo.rewardType:gsub("_", " ")
+		--Assign the correct reward name
+		BattlepassPreviewGui.MainFrame.PreviewDescriptionFrame.RewardName.Text =
+			rewardInfo.rewardSkin.name:gsub("_", " ")
+		--Assign the correct reward description
+		BattlepassPreviewGui.MainFrame.PreviewDescriptionFrame.RewardDescription.Text =
+			battlepassConfig.RewardDescriptions[rewardInfo.rewardType]
+		--Assign the rarity text and color
+		BattlepassPreviewGui.MainFrame.PreviewDescriptionFrame.RewardRarity.Text = rewardInfo.rarity
+		BattlepassPreviewGui.MainFrame.PreviewDescriptionFrame.RewardRarity.TextColor3 = rewardInfo.rarityColor
+		--Set the background color of the item frame to the rarity color
+		BattlepassPreviewGui.MainFrame.BackgroundColor3 = rewardInfo.rarityColor
+		--Assign the reward required level
+		BattlepassPreviewGui.MainFrame.PreviewDescriptionFrame.RewardRequirement.Text = "Required level " .. level
+		--Generate the weapon model preview with the skin and parent it to the viewportFrame
+		DataService:GetLoadout():andThen(function(loadout: table)
+			local weaponModel = WeaponCustomizationController:CreateWeaponPreviewWithSkin(
+				loadout.WeaponEquipped,
+				rewardInfo.rewardSkin.skinID
+			)
+			--create the camera
+			local camera = Instance.new("Camera")
+			camera.Parent = BattlepassGui
+			local dtrViewportFrame = DragToRotateViewportFrame.New(viewportFrame, camera)
+
+			dtrViewportFrame:SetModel(weaponModel)
+			dtrViewportFrame.MouseMode = "Default"
+
+			viewportConnection = viewportFrame.InputBegan:Connect(function(inputObject)
+				if
+					inputObject.UserInputType == Enum.UserInputType.MouseButton1
+					or inputObject.UserInputType == Enum.UserInputType.Touch
+				then
+					dtrViewportFrame:BeginDragging()
+
+					inputObject.Changed:Connect(function()
+						if inputObject.UserInputState == Enum.UserInputState.End then
+							dtrViewportFrame:StopDragging()
+						end
+					end)
+				end
+			end)
+		end)
+	elseif rewardInfo.rewardType == battlepassConfig.RewardTypes.Crate then
+		BattlepassPreviewGui.MainFrame.PreviewViewportFrame.Visible = true
+		BattlepassPreviewGui.MainFrame.RewardImage.Visible = false
+		BattlepassWidget.CurrentRewardItem = nil
+		--Assign the reward type to the preview frame
+		BattlepassPreviewGui.MainFrame.PreviewDescriptionFrame.RewardType.Text = rewardInfo.rewardType:gsub("_", " ")
+		--Assign the correct reward name
+		BattlepassPreviewGui.MainFrame.PreviewDescriptionFrame.RewardName.Text = rewardInfo.crateName:gsub("_", " ")
+		--Assign the correct reward description
+		BattlepassPreviewGui.MainFrame.PreviewDescriptionFrame.RewardDescription.Text =
 		battlepassConfig.RewardDescriptions[rewardInfo.rewardType]
-	--Assign the rarity text and color
-	BattlepassPreviewGui.MainFrame.PreviewDescriptionFrame.RewardRarity.Text = rewardInfo.rarity
-	BattlepassPreviewGui.MainFrame.PreviewDescriptionFrame.RewardRarity.TextColor3 = rewardInfo.rarityColor
-	--Set the background color of the item frame to the rarity color
-	BattlepassPreviewGui.MainFrame.BackgroundColor3 = rewardInfo.rarityColor
-	--Assign the reward required level
-	BattlepassPreviewGui.MainFrame.PreviewDescriptionFrame.RewardRequirement.Text = "Required level " .. level
-	--Detect the type of reward and display the correct preview (display on viewportframe or display on image label)
-	if
-		rewardInfo.rewardType == battlepassConfig.RewardTypes.BattleCoins
-		or rewardInfo.rewardType == battlepassConfig.RewardTypes.BattleGems
-		or rewardInfo.rewardType == battlepassConfig.RewardTypes.Experience_Boost
-	then
+		--Assign the rarity text and color
+		BattlepassPreviewGui.MainFrame.PreviewDescriptionFrame.RewardRarity.Text = rewardInfo.rarity
+		BattlepassPreviewGui.MainFrame.PreviewDescriptionFrame.RewardRarity.TextColor3 = rewardInfo.rarityColor
+		--Set the background color of the item frame to the rarity color
+		BattlepassPreviewGui.MainFrame.BackgroundColor3 = rewardInfo.rarityColor
+		--Assign the reward required level
+		BattlepassPreviewGui.MainFrame.PreviewDescriptionFrame.RewardRequirement.Text = "Required level " .. level
+		--Get the crate model
+		local crateModel = Assets.Models.Crates[rewardInfo.crateName]:Clone()
+		--create the camera
+		local camera = Instance.new("Camera")
+		camera.Parent = BattlepassGui
+		local dtrViewportFrame = DragToRotateViewportFrame.New(viewportFrame, camera)
+
+		dtrViewportFrame:SetModel(crateModel)
+		dtrViewportFrame.MouseMode = "Default"
+
+		viewportConnection = viewportFrame.InputBegan:Connect(function(inputObject)
+			if
+				inputObject.UserInputType == Enum.UserInputType.MouseButton1
+				or inputObject.UserInputType == Enum.UserInputType.Touch
+			then
+				dtrViewportFrame:BeginDragging()
+
+				inputObject.Changed:Connect(function()
+					if inputObject.UserInputState == Enum.UserInputState.End then
+						dtrViewportFrame:StopDragging()
+					end
+				end)
+			end
+		end)
+	else
+		BattlepassPreviewGui.MainFrame.RewardImage.Visible = true
+		BattlepassPreviewGui.MainFrame.PreviewViewportFrame.Visible = true
+
+		BattlepassWidget.CurrentRewardItem = nil
+		--Assign the reward type to the preview frame
+		BattlepassPreviewGui.MainFrame.PreviewDescriptionFrame.RewardType.Text = rewardInfo.rewardType:gsub("_", " ")
+		--Assign the correct reward name
+		BattlepassPreviewGui.MainFrame.PreviewDescriptionFrame.RewardName.Text = rewardInfo.rewardType:gsub("_", " ")
+		--Assign the correct reward description
+		BattlepassPreviewGui.MainFrame.PreviewDescriptionFrame.RewardDescription.Text =
+			battlepassConfig.RewardDescriptions[rewardInfo.rewardType]
+		--Assign the rarity text and color
+		BattlepassPreviewGui.MainFrame.PreviewDescriptionFrame.RewardRarity.Text = rewardInfo.rarity
+		BattlepassPreviewGui.MainFrame.PreviewDescriptionFrame.RewardRarity.TextColor3 = rewardInfo.rarityColor
+		--Set the background color of the item frame to the rarity color
+		BattlepassPreviewGui.MainFrame.BackgroundColor3 = rewardInfo.rarityColor
+		--Assign the reward required level
+		BattlepassPreviewGui.MainFrame.PreviewDescriptionFrame.RewardRequirement.Text = "Required level " .. level
+
 		BattlepassPreviewGui.MainFrame.RewardImage.Image = battlepassConfig.RewardIcons[rewardInfo.rewardType]
 		BattlepassPreviewGui.MainFrame.RewardImage.Visible = true
 	end
 end
 
 local function CreateItemRewardFrame(battlepassConfig: table, rewardInfo: table, rewardTypeFrame: Frame, level: number)
-	local rewardFrame = Assets.GuiObjects.Frames.BattlepassRewardItemFrame:Clone()
-	rewardFrame.Parent = rewardTypeFrame
-	--Assign the reward name, filtering the _ and replacing with spaces
-	local rewardName = rewardInfo.rewardType:gsub("_", " ")
-	rewardFrame.ItemName.Text = rewardName
-	--Assign the color to the itemframe according to the reward rarity
-	rewardFrame.ItemFrame.ImageColor3 = rewardInfo.rarityColor
-	--Assign the correct image to the itemframe
-	rewardFrame.ItemIcon.Image = battlepassConfig.RewardIcons[rewardInfo.rewardType]
+	--Create the item frame according to the reward type
+	local rewardTypes = battlepassConfig.RewardTypes
+	if rewardInfo.rewardType == rewardTypes.Emote then
+		--ToDo: Code for emote
+	elseif rewardInfo.rewardType == rewardTypes.Skin then
+		--Create the skin frame
+		local skinData = rewardInfo.rewardSkin
+		UIController:CreateSkinFrame(skinData.skinID, skinData.name, skinData.rarity):andThen(function(skinFrame)
+			skinFrame.Parent = rewardTypeFrame
 
-	if rewardInfo.rewardAmount then
-		rewardFrame.ItemAmount.Visible = true
-		rewardFrame.ItemAmount.Text = rewardInfo.rewardAmount
+			--Connect the mouse enter events to the viewport
+			skinFrame.ViewportFrame.MouseEnter:Connect(function()
+				if not BattlepassPreviewGui.Enabled then
+					BattlepassPreviewGui.Enabled = true
+				end
+				-- if currentRewardFrameInPreview then
+				-- 	currentRewardFrameInPreview.SelectionFrame.Visible = false
+				-- end
+				currentRewardFrameInPreview = skinFrame
+				--format the data to pass to the display preview
+				local rewardInfo = {
+					rewardType = rewardTypes.Skin,
+					rarity = skinData.rarity,
+					rarityColor = battlepassConfig.RarityColors[skinData.rarity],
+					rewardSkin = skinData,
+				}
+				BattlepassWidget:DisplayPreview(rewardInfo, level)
+			end)
+		end)
+	elseif rewardInfo.rewardType == rewardTypes.Crate then
+		warn(rewardInfo)
+		local crateFrame = UIController:CreateCrateFrame(rewardInfo.crateName, rewardTypeFrame, battlepassConfig.RarityColors["Mythic"])
+		crateFrame.Parent = rewardTypeFrame
+		--Connect the mouse enter events to the viewport
+		crateFrame.ViewportFrame.MouseEnter:Connect(function()
+			if not BattlepassPreviewGui.Enabled then
+				BattlepassPreviewGui.Enabled = true
+			end
+			-- if currentRewardFrameInPreview then
+			-- 	currentRewardFrameInPreview.SelectionFrame.Visible = false
+			-- end
+			currentRewardFrameInPreview = crateFrame
+			--format the data to pass to the display preview
+			local rewardInfo = {
+				rewardType = rewardTypes.Crate,
+				rarity = "Mythic",
+				rarityColor = battlepassConfig.RarityColors["Mythic"],
+				crateName = rewardInfo.crateName,
+			}
+			BattlepassWidget:DisplayPreview(rewardInfo, level)
+		end)
+	else
+		local rewardFrame
+		rewardFrame = Assets.GuiObjects.Frames.BattlepassRewardItemFrame:Clone()
+		rewardFrame.Parent = rewardTypeFrame
+		--Assign the reward name, filtering the _ and replacing with spaces
+		local rewardName = rewardInfo.rewardType:gsub("_", " ")
+		rewardFrame.ItemName.Text = rewardName
+		--Assign the color to the itemframe according to the reward rarity
+		rewardFrame.ItemFrame.ImageColor3 = rewardInfo.rarityColor
+		rewardFrame.ItemIcon.Image = battlepassConfig.RewardIcons[rewardInfo.rewardType]
+
+		if rewardInfo.rewardAmount then
+			rewardFrame.ItemAmount.Visible = true
+			rewardFrame.ItemAmount.Text = rewardInfo.rewardAmount
+		end
+		--Connect the mouse enter and leave events
+		rewardFrame.ItemIcon.MouseEnter:Connect(function()
+			if not BattlepassPreviewGui.Enabled then
+				BattlepassPreviewGui.Enabled = true
+			end
+			if currentRewardFrameInPreview and currentRewardFrameInPreview:FindFirstChild("SelectionFrame") then
+				currentRewardFrameInPreview.SelectionFrame.Visible = false
+			end
+			currentRewardFrameInPreview = rewardFrame
+			rewardFrame.SelectionFrame.Visible = true
+			BattlepassWidget:DisplayPreview(rewardInfo, level)
+		end)
 	end
-
-	--Connect the mouse enter and leave events
-	rewardFrame.ItemIcon.MouseEnter:Connect(function()
-		warn("Mouse enter")
-		if not BattlepassPreviewGui.Enabled then
-			BattlepassPreviewGui.Enabled = true
-		end
-		if currentRewardFrameInPreview then
-			currentRewardFrameInPreview.SelectionFrame.Visible = false
-		end
-		currentRewardFrameInPreview = rewardFrame
-		rewardFrame.SelectionFrame.Visible = true
-		BattlepassWidget:DisplayPreview(rewardInfo, level)
-	end)
 end
 
-function BattlepassWidget:GenerateRewards(currentSeason)
+function BattlepassWidget:GenerateRewards(battlepassData)
 	BattlepassService:GetBattlepassConfig():andThen(function(_battlepassConfig)
 		battlepassConfig = _battlepassConfig
-		local seasonRewards = _battlepassConfig.rewards[currentSeason]
+		local seasonRewards = _battlepassConfig.rewards[battlepassData.currentSeason]
 		for level, rankRewardsTable in seasonRewards do
 			local battlepassRewardFrame = Assets.GuiObjects.Frames.BattlepassRewardFrame:Clone()
 			--Name the frame with the rank
 			battlepassRewardFrame.Name = level
 			--Assign the rank text
 			battlepassRewardFrame.RankText.Text = level
+			--Assign the level as an attribute to the frame
+			battlepassRewardFrame:SetAttribute("Level", level)
 			--Assign the current rank to the progress bar
 			battlepassRewardFrame.ProgressBarFrame.BarFrame.currentRankText.Text = level
 			--Set the bar size to 0
 			battlepassRewardFrame.ProgressBarFrame.BarFrame.ProgressBar.Size = UDim2.fromScale(0, 0.9)
 			battlepassRewardFrame.Parent = BattlepassWidget.MainFrame.RewardsFrame
+			--Check if the player has claimed this rank if it's alreayd completed
+			if
+				not table.find(battlepassData[battlepassData.currentSeason].ClaimedLevels, level)
+				and battlepassData[battlepassData.currentSeason].Level >= level
+			then
+				battlepassRewardFrame.ClaimFrame.Visible = true
+				local shineTween = UIController:AnimateShineForFrame(battlepassRewardFrame.ClaimFrame, false, true)
+				--Connect the claim button
+				battlepassRewardFrame.ClaimFrame.ClaimButton.Activated:Connect(function()
+					ButtonWidget:OnActivation(battlepassRewardFrame.ClaimFrame.ClaimButton, function()
+						BattlepassService:ClaimBattlepassReward(level)
+						battlepassRewardFrame.ClaimFrame.ClaimButton:Destroy()
+						UIController:StopAnimationForTween(shineTween)
+						battlepassRewardFrame.ClaimFrame.ClaimedText.Visible = true
+					end)
+				end)
+			elseif table.find(battlepassData[battlepassData.currentSeason].ClaimedLevels, level) then
+				--If the player has already claimed the reward
+				battlepassRewardFrame.ClaimFrame.ClaimButton:Destroy()
+				battlepassRewardFrame.ClaimFrame.Visible = true
+				battlepassRewardFrame.ClaimFrame.ClaimedText.Visible = true
+			end
 			--Generate the item rewards frames for each rank and separate them to premium rewards and free rewards
-			warn(level)
 			for _, rewardInfo in rankRewardsTable.battlepass do
 				CreateItemRewardFrame(_battlepassConfig, rewardInfo, battlepassRewardFrame.PremiumRewardsFrame, level)
 			end
@@ -306,7 +518,7 @@ function BattlepassWidget:OpenBattlepass(callback: Function)
 		player:SetAttribute("CurrentSeason", currentSeason)
 		--Generate the rewards frame if they don't exist
 		if #BattlepassWidget.MainFrame.RewardsFrame:GetChildren() <= 1 then
-			BattlepassWidget:GenerateRewards(battlepassData.currentSeason)
+			BattlepassWidget:GenerateRewards(battlepassData)
 		end
 		--Update the progress bars
 		BattlepassService:GetExperienceNeededForNextLevel():andThen(function(experienceNeeded)
@@ -341,6 +553,12 @@ function BattlepassWidget:CloseBattlepass()
 		TweenInfo.new(0.325),
 		{ Position = UDim2.fromScale(1, BattlepassPreviewGui.MainFrame.Position.Y.Scale) }
 	)
+	--Destroy the rewards frames
+	for _, rewardFrame in pairs(BattlepassWidget.MainFrame.RewardsFrame:GetChildren()) do
+		if rewardFrame:IsA("Frame") then
+			rewardFrame:Destroy()
+		end
+	end
 	previewGuiTween:Play()
 	mainFrameTween.Completed:Connect(function()
 		BattlepassGui.Enabled = false

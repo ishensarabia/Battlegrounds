@@ -8,6 +8,7 @@ local Knit = require(ReplicatedStorage.Packages.Knit)
 local Sounds = {
 	buttonClick = "rbxassetid://4499400560",
 	Dash = "rbxassetid://8653395088",
+	Slide = "rbxassetid://6429226498",
 }
 local AudioService = Knit.CreateService({
 	Name = "AudioService",
@@ -25,9 +26,10 @@ function AudioService:PlaySound(player, sound: string, soundProperties : table)
 		soundProperties.RollOffMaxDistance = 50
 		soundProperties.RollOffMinDistance = 10
 	end
-	if Sounds[sound] then
+	if Sounds[sound] and not player.Character.HumanoidRootPart:FindFirstChild(sound) then
 		local soundToPlay = Instance.new("Sound")
 		soundToPlay.SoundId = Sounds[sound]
+		soundToPlay.Name = sound
 		soundToPlay.RollOffMode = soundProperties.RollOffMode
 		soundToPlay.RollOffMaxDistance = soundProperties.RollOffMaxDistance
 		soundToPlay.RollOffMinDistance = soundProperties.RollfOffMinDistance
@@ -38,9 +40,9 @@ function AudioService:PlaySound(player, sound: string, soundProperties : table)
 	end
 end
 
-function AudioService.Client:PlaySound(player: Player, sound: string, isServer: boolean)
+function AudioService.Client:PlaySound(player: Player, sound: string, isServer: boolean, soundProperties : table)
 	if isServer then
-		return self.Server:PlaySound(player, sound)
+		return self.Server:PlaySound(player, sound, soundProperties)
 	end
 	if Sounds[sound] then
 		local soundToPlay = Instance.new("Sound")

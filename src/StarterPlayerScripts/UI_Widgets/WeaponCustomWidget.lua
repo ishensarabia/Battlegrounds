@@ -238,23 +238,29 @@ function WeaponCustomizationWidget:CloseCustomization(category: string)
 end
 
 local function GenerateSkinsButtons()
-	local skinsIDs = require(ReplicatedStorage.Source.Assets.Skins)
+	local Skins = require(ReplicatedStorage.Source.Assets.Skins)
 	if not DataService then
 		DataService = Knit.GetService("DataService")
 	end
 	DataService:GetKeyValue("Skins"):andThen(function(skins: table)
 		for skinName, skinAmount in skins do
+			local skinName = string.gsub(skinName, "-", "") 
+			skinName = string.gsub(skinName, " ", "")
+			skinName = string.gsub(skinName, "_", "")
+			skinName = string.gsub(skinName, "&", "")			
+			warn(skinName)
+
 			local customizationButtonFrame = Assets.GuiObjects.Frames.CustomizationButtonFrame:Clone()
 			customizationButtonFrame.Name = skinName
 			customizationButtonFrame.Parent = customizationItemsFrame
-			customizationButtonFrame.Frame.IconButton.Image = skinsIDs[skinName]
+			customizationButtonFrame.Frame.IconButton.Image = Skins[skinName].skinID
 			customizationButtonFrame.Frame.Title.Text = skinName
 			-- customizationButtonFrame.Frame.BackgroundButton.ImageColor3 = RARITIES_COLORS[skinAmount.Rarity]
 
 			--Connect the button
 			customizationButtonFrame.Frame.IconButton.Activated:Connect(function()
 				ButtonWidget:OnActivation(customizationButtonFrame.Frame, function()
-					WeaponCustomizationWidget:SetModification(skinsIDs[skinName])
+					WeaponCustomizationWidget:SetModification(Skins[skinName].skinID)
 					--Assign the current selection but check if there's a previous one
 					if not WeaponCustomizationWidget.currentSkinSelected then
 						WeaponCustomizationWidget.currentSkinSelected = customizationButtonFrame

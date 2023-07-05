@@ -161,8 +161,8 @@ function ShoulderCamera.new(weaponsSystem)
 	self.gamepadSensitivityModifier = Vector2.new(0.85, 0.65)
 	-- Walk speeds
 	self.zoomWalkSpeed = 8
-	self.normalWalkSpeed = 16
-	self.sprintingWalkSpeed = 24
+	self.normalWalkSpeed = 13.33
+	self.sprintingWalkSpeed = 19.99
 	self.dashingWalkSpeed = 0
 
 	-- Current state

@@ -7,7 +7,8 @@ local ButtonWidget = require(game.StarterPlayer.StarterPlayerScripts.Source.UI_W
 --Modules
 local ViewportModel = require(ReplicatedStorage.Source.Modules.Util.ViewportModel)
 local DragToRotateViewportFrame = require(ReplicatedStorage.Source.Modules.Util.DragToRotateViewportFrame)
-
+--Controllers
+local WeaponCustomizationController = Knit.GetController("WeaponCustomizationController")
 --Screen guis
 local HoverGui
 --Gui objects
@@ -149,11 +150,13 @@ function HoverWidget:CloseHover()
 	HoverGui.Enabled = false
 end
 
-function HoverWidget:OpenCrateHover(params: table)
+function HoverWidget:OpenCrateInfo(params: table)
+	warn(params)
 	--Get the description text label
 	local contentsTextLabel = ItemContentsFrame.ContentsTextLabel
 	--Get the content item template frame
 	for index, contentInfo: table in params.contents do
+		warn(contentInfo)
 		local contentItemTemplate = Assets.GuiObjects.Frames.ContentItemTemplate:Clone()
 		--Assign the correct info to the content item template
 		contentItemTemplate.Name = contentInfo.Name
@@ -167,7 +170,7 @@ function HoverWidget:OpenCrateHover(params: table)
 		--Assign the parent
 		contentItemTemplate.Parent = ItemsDisplayFrame
 		--Assign the icon
-		contentItemTemplate.SkinBackground.Image = contentInfo.Skin or ""
+		contentItemTemplate.SkinBackground.Image = contentInfo.Skin
 		--Assign the display order
 		contentItemTemplate.LayoutOrder = RARITIES_DISPLAY_ORDER[contentInfo.Rarity]
 		
@@ -175,33 +178,14 @@ function HoverWidget:OpenCrateHover(params: table)
 		if contentInfo.Image then
 			contentItemTemplate.ContentIcon = contentInfo.Image
 		end
-		if contentInfo.Type == "Skin" then
+		if params._type == "Skin" then
 			--Get the weapon equipped
 			local DataService = Knit.GetService("DataService")
 			DataService:GetKeyValue("Loadout"):andThen(function(loadout)
 				local weaponModel =
 					ReplicatedStorage.Weapons[loadout.WeaponEquipped]:FindFirstChildWhichIsA("Model"):Clone()
-				--Get weapon parts to apply the skin
-				for index, value in weaponModel:GetDescendants() do
-					if value:GetAttribute("CustomPart") then
-						local textures = {}
-						--It's a texture
-						for i = 1, 6, 1 do
-							local texture = Instance.new("Texture")
-							texture.Name = "Skin"
-							texture.Texture = contentInfo.Skin
-							table.insert(textures, texture)
-							texture.Parent = value
-						end
-						textures[1].Face = Enum.NormalId.Back
-						textures[2].Face = Enum.NormalId.Bottom
-						textures[3].Face = Enum.NormalId.Front
-						textures[4].Face = Enum.NormalId.Left
-						textures[5].Face = Enum.NormalId.Right
-						textures[6].Face = Enum.NormalId.Top
-					end
-				end
-
+				
+				WeaponCustomizationController:ApplySkinForPreview(weaponModel, contentInfo.Skin)
 				--get the viewport from the content item template
 				local viewportFrame = contentItemTemplate.ViewportFrame
 				--Create the viewport camera
@@ -274,7 +258,7 @@ function HoverWidget:OpenHover(model: Model, params: table)
 
 	--Display the item contents according to the category
 	if params.category == "Crates" then
-		HoverWidget:OpenCrateHover(params)
+		HoverWidget:OpenCrateInfo(params)
 	end
 
 	if model then

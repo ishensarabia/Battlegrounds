@@ -1,48 +1,18 @@
 local MarketplaceService = game:GetService("MarketplaceService")
 local Players = game:GetService("Players")
+local PolicyService = game:GetService("PolicyService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Knit = require(ReplicatedStorage.Packages.Knit)
+--Assets
+local Skins = require(ReplicatedStorage.Source.Assets.Skins)
 
 local StoreService = Knit.CreateService({
 	Name = "StoreService",
 	Client = {
-		CratePurchaseSignal = Knit.CreateSignal(),
+		CrateAddedSignal = Knit.CreateSignal(),
 		OpenCrateSignal = Knit.CreateSignal(),
 	},
 })
-
-StoreService.skins = {
-	["Alter-Ego"] = "rbxassetid://13643596771",
-	Venomus = "rbxassetid://358113752",
-	["All-Seeing Eye"] = "rbxassetid://358279560",
-	["Abstract Peach"] = "rbxassetid://13655041050",
-	["Royal Ornate"] = "rbxassetid://13620123374",
-	Pineapple = "rbxassetid://13655576502",
-	Duckies = "rbxassetid://358413518",
-	Totopos = "rbxassetid://358284720",
-	["Digital Disturbance"] = "rbxassetid://358113994",
-	Connections = "rbxassetid://358209640",
-	["Party Time"] = "rbxassetid://358113881",
-	Cherries = "rbxassetid://13662981938",
-	Steampunk = "rbxassetid://13663622687",
-	Darkness = "rbxassetid://13664411385",
-	["Void Scars"] = "rbxassetid://13664464931",
-	Constellation = "rbxassetid://13664532889",
-	Bowies = "rbxassetid://13664668442",
-	["Industrial Space"] = "rbxassetid://13664822366",
-	["Coffins & Skulls"] = "rbxassetid://13665000362",
-	["Rainbow Bats"] = "rbxassetid://13664947705",
-	["Sugar-Haze"] = "rbxassetid://13665979274",
-	["Forest Camo"] = "rbxassetid://13666123351",
-	["Snow Camo"] = "rbxassetid://13667523981",
-	["Desert Camo"] = "rbxassetid://13667570547",
-	["Shark Camo"] = "rbxassetid://13667632021",
-	["Punk Spirit"] = "rbxassetid://13667613116",
-	["Ghost Camo"] = "rbxassetid://13667665573",
-	Kraken = "rbxassetid://390097022",
-	["Monkey Rage"] = "rbxassetid://13667787552",
-	Dragonfruits = "rbxassetid://13667938944",
-}
 
 StoreService.bundles = {
 	["Starter_Bundle"] = {
@@ -131,274 +101,162 @@ StoreService.bundles = {
 	},
 }
 
+
 StoreService.crates = {
 	["Skins_Crate"] = {
 		Price = 350,
 		Currency = "BattleGems",
+		Type = "Skin",
 		Contents = {
 			[1] = {
-				Name = "Alter-Ego",
-				Price = 100,
-				Type = "Skin",
-				Rarity = "Rare",
-				Skin = "rbxassetid://13643596771",
-				Id = "AlterEgo",
+				Name = Skins.AlterEgo.name,
+				Rarity = Skins.AlterEgo.rarity,
+				Skin = Skins.AlterEgo.skinID,
 			},
 			[2] = {
-				Name = "Venomus",
-				Price = 100,
-				Type = "Skin",
-				Rarity = "Mythic",
-				Skin = "rbxassetid://358113752",
-				Id = "Venomus",
+				Name = Skins.Venomus.name,
+				Rarity = Skins.Venomus.rarity,
+				Skin = Skins.Venomus.skinID,
 			},
 			[3] = {
-				Name = "All-Seeing Eye",
-				Price = 100,
-				Type = "Skin",
-				Rarity = "Mythic",
-				Skin = "rbxassetid://358279560",
-
-				Id = 3,
+				Name = Skins.AllSeeingEye.name,
+				Rarity = Skins.AllSeeingEye.rarity,
+				Skin = Skins.AllSeeingEye.skinID,
 			},
 			[4] = {
-				Name = "Abstract Peach",
-				Price = 100,
-				Type = "Skin",
-				Rarity = "Legendary",
-				Skin = "rbxassetid://13655041050",
-
-				Id = 4,
+				Name = Skins.AbstractPeach.name,
+				Rarity = Skins.AbstractPeach.rarity,
+				Skin = Skins.AbstractPeach.skinID,
 			},
 			[5] = {
-				Name = "Royal Ornate",
-				Price = 100,
-				Type = "Skin",
-				Rarity = "Epic",
-				Skin = "rbxassetid://13620123374",
-
-				Id = 5,
+				Name = Skins.RoyalOrnate.name,
+				Rarity = Skins.RoyalOrnate.rarity,
+				Skin = Skins.RoyalOrnate.skinID,
 			},
 			[6] = {
-				Name = "Pineapple",
-				Price = 100,
-				Type = "Skin",
-				Rarity = "Common",
-				Skin = "rbxassetid://13655576502",
-
-				Id = 6,
+				Name = Skins.Pineapple.name,
+				Rarity = Skins.Pineapple.rarity,
+				Skin = Skins.Pineapple.skinID,
 			},
 			[7] = {
-				Name = "Duckies",
-				Price = 100,
-				Type = "Skin",
-				Rarity = "Common",
-				Skin = "rbxassetid://358413518",
-
-				Id = 7,
+				Name = Skins.Duckies.name,
+				Rarity = Skins.Duckies.rarity,
+				Skin = Skins.Duckies.skinID,
 			},
 			[8] = {
-				Name = "Totopos",
-				Price = 100,
-				Type = "Skin",
-				Rarity = "Rare",
-				Skin = "rbxassetid://358284720",
-
-				Id = 8,
+				Name = Skins.Totopos.name,
+				Rarity = Skins.Totopos.rarity,
+				Skin = Skins.Totopos.skinID,
 			},
 			[9] = {
-				Name = "Digital Disturbance",
-				Price = 100,
-				Type = "Skin",
-				Rarity = "Epic",
-				Skin = "rbxassetid://358113994",
-
-				Id = 9,
+				Name = Skins.DigitalDisturbance.name,
+				Rarity = Skins.DigitalDisturbance.rarity,
+				Skin = Skins.DigitalDisturbance.skinID,
 			},
 			[10] = {
-				Name = "Connections",
-				Price = 100,
-				Type = "Skin",
-				Rarity = "Epic",
-				Skin = "rbxassetid://358209640",
-
-				Id = 9,
+				Name = Skins.Connections.name,
+				Rarity = Skins.Connections.rarity,
+				Skin = Skins.Connections.skinID,
 			},
 			[11] = {
-				Name = "Party Time",
-				Price = 100,
-				Type = "Skin",
-				Rarity = "Rare",
-				Skin = "rbxassetid://358113881",
-
-				Id = 9,
+				Name = Skins.PartyTime.name,
+				Rarity = Skins.PartyTime.rarity,
+				Skin = Skins.PartyTime.skinID,
 			},
 			[12] = {
-				Name = "Cherries",
-				Price = 100,
-				Type = "Skin",
-				Rarity = "Common",
-				Skin = "rbxassetid://13662981938",
-
-				Id = 9,
+				Name = Skins.Cherries.name,
+				Rarity = Skins.Cherries.rarity,
+				Skin = Skins.Cherries.skinID,
 			},
 			[13] = {
-				Name = "Steampunk",
-				Price = 100,
-				Type = "Skin",
-				Rarity = "Rare",
-				Skin = "rbxassetid://13663622687",
-
-				Id = 9,
+				Name = Skins.Steampunk.name,
+				Rarity = Skins.Steampunk.rarity,
+				Skin = Skins.Steampunk.skinID,
 			},
 			[14] = {
-				Name = "Darkness",
-				Price = 100,
-				Type = "Skin",
-				Rarity = "Common",
-				Skin = "rbxassetid://13664411385",
-
-				Id = 9,
+				Name = Skins.Darkness.name,
+				Rarity = Skins.Darkness.rarity,
+				Skin = Skins.Darkness.skinID,
 			},
 			[15] = {
-				Name = "Void Scars",
-				Price = 100,
-				Type = "Skin",
-				Rarity = "Legendary",
-				Skin = "rbxassetid://13664464931",
-
-				Id = 9,
+				Name = Skins.VoidScars.name,
+				Rarity = Skins.VoidScars.rarity,
+				Skin = Skins.VoidScars.skinID,
 			},
 			[16] = {
-				Name = "Constellation",
-				Price = 100,
-				Type = "Skin",
-				Rarity = "Rare",
-				Skin = "rbxassetid://13664532889",
-
-				Id = 9,
+				Name = Skins.Constellation.name,
+				Rarity = Skins.Constellation.rarity,
+				Skin = Skins.Constellation.skinID,
 			},
 			[17] = {
-				Name = "Bowies",
-				Price = 100,
-				Type = "Skin",
-				Rarity = "Common",
-				Skin = "rbxassetid://13664668442",
-
-				Id = 9,
+				Name = Skins.Bowies.name,
+				Rarity = Skins.Bowies.rarity,
+				Skin = Skins.Bowies.skinID,
 			},
 			[18] = {
-				Name = "Industrial Space",
-				Price = 100,
-				Type = "Skin",
-				Rarity = "Rare",
-				Skin = "rbxassetid://13664822366",
-
-				Id = 9,
+				Name = Skins.IndustrialSpace.name,
+				Rarity = Skins.IndustrialSpace.rarity,
+				Skin = Skins.IndustrialSpace.skinID,
 			},
 			[19] = {
-				Name = "Coffins & Skulls",
-				Price = 100,
-				Type = "Skin",
-				Rarity = "Epic",
-				Skin = "rbxassetid://13665000362",
-
-				Id = 9,
+				Name = Skins.CoffinsSkulls.name,
+				Rarity = Skins.CoffinsSkulls.rarity,
+				Skin = Skins.CoffinsSkulls.skinID,
 			},
 			[20] = {
-				Name = "Rainbow Bats",
-				Price = 100,
-				Type = "Skin",
-				Rarity = "Rare",
-				Skin = "rbxassetid://13664947705",
-
-				Id = 9,
+				Name = Skins.RainbowBats.name,
+				Rarity = Skins.RainbowBats.rarity,
+				Skin = Skins.RainbowBats.skinID,
 			},
 			[21] = {
-				Name = "Sugar-Haze",
-				Price = 100,
-				Type = "Skin",
-				Rarity = "Epic",
-				Skin = "rbxassetid://13665979274",
-
-				Id = 9,
+				Name = Skins.SugarHaze.name,
+				Rarity = Skins.SugarHaze.rarity,
+				Skin = Skins.SugarHaze.skinID,
 			},
 			[22] = {
-				Name = "Forest Camo",
-				Price = 100,
-				Type = "Skin",
-				Rarity = "Common",
-				Skin = "rbxassetid://13666123351",
-
-				Id = 9,
+				Name = Skins.ForestCamo.name,
+				Rarity = Skins.ForestCamo.rarity,
+				Skin = Skins.ForestCamo.skinID,
 			},
 			[23] = {
-				Name = "Snow Camo",
-				Price = 100,
-				Type = "Skin",
-				Rarity = "Common",
-				Skin = "rbxassetid://13667523981",
-
-				Id = 9,
+				Name = Skins.SnowCamo.name,
+				Rarity = Skins.SnowCamo.rarity,
+				Skin = Skins.SnowCamo.skinID,
 			},
 			[24] = {
-				Name = "Desert Camo",
-				Price = 100,
-				Type = "Skin",
-				Rarity = "Common",
-				Skin = "rbxassetid://13667570547",
-
-				Id = 9,
+				Name = Skins.DesertCamo.name,
+				Rarity = Skins.DesertCamo.rarity,
+				Skin = Skins.DesertCamo.skinID,
 			},
 			[25] = {
-				Name = "Shark Camo",
-				Price = 100,
-				Type = "Skin",
-				Rarity = "Epic",
-				Skin = "rbxassetid://13667632021",
-
-				Id = 9,
+				Name = Skins.SharkCamo.name,
+				Rarity = Skins.SharkCamo.rarity,
+				Skin = Skins.SharkCamo.skinID,
 			},
 			[26] = {
-				Name = "Punk Spirit",
-				Price = 100,
-				Type = "Skin",
-				Rarity = "Legendary",
-				Skin = "rbxassetid://13667613116",
-
-				Id = 9,
+				Name = Skins.PunkSpirit.name,
+				Rarity = Skins.PunkSpirit.rarity,
+				Skin = Skins.PunkSpirit.skinID,
 			},
 			[27] = {
-				Name = "Ghost Camo",
-				Price = 100,
-				Type = "Skin",
-				Rarity = "Legendary",
-				Skin = "rbxassetid://13667665573",
-
-				Id = 9,
+				Name = Skins.GhostCamo.name,
+				Rarity = Skins.GhostCamo.rarity,
+				Skin = Skins.GhostCamo.skinID,
 			},
 			[28] = {
-				Name = "Kraken",
-				Price = 100,
-				Type = "Skin",
-				Rarity = "Mythic",
-				Skin = "rbxassetid://390097022",
-
-				Id = 9,
+				Name = Skins.Kraken.name,
+				Rarity = Skins.Kraken.rarity,
+				Skin = Skins.Kraken.skinID,
 			},
 			[29] = {
-				Name = "Monkey Rage",
-				Price = 100,
-				Type = "Skin",
-				Rarity = "Legendary",
-				Skin = "rbxassetid://13667787552",
+				Name = Skins.MonkeyRage.name,
+				Rarity = Skins.MonkeyRage.rarity,
+				Skin = Skins.MonkeyRage.skinID,
 			},
 			[30] = {
-				Name = "Dragonfruits",
-				Price = 100,
-				Type = "Skin",
-				Rarity = "Rare",
-				Skin = "rbxassetid://13667938944",
+				Name = Skins.Dragonfruits.name,
+				Rarity = Skins.Dragonfruits.rarity,
+				Skin = Skins.Dragonfruits.skinID,
 			},
 		},
 		RaritiesPercentages = {
@@ -600,7 +458,16 @@ end
 --Buy bundle function
 function StoreService:BuyBundle(player, bundleCategory: string, bundleName: string)
 	local bundle = self.bundles[bundleCategory][bundleName]
-	if bundle then
+	local success, result = pcall(function()
+		return PolicyService:GetPolicyInfoForPlayerAsync(player)
+	end)
+	
+	if not success then
+		warn("PolicyService error: " .. result)
+	elseif result.ArePaidRandomItemsRestricted then
+		warn("Player cannot interact with paid random item generators")
+	end
+	if bundle and success then
 		MarketplaceService:PromptProductPurchase(player, bundle.ProductID)
 	end
 	return false
@@ -632,7 +499,7 @@ function StoreService:BuyCrate(player, crateName: string)
 		--Add crate to player's inventory
 		local totalAmountOfCrates = self._dataService:AddCrate(player, crateName, true)
 		--Fire the signal
-		self.Client.CratePurchaseSignal:Fire(player, crateName, totalAmountOfCrates)
+		self.Client.CrateAddedSignal:Fire(player, crateName, totalAmountOfCrates)
 	end
 end
 
@@ -642,7 +509,12 @@ function StoreService.Client:BuyCrate(player, crateName: string)
 end
 
 --Open crate function
-function StoreService:OpenCrate(player, crateName: string)
+function StoreService:OpenCrate(player, crateName: string, crateType : string)
+	warn(crateName, crateType)
+	--check if the player has the crate
+	if not self._dataService:HasCrate(player, crateName) then
+		return nil 
+	end
 	local n = 0
 	local rarityChosen = nil
 	local crate = self.crates[crateName]
@@ -668,13 +540,18 @@ function StoreService:OpenCrate(player, crateName: string)
 
 	shuffle(crate.Contents)
 	local rewardChosen
-	for crateName, crateData in crate.Contents do
-		if crateData.Rarity == rarityChosen then
+	for index, contentData : table in crate.Contents do
+		warn(contentData)
+		if contentData.Rarity == rarityChosen then
 			--assign the reward to the player
-			if crateData.Type == "Skin" then
-				rewardChosen = crateData
-				warn(rewardChosen.Name)
-				self._dataService:AddSkin(player, crateData.Name)
+			if crateType == "Skin" then
+				rewardChosen = contentData
+				self._dataService:AddSkin(player, contentData.Name)
+			end
+
+			if crateType == "Emote" then
+				rewardChosen = contentData
+				self._dataService:AddEmote(player, contentData)
 			end
 			break
 		end
@@ -687,8 +564,8 @@ function StoreService:OpenCrate(player, crateName: string)
 end
 
 --[Client] Open crate function
-function StoreService.Client:OpenCrate(player, crateName: string)
-	return self.Server:OpenCrate(player, crateName)
+function StoreService.Client:OpenCrate(player, crateName: string, crateType : string)
+	return self.Server:OpenCrate(player, crateName, crateType)
 end
 
 return StoreService

@@ -17,5 +17,6 @@ return {
         Left_Dash = "rbxassetid://12432217627",
 		Climb = "rbxassetid://13084101795",
 		Climb_Up = "rbxassetid://13086372330",
+		Slide = "rbxassetid://13884788134"
 	},
 }

@@ -127,17 +127,23 @@ function StoreWidget:Initialize()
 		end
 	end
 	--Connect store signals
-	StoreService.CratePurchaseSignal:Connect(function(crateName: string, totalAmountOfCrates: number)
-		ItemsScrollingFrame[crateName].OpenButton.Visible = true
-		--Add the crate amount to the open button text
-		ItemsScrollingFrame[crateName].OpenButton.Text.Text = "Open (" .. tostring(totalAmountOfCrates) .. ")"
-	end)
-	StoreService.OpenCrateSignal:Connect(function(crate: table, rewardChosen: table, cratesLeft: number, crateName : string)
-		ItemsScrollingFrame[crateName].OpenButton.Text.Text = "Open (" .. tostring(cratesLeft) .. ")"
-		if cratesLeft == 0 then
-			ItemsScrollingFrame[crateName].OpenButton.Visible = false
+	StoreService.CrateAddedSignal:Connect(function(crateName: string, totalAmountOfCrates: number)
+		warn("Crate added", crateName, totalAmountOfCrates)
+		--if the frame exists, update the open button text
+		if ItemsScrollingFrame:FindFirstChild(crateName) then			
+			ItemsScrollingFrame[crateName].OpenButton.Visible = true
+			--Add the crate amount to the open button text
+			ItemsScrollingFrame[crateName].OpenButton.Text.Text = "Open (" .. tostring(totalAmountOfCrates) .. ")"
 		end
 	end)
+	StoreService.OpenCrateSignal:Connect(
+		function(crate: table, rewardChosen: table, cratesLeft: number, crateName: string)
+			ItemsScrollingFrame[crateName].OpenButton.Text.Text = "Open (" .. tostring(cratesLeft) .. ")"
+			if cratesLeft == 0 then
+				ItemsScrollingFrame[crateName].OpenButton.Visible = false
+			end
+		end
+	)
 
 	--Return the widget
 	return StoreWidget
@@ -282,22 +288,23 @@ function StoreWidget:GenerateCratesFrames(crates: table)
 		--Create the viewport instance module
 		local crateViewportModel = ViewportModel.new(crateFrame.ViewportFrame, viewportCamera)
 		crateViewportModel:SetModel(crateModel)
-		local theta = 0
-		local orientation
+		local theta = 55
+		local orientation = CFrame.fromEulerAnglesYXZ(math.rad(-6), theta, 0)
 		local cf, size = crateModel:GetBoundingBox()
 		local distance = crateViewportModel:GetFitDistance(cf.Position)
-		table.insert(
-			StoreWidget.viewportConnections,
-			RunService.RenderStepped:Connect(function(dt)
-				theta = theta + math.rad(20 * dt)
-				orientation = CFrame.fromEulerAnglesYXZ(math.rad(-6), theta, 0)
-				viewportCamera.CFrame = CFrame.new(cf.Position) * orientation * CFrame.new(0, 0, distance)
-			end)
-		)
+		viewportCamera.CFrame = CFrame.new(cf.Position) * orientation * CFrame.new(0, 0, distance)
+		-- table.insert(
+		-- 	StoreWidget.viewportConnections,
+		-- 	RunService.RenderStepped:Connect(function(dt)
+		-- 		theta = theta + math.rad(20 * dt)
+		-- 		orientation = CFrame.fromEulerAnglesYXZ(math.rad(-6), theta, 0)
+		-- 		viewportCamera.CFrame = CFrame.new(cf.Position) * orientation * CFrame.new(0, 0, distance)
+		-- 	end)
+		-- )
 		crateFrame.ViewportFrame.CurrentCamera = viewportCamera
 		local hoverInfoWidget = HoverWidget.new(
 			crateFrame.HoverInfoButton,
-			{ model = crateModel:Clone(), contents = crateData.Contents, category = "Crates" }
+			{ model = crateModel:Clone(), contents = crateData.Contents, category = "Crates", _type = crateData.Type }
 		)
 		--Tween the GlowEffect rotation
 		local glowEffectTween = TweenService:Create(
@@ -310,12 +317,12 @@ function StoreWidget:GenerateCratesFrames(crates: table)
 		crateFrame.BuyButton.Activated:Connect(function()
 			ButtonWidget:OnActivation(crateFrame.BuyButton, function()
 				StoreService:BuyCrate(crateName)
-			end)
+			end, "buy")
 		end)
 		--Connect the open event
 		crateFrame.OpenButton.Activated:Connect(function()
 			ButtonWidget:OnActivation(crateFrame.OpenButton, function()
-				StoreService:OpenCrate(crateName)
+				StoreService:OpenCrate(crateName, crateData.Type)
 			end)
 		end)
 	end

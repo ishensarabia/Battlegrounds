@@ -1,9 +1,6 @@
 --Services
-local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local TweenService = game:GetService("TweenService")
-local Packages = game.ReplicatedStorage.Packages
-local Assets = ReplicatedStorage.Assets
 local Knit = require(ReplicatedStorage.Packages.Knit)
 --Main
 local ButtonWidget = {}
@@ -23,7 +20,7 @@ function ButtonWidget:OnActivation(button: GuiButton, callback, customSoundName 
         buttonTween = TweenService:Create(
             button,
             buttonTweenInfo,
-            { Size = UDim2.fromScale(button.Size.X.Scale - 0.15, button.Size.Y.Scale - 0.15) }
+            { Size = UDim2.fromScale(button.Size.X.Scale - 0.009, button.Size.Y.Scale - 0.15) }
         )
     end
 	buttonTween:Play()

@@ -1,3 +1,4 @@
+local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
 local RunS = game:GetService("RunService")
 
@@ -183,13 +184,13 @@ function DragToRotateViewportFrame:Initialize(viewportFrame, camera)
 end
 
 function DragToRotateViewportFrame:SetModel(model)
-	assertf(
-		isValueOfClass(model, "Model"),
-		'Called %s:SetModel with argument #1 %s "%s", expected Model.',
-		CLASS_NAME,
-		typeof(model),
-		tostring(model)
-	)
+	-- assertf(
+	-- 	isValueOfClass(model, "Model"),
+	-- 	'Called %s:SetModel with argument #1 %s "%s", expected Model.',
+	-- 	CLASS_NAME,
+	-- 	typeof(model),
+	-- 	tostring(model)
+	-- )
 	assertf(model.PrimaryPart ~= nil, "Called %s:SetModel with a model without a PrimaryPart.", CLASS_NAME)
 
 	self.Model = model
@@ -199,6 +200,8 @@ function DragToRotateViewportFrame:SetModel(model)
 
 	self:SetAngles(CFrame.Angles(0, math.pi, 0))
 	self:Rotate(0, 0)
+	self.InitalCameraCFrame = self.Camera.CFrame
+	self.InitialFOV = self.Camera.FieldOfView
 end
 
 function DragToRotateViewportFrame:SetAngles(angles)
@@ -304,6 +307,10 @@ function DragToRotateViewportFrame:BeginDragging()
 			delta = delta * Vector2.new(1, -1)
 		end
 
+		if inputObject.UserInputType == Enum.UserInputType.MouseWheel then
+			self.Camera.FieldOfView = self.Camera.FieldOfView - inputObject.Position.Z
+			return
+		end
 		self:Rotate(-delta.Y / 100, -delta.X / 100)
 	end)
 end
@@ -318,6 +325,17 @@ function DragToRotateViewportFrame:StopDragging()
 		self.renderSteppedC:Disconnect()
 		self.renderSteppedC = nil
 	end
+
+	--if after a certain time there's no more dragging return to the initial camera position
+	task.delay(1.6, function()
+		if self.Camera.CFrame ~= self.InitalCameraCFrame and not self.renderSteppedC and not self.inputChangedC then
+			TweenService:Create(
+				self.Camera,
+				TweenInfo.new(0.6, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+				{ CFrame = self.InitalCameraCFrame, FieldOfView = self.InitialFOV }
+			):Play()
+		end
+	end)
 end
 
 return DragToRotateViewportFrame

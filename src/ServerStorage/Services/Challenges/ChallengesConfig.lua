@@ -134,27 +134,7 @@ ChallengesConfig.challenges = {
 				},
 				{
 					rewardType = "BattlepassExp",
-					rewardAmount = 100,
-				},
-			},
-		},
-		{
-			name = "Rebuilding the world!",
-			description = "Build 5 objects",
-			typeOfProgression = "BuildObjects",
-			goal = 5,
-			rewards = {
-				{
-					rewardType = "BattleCoins",
-					rewardAmount = 100,
-				},
-				{
-					rewardType = "BattleGems",
-					rewardAmount = 10,
-				},
-				{
-					rewardType = "BattlepassExp",
-					rewardAmount = 100,
+					rewardAmount = 16666,
 				},
 			},
 		},
@@ -277,7 +257,7 @@ ChallengesConfig.challenges = {
 				},
 				{
 					rewardType = "BattlepassExp",
-					rewardAmount = 1000,
+					rewardAmount = 6666,
 				},
 			},
 		},

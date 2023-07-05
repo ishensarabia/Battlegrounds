@@ -13,31 +13,6 @@ local PlayerPreviewController = Knit.CreateController({ Name = "PlayerPreviewCon
 local playerCharacter
 local weaponEquipped
 
-function PlayerPreviewController:setHeadMouseBehavior(bool: boolean)
-	if bool then
-		local attachment = Instance.new("Attachment")
-		attachment.Name = "Camera Follow"
-		attachment.CFrame = playerCharacter.Head.CFrame
-		attachment.Parent = playerCharacter.Head
-
-		local IKController = Instance.new("IKControl")
-		IKController.Parent = playerCharacter.Humanoid
-		IKController.ChainRoot = playerCharacter.UpperTorso
-		IKController.EndEffector = playerCharacter.Head
-		IKController.Target = attachment
-		IKController.Pole = nil
-		RunService.RenderStepped:Connect(function(deltaTime)
-			attachment.WorldPosition = CFrame.lookAt(
-				playerCharacter.Head.CFrame.Position,
-				Vector3.new(
-					Mouse.Hit.Position.X,
-					playerCharacter.HumanoidRootPart.CFrame.Position.Y,
-					Mouse.Hit.Position.Z
-				)
-			).Position
-		end)
-	end
-end
 
 function PlayerPreviewController:SpawnWeaponInCharacterMenu()
 	if weaponEquipped then
@@ -86,7 +61,6 @@ function PlayerPreviewController:SpawnWeaponInCharacterMenu()
 			weld.Part0 = playerCharacter.RightHand
 			weld.Part1 = weaponEquipped.Handle
 		
-			-- self:setHeadMouseBehavior( true)
 		
 			--Animate the selected weapon
 			local IKController = Instance.new("IKControl")

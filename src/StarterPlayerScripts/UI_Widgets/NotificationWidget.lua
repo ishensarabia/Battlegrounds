@@ -9,7 +9,7 @@ local Knit = require(ReplicatedStorage.Packages.Knit)
 local NotificationWidget = {}
 local isInitialized = false
 --Notifiaction tween info
-local notificationTweenInfo = TweenInfo.new(1.6, Enum.EasingStyle.Exponential, Enum.EasingDirection.Out, 0, true, 0)
+local notificationTweenInfo = TweenInfo.new(0.6, Enum.EasingStyle.Exponential, Enum.EasingDirection.Out, 0, true, 0)
 --Constants
 local DELAY_TIME_BEFORE_NOTIFICATION = 0.66
 

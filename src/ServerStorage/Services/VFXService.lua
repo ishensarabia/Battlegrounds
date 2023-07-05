@@ -5,7 +5,8 @@ local Knit = require(ReplicatedStorage.Packages.Knit)
 local VFXService = Knit.CreateService {
     Name = "VFXService",
     Client = {
-        SpawnVFX = Knit.CreateSignal()
+        SpawnVFX = Knit.CreateSignal(),
+        StopVFX = Knit.CreateSignal()
     },
 }
 
@@ -20,10 +21,29 @@ function VFXService:PlayerDash(player : Player)
     end
 end
 
+function VFXService:PlayerSlide(player : Player)
+    for index, _player in Players:GetPlayers() do
+        self.Client.SpawnVFX:Fire(_player, "Slide", {HRP = player.Character.HumanoidRootPart})
+    end
+end
+
 function VFXService.Client:Dash(player)
     return self.Server:PlayerDash(player)
 end
 
+function VFXService.Client:Slide(player)
+    return self.Server:PlayerSlide(player)
+end
+
+function VFXService:StopSlide(player : Player)
+    for index, _player in Players:GetPlayers() do
+        self.Client.StopVFX:Fire(_player, "Slide", {HRP = player.Character.HumanoidRootPart})
+    end
+end
+
+function VFXService.Client:StopSlide(player)
+    return self.Server:StopSlide(player)
+end
 
 function VFXService:KnitInit()
     

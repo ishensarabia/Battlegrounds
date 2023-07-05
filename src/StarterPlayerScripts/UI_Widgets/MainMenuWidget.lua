@@ -8,6 +8,7 @@ local Assets = ReplicatedStorage.Assets
 local Knit = require(ReplicatedStorage.Packages.Knit)
 --Modules
 local FormatText = require(ReplicatedStorage.Source.Modules.Util.FormatText)
+local DragToRotateViewportFrame = require(ReplicatedStorage.Source.Modules.Util.DragToRotateViewportFrame)
 --Widgets
 local InventoryWidget = require(game.StarterPlayer.StarterPlayerScripts.Source.UI_Widgets.InventoryWidget)
 local BattlepassWidget = require(game.StarterPlayer.StarterPlayerScripts.Source.UI_Widgets.BattlepassWidget)
@@ -77,7 +78,7 @@ function MainMenuWidget:CloseMenu()
 
 	local storeButtonTween =
 		TweenService:Create(storeButtonFrame, TweenInfo.new(0.325), { Position = UDim2.fromScale(1, 0.312) })
-	
+
 	storeButtonTween:Play()
 	challengesButtonTween:Play()
 	mainFrameTween:Play()
@@ -240,23 +241,38 @@ function MainMenuWidget:Initialize()
 	--Set up player preview
 	local worldModel = Instance.new("WorldModel")
 	worldModel.Parent = playerPreviewViewportFrame
-	local dummy = ReplicatedStorage.Assets.Models.Dummy:Clone()
-	dummy.Parent = workspace
-	-- if not RunService:IsStudio() then
+	local playerCharacter = ReplicatedStorage.Assets.Models.Dummy:Clone()
+	playerCharacter.Parent = workspace
 	local playerDesc
 	local success, errorMessage = pcall(function()
 		playerDesc = Players:GetHumanoidDescriptionFromUserId(player.UserId)
 	end)
 	if playerDesc and success then
-		dummy:WaitForChild("Humanoid"):ApplyDescription(playerDesc)
+		playerCharacter:WaitForChild("Humanoid"):ApplyDescription(playerDesc)
 	end
-	-- end
-	dummy.Parent = worldModel
+	playerCharacter.Parent = worldModel
+	worldModel.PrimaryPart = playerCharacter.HumanoidRootPart
 	local camera = Instance.new("Camera")
 	camera.Parent = MainMenuGui
-	camera.CFrame = (dummy.PrimaryPart.CFrame + Vector3.new(0, 0, 7.3)) * CFrame.Angles(0, math.rad(40), 0)
-	--Align character to face camera
-	dummy:SetPrimaryPartCFrame(dummy.PrimaryPart.CFrame * CFrame.Angles(0, math.rad(-180), 0))
+	local dtrViewportFrame = DragToRotateViewportFrame.New(playerPreviewViewportFrame, camera)
+
+	dtrViewportFrame:SetModel(worldModel)
+	dtrViewportFrame.MouseMode = "Default"
+
+	local viewportConnection = playerPreviewViewportFrame.InputBegan:Connect(function(inputObject)
+		if
+			inputObject.UserInputType == Enum.UserInputType.MouseButton1
+			or inputObject.UserInputType == Enum.UserInputType.Touch
+		then
+			dtrViewportFrame:BeginDragging()
+
+			inputObject.Changed:Connect(function()
+				if inputObject.UserInputState == Enum.UserInputState.End then
+					dtrViewportFrame:StopDragging()
+				end
+			end)
+		end
+	end)
 	playerPreviewViewportFrame.CurrentCamera = camera
 	--Activate controller
 	local PlayerPreviewController = Knit.GetController("PlayerPreviewController")

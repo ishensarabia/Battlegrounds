@@ -5,6 +5,8 @@ local TweenService = game:GetService("TweenService")
 local Packages = game.ReplicatedStorage.Packages
 local Assets = ReplicatedStorage.Assets
 local Knit = require(ReplicatedStorage.Packages.Knit)
+--Modules
+local FormatText = require(ReplicatedStorage.Source.Modules.Util.FormatText)
 --Services
 local ChallengesService = Knit.GetService("ChallengesService")
 --Widgets
@@ -34,7 +36,7 @@ local function CreateChallengeFrame(challenge: table, challengeType: string, ind
 	for i, reward: table in challenge.rewards do
 		local rewardFrame = Assets.GuiObjects.Frames.ChallengeRewardFrame:Clone()
 		rewardFrame.RewardImage.Image = REWARD_TYPE_ICONS[reward.rewardType] or ""
-		rewardFrame.RewardAmount.Text = reward.rewardAmount
+		rewardFrame.RewardAmount.Text = FormatText.To_comma_value(reward.rewardAmount)
 		rewardFrame.LayoutOrder = i
 		rewardFrame.Parent = challengeFrame.RewardsFrame
 	end

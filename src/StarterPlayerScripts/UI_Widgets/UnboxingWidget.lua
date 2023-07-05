@@ -9,27 +9,40 @@ local Knit = require(ReplicatedStorage.Packages.Knit)
 --Services
 local StoreService = Knit.GetService("StoreService")
 local UIController = Knit.GetController("UIController")
+--Widgets
+local ButtonWidget = require(game.StarterPlayer.StarterPlayerScripts.Source.UI_Widgets.ButtonWidget)
 --Main
 local UnboxingWidget = {}
 --Gui objects
 local UnboxingGui
+
 local unboxingFrame
 local backgroundFrame
+local rewardFrame
 --Variables
 local rnd = Random.new()
 
-local tweenInfo = TweenInfo.new(0.69, Enum.EasingStyle.Linear, Enum.EasingDirection.InOut, 0)
+local tweenInfo = TweenInfo.new(0.39, Enum.EasingStyle.Linear, Enum.EasingDirection.InOut, 0)
 
 local function HideGuiObjects()
 	--Hide the gui objects by size for animation purposes
 	unboxingFrame.Size = UDim2.fromScale(0, 0)
+	unboxingFrame.Visible = false
+
+	rewardFrame.Size = UDim2.fromScale(0, 0)
+	rewardFrame.Visible = false
+
 	backgroundFrame.Transparency = 1
+	backgroundFrame.Visible = false
 end
 
 local function ShowGuiObjects()
 	if not UnboxingGui.Enabled then
 		UnboxingGui.Enabled = true
 	end
+	unboxingFrame.Visible = true
+	rewardFrame.Visible = true
+	backgroundFrame.Visible = true
 	--Tween the gui objects to their original size
 	local unboxingFrameTween =
 		TweenService:Create(unboxingFrame, tweenInfo, { Size = unboxingFrame:GetAttribute("TargetSize") })
@@ -37,6 +50,43 @@ local function ShowGuiObjects()
 	unboxingFrameTween:Play()
 	backgroundFrameTween:Play()
 	unboxingFrameTween.Completed:Wait()
+end
+
+--Show reward function
+local function DisplayReward(chosenReward, rewardType)
+	--Tween the reward frame to its original size
+	local rewardFrameTween =
+		TweenService:Create(rewardFrame, tweenInfo, { Size = rewardFrame:GetAttribute("TargetSize") })
+	rewardFrameTween:Play()
+	rewardFrameTween.Completed:Wait()
+	--Show the reward depending on the type
+	if rewardType == "Skin" then
+		UIController:CreateSkinFrame(chosenReward.Skin, chosenReward.Name, chosenReward.Rarity)
+			:andThen(function(skinFrame)
+				skinFrame.Parent = rewardFrame.ItemFrame
+				--Set the size and position of the skin frame
+				skinFrame.Size = UDim2.fromScale(1, 1)
+				skinFrame.Position = UDim2.fromScale(0, 0)
+			end)
+	end
+	--Connect the close button
+	rewardFrame.CloseButtonFrame.BackgroundButton.Activated:Connect(function()
+		ButtonWidget:OnActivation(rewardFrame.CloseButtonFrame.BackgroundButton, function()
+			--Tween the reward frame to its original size
+			local rewardFrameTween = TweenService:Create(rewardFrame, tweenInfo, { Size = UDim2.fromScale(0, 0) })
+			rewardFrameTween:Play()
+			rewardFrameTween.Completed:Wait()
+			rewardFrame.ItemFrame:ClearAllChildren()
+			--clear rewardFrame.ItemFrame of frames
+			for index, child in unboxingFrame.ItemsFrame.ItemsContainer:GetChildren() do
+				if child:IsA("Frame") then
+					child:Destroy()
+				end
+			end
+			--Hide the gui objects by size for animation purposes
+			HideGuiObjects()
+		end)
+	end)
 end
 
 function UnboxingWidget:Initialize(button: GuiButton, callback, customSoundName: string, params: table)
@@ -50,8 +100,11 @@ function UnboxingWidget:Initialize(button: GuiButton, callback, customSoundName:
 
 	--Initialize the gui objects
 	backgroundFrame = UnboxingGui.BackgroundFrame
-	UnboxingGui.Enabled = false
 	unboxingFrame = UnboxingGui.UnboxingFrame
+	rewardFrame = UnboxingGui.RewardFrame
+
+	--Disable the gui
+	UnboxingGui.Enabled = false
 
 	--Hide the gui objects by size for animation purposes
 	HideGuiObjects()
@@ -71,16 +124,15 @@ local function lerp(a, b, t)
 	return a + (b - a) * t
 end
 
-function UnboxingWidget:OpenCrate(crate: table, rewardChosen: table)
-	warn(crate, rewardChosen)
+function UnboxingWidget:OpenCrate(crate: table, chosenReward: table)
 	ShowGuiObjects()
 	local numItems = rnd:NextInteger(20, 100)
 	local chosenPosition = rnd:NextInteger(15, numItems - 5)
 	local unboxTime = rnd:NextInteger(3, 6)
 
 	for i = 1, numItems do
-		local rarityChosen = rewardChosen.Rarity
-		local randomItemChosen = rewardChosen
+		local rarityChosen = chosenReward.rarity
+		local randomItemChosen = chosenReward
 
 		if i ~= chosenPosition then
 			local rndChance = rnd:NextNumber() * 100
@@ -117,7 +169,7 @@ function UnboxingWidget:OpenCrate(crate: table, rewardChosen: table)
 
 	unboxingFrame.ItemsFrame.ItemsContainer.Position = UDim2.new(0, 0, 0.5, 0)
 
-	local cellSize = Assets.GuiObjects.Frames.SkinTemplate.Size.X.Scale
+	local cellSize = Assets.GuiObjects.Frames.SkinTemplateFrame.Size.X.Scale
 	local padding = unboxingFrame.ItemsFrame.ItemsContainer.UIListLayout.Padding.Scale
 	local pos1 = 0.5 - cellSize / 2
 	local nextOffset = -cellSize - padding
@@ -128,7 +180,7 @@ function UnboxingWidget:OpenCrate(crate: table, rewardChosen: table)
 
 	local timeOpened = tick()
 
-	local pow = rnd:NextNumber(2, 10)
+	local pow = rnd:NextNumber(3, 10)
 	local lastSlot = 0
 	local heartbeatConnection
 
@@ -149,19 +201,9 @@ function UnboxingWidget:OpenCrate(crate: table, rewardChosen: table)
 
 		if x >= 1 then
 			heartbeatConnection:Disconnect()
-			unboxingFrame.ContinueButton.Visible = true
-		end
-	end)
-
-	--Connect the close button
-	unboxingFrame.ContinueButton.Activated:Connect(function()
-		UnboxingGui.Enabled = false
-		unboxingFrame.ContinueButton.Visible = false
-		HideGuiObjects()
-		for index, child in unboxingFrame.ItemsFrame.ItemsContainer:GetChildren() do
-			if child:IsA("Frame") then
-				child:Destroy()
-			end
+			--show the reward
+			DisplayReward(chosenReward, crate.Type)
+			unboxingFrame.Visible = false
 		end
 	end)
 end

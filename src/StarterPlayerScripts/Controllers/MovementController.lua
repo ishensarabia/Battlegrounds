@@ -9,6 +9,10 @@ local Knit = require(ReplicatedStorage.Packages.Knit)
 local MovementController = Knit.CreateController({ Name = "MovementController" })
 
 local ACTION_DASH = "DASH"
+local ACTION_SLIDE = "SLIDE"
+
+local SLIDE_KEYCODE = Enum.KeyCode.C
+
 local character
 local DIRECTIONS = {
 	FORWARD = "FORWARD",
@@ -31,7 +35,9 @@ local ANIM_SPEED_DICTIONARY = {
 }
 
 local DASH_FORCE = 23
+local SLIDE_FORCE = 3.33 	
 local DASH_STAMINA_COST = 10
+local SLIDE_STAMINA_COST = 6
 local isHolding = false
 
 function MovementController:KnitStart() end
@@ -88,6 +94,68 @@ function MovementController:Dash(direction: string, vectorMultiplier: number)
 	end
 end
 
+--Slide function
+function MovementController:Slide()
+	-- Check if the player has enough stamina to slide
+	if character:GetAttribute("Stamina") >= SLIDE_STAMINA_COST then
+		-- Check if the slide action is already debounced
+		if not self.debounces.slide and character.Humanoid:GetState() == Enum.HumanoidStateType.Running then
+			character.Humanoid.JumpPower = 0
+			-- Mute the footsteps sound while slideing
+			local footstepsSound = Players.LocalPlayer.Character.HumanoidRootPart.Running
+			footstepsSound.Volume = 0
+
+			-- Get necessary controllers and services
+			local WeaponsController = Knit.GetController("WeaponsController")
+			local VFXService = Knit.GetService("VFXService")
+			local AudioService = Knit.GetService("AudioService")
+			-- Play the slide animation and trigger necessary actions
+			local animationTrack = self.AnimationController:PlayAnimation("Slide")
+			-- WeaponsController:Slide()
+			VFXService:Slide()
+
+			-- Set the slide action to debounced state
+			self.debounces.slide = true
+
+			-- Create a body velocity object to move the character
+			local linearVelocity = Instance.new("BodyVelocity")
+			linearVelocity.Parent = character.HumanoidRootPart
+			linearVelocity.MaxForce = Vector3.new(999999, 0, 999999)
+
+			-- Set the direction and speed of the slide based on input
+
+			--Reduce the velocity of the character over time to simulate friction
+			local slideLoop
+			local slideForceLeft = SLIDE_FORCE + character.Humanoid.WalkSpeed
+			slideLoop = RunService.Heartbeat:Connect(function()
+				slideForceLeft -= 0.133
+				if linearVelocity.Velocity.Magnitude > 0 and slideForceLeft > 9 then
+					self.StatsService:ExecuteAction("Slide")
+					AudioService:PlaySound("Slide", true, { RollOffMaxDistance = 100, RollOffMinDistance = 10, RollOffMode = Enum.RollOffMode.Linear })
+					linearVelocity.Velocity = character.HumanoidRootPart.CFrame.LookVector * slideForceLeft
+				else
+					self.AnimationController:StopAnimation("Slide")
+					slideLoop:Disconnect()
+				end
+				task.wait(1)
+			end)
+
+			-- Reset debounced state, enable IK and footsteps sound at the end of the dash animation
+			animationTrack.Ended:Connect(function()
+				self.StatsService:StopAction("Slide")
+				VFXService:StopSlide()
+				self.debounces.slide = false
+				character.Humanoid.JumpPower = 31
+				footstepsSound.Volume = 1.0
+				linearVelocity:Destroy()
+				if slideLoop then
+					slideLoop:Disconnect()
+				end
+			end)
+		end
+	end
+end
+
 function MovementController:OnJumpRequest()
 	local player = Players.LocalPlayer
 	local character = player.Character or player.CharacterAdded:Wait()
@@ -130,7 +198,7 @@ function MovementController:OnJumpRequest()
 				--Unequip the tools from the humanoid
 				player.Character.Humanoid:UnequipTools()
 				rootPart.Anchored = true
-				isHolding = true
+			isHolding = true
 				self.AnimationController:PlayAnimation("Climb")
 				--Generate a loop to drain stamina while holding the jump button
 				local staminaDrainLoop
@@ -164,6 +232,7 @@ function MovementController:KnitInit()
 		_character:WaitForChild("Humanoid"):SetStateEnabled(Enum.HumanoidStateType.Ragdoll, false)
 		_character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.FallingDown, false)
 		character = _character
+		--Bind actions to the context action service
 		ContextActionService:BindAction(ACTION_DASH, function(actionName, inputState, _inputObject)
 			if actionName == ACTION_DASH and inputState == Enum.UserInputState.Begin then
 				local Cam = workspace.CurrentCamera
@@ -181,9 +250,22 @@ function MovementController:KnitInit()
 				end
 			end
 		end, true, Enum.KeyCode.LeftControl)
+
+		--Set the position and description of the dash action
 		ContextActionService:SetPosition(ACTION_DASH, UDim2.new({ 0.916, 0 }, { 0.439, 0 }))
 		ContextActionService:SetDescription(ACTION_DASH, "Dash movement")
 		ContextActionService:SetTitle(ACTION_DASH, ACTION_DASH)
+		local isPressingSlide
+
+		ContextActionService:BindAction(ACTION_SLIDE, function(actionName, inputState, _inputObject)
+			if actionName == ACTION_SLIDE and inputState == Enum.UserInputState.Begin then
+				self:Slide()
+			end
+			if actionName == ACTION_SLIDE and inputState == Enum.UserInputState.End then
+				self.AnimationController:StopAnimation("Slide")
+			end
+		end, true, SLIDE_KEYCODE)
+
 		--Hook the user input service to the jump action
 		UserInputService.JumpRequest:Connect(function()
 			self:OnJumpRequest()

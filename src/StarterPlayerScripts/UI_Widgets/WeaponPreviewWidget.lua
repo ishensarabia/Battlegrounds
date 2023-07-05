@@ -8,7 +8,6 @@ local Packages = game.ReplicatedStorage.Packages
 local Assets = ReplicatedStorage.Assets
 local Knit = require(ReplicatedStorage.Packages.Knit)
 --Modules
-local ViewportModel = require(ReplicatedStorage.Source.Modules.Util.ViewportModel)
 local DragToRotateViewportFrame = require(ReplicatedStorage.Source.Modules.Util.DragToRotateViewportFrame)
 --Widgets
 local WeaponCustomWidget = require(game.StarterPlayer.StarterPlayerScripts.Source.UI_Widgets.WeaponCustomWidget)
@@ -183,18 +182,8 @@ function WeaponPreviewWidget:OpenPreview(weaponID: string, callback)
 			end)
 		end
 	end)
-	-- itemViewportModel = ViewportModel.new(viewportFrame, camera)
-	-- itemViewportModel:SetModel(weaponModel)
-	-- local theta = 0
-	-- local orientation
-	-- local cf, size = weaponModel:GetBoundingBox()
-	-- local distance = itemViewportModel:GetFitDistance(cf.Position)
-	-- WeaponPreviewWidget.viewportConnection = RunService.RenderStepped:Connect(function(dt)
-	-- 	theta = theta + math.rad(20 * dt)
-	-- 	orientation = CFrame.fromEulerAnglesYXZ(math.rad(-6), theta, 0)
-	-- 	camera.CFrame = CFrame.new(cf.Position) * orientation * CFrame.new(0, 0, distance)
-	-- end)
-	-- viewportFrame.CurrentCamera = camera
 end
+
+
 
 return WeaponPreviewWidget:Initialize()

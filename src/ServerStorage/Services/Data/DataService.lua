@@ -53,7 +53,7 @@ end
 function DataService:KnitStart()
 	-- Initialize profiles table to store
 	self.profiles = {}
-	self.profileStore = ProfileService.GetProfileStore("Development_Alpha_0.31", DataConfig.profileTemplate)
+	self.profileStore = ProfileService.GetProfileStore("Development1", DataConfig.profileTemplate)
 	Players.PlayerRemoving:Connect(function(player)
 		self:onPlayerRemoving(player)
 	end)
@@ -149,7 +149,6 @@ function DataService.Client:SaveWeaponCustomization(
 			end
 		end
 
-		warn(weaponData)
 		self.Server:SetKeyValue(player, "Weapons", weaponData)
 	end
 end
@@ -204,18 +203,15 @@ function DataService.Client:GetWeaponCustomization(player, weaponID: string)
 	return weaponCustomization
 end
 
-function DataService:GetWeaponEquipped(player, weapon: string)
-	local profile = self.profiles[player]
-	if profile then
-		return profile.Data.WeaponEquipped
-	end
-end
-
 function DataService:GetLoadout(player)
 	local profile = self.profiles[player]
 	if profile then
 		return profile.Data.Loadout
 	end
+end
+
+function DataService.Client:GetLoadout(player)
+	return self.Server:GetLoadout(player)
 end
 
 function DataService:SetWeaponEquipped(player, weapon: string)
@@ -226,8 +222,21 @@ function DataService:SetWeaponEquipped(player, weapon: string)
 end
 
 function DataService.Client:SetWeaponEquipped(player, weapon: string)
-	return self.Server:SetWeaponEquipped(player, weapon)
+	self.Server:SetWeaponEquipped(player, weapon)
 end
+
+--Get weapon equipped function
+function DataService:GetWeaponEquipped(player)
+	local profile = self.profiles[player]
+	if profile then
+		return profile.Data.Loadout.WeaponEquipped
+	end
+end
+--Get weapon equipped function
+function DataService.Client:GetWeaponEquipped(player)
+	return self.Server:GetWeaponEquipped(player)
+end
+
 
 function DataService:onPlayerAdded(player)
 	local profile = self.profileStore:LoadProfileAsync("Player_" .. player.UserId, "ForceLoad")
@@ -277,6 +286,29 @@ function DataService:AddBattlecoins(player, amount: number)
 	end
 end
 
+function DataService:GetEmotes(player)
+	local profile = self.profiles[player]
+	if profile then
+		return profile.Data.Emotes
+	end
+end
+
+function DataService.Client:GetEmotes(player)
+	return self.Server:GetEmotes(player)
+end
+
+--Has crate function
+function DataService:HasCrate(player, crateName: string)
+	local profile = self.profiles[player]
+	if profile then
+		if profile.Data.Crates[crateName] > 0 then
+			return true
+		else
+			return false
+		end
+	end
+end
+
 function DataService:AddCrate(player, crateName: string, needsValue: boolean?)
 	local profile = self.profiles[player]
 	if profile then
@@ -301,6 +333,20 @@ function DataService:AddSkin(player, skinName: string)
 			profile.Data.Skins[skinName] = 1
 		end
 	end
+end
+
+function DataService:AddEmote(player, emote : table)
+	local profile = self.profiles[player]
+	if profile then
+		--Make sure the emote is not already in the table
+		for _, v in pairs(profile.Data.Emotes) do
+			if v.name == emote.name then
+				return false
+			end
+		end
+		table.insert(profile.Data.Emotes, emote)
+	end
+	
 end
 
 function DataService:RemoveCrate(player, crateName: string, needsValue: boolean?)
