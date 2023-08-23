@@ -16,6 +16,7 @@ local BattlepassService = Knit.GetService("BattlepassService")
 local DataService = Knit.GetService("DataService")
 --Controllers
 local UIController = Knit.GetController("UIController")
+local EmoteController = Knit.GetController("EmoteController")
 local WeaponCustomizationController = Knit.GetController("WeaponCustomizationController")
 --variables
 local battlepassConfig
@@ -91,15 +92,15 @@ function BattlepassWidget:Initialize()
 		currentLevelFrame.BarFrame.currentLevelText.Text = newLevel
 		--Assign the next level
 		currentLevelFrame.BarFrame.nextLevelText.Text = newLevel + 1
-		rewardsFrame[newLevel].ClaimFrame.Visible = true
-		local shineTween = UIController:AnimateShineForFrame(rewardsFrame[newLevel].ClaimFrame, false, true)
+		rewardsFrame[newLevel].FreeClaimFrame.Visible = true
+		local shineTween = UIController:AnimateShineForFrame(rewardsFrame[newLevel].FreeClaimFrame, false, true)
 		--Connect the claim button
-		rewardsFrame[newLevel].ClaimFrame.ClaimButton.Activated:Connect(function()
-			ButtonWidget:OnActivation(rewardsFrame[newLevel].ClaimFrame.ClaimButton, function()
+		rewardsFrame[newLevel].FreeClaimFrame.ClaimButton.Activated:Connect(function()
+			ButtonWidget:OnActivation(rewardsFrame[newLevel].FreeClaimFrame.ClaimButton, function()
 				BattlepassService:ClaimBattlepassReward(newLevel)
-				rewardsFrame[newLevel].ClaimFrame.ClaimButton:Destroy()
+				rewardsFrame[newLevel].FreeClaimFrame.ClaimButton:Destroy()
 				UIController:StopAnimationForTween(shineTween)
-				rewardsFrame[newLevel].ClaimFrame.ClaimedText.Visible = true
+				rewardsFrame[newLevel].FreeClaimFrame.ClaimedText.Visible = true
 			end)
 		end)
 	end)
@@ -115,7 +116,7 @@ function BattlepassWidget:Initialize()
 			for i = 1, currentSeasonData.Level do
 				if not currentSeasonData.ClaimedLevels[i] and currentSeasonData.Level >= i then
 					rewardsFrame[i].ProgressBarFrame.BarFrame.ProgressBar.Size = UDim2.fromScale(1, 0.9)
-					rewardsFrame[i].ClaimFrame.Visible = true
+					rewardsFrame[i].FreeClaimFrame.Visible = true
 				end
 			end
 			--Assign the current xp
@@ -287,7 +288,7 @@ function BattlepassWidget:DisplayPreview(rewardInfo: table, level)
 		BattlepassPreviewGui.MainFrame.PreviewDescriptionFrame.RewardName.Text = rewardInfo.crateName:gsub("_", " ")
 		--Assign the correct reward description
 		BattlepassPreviewGui.MainFrame.PreviewDescriptionFrame.RewardDescription.Text =
-		battlepassConfig.RewardDescriptions[rewardInfo.rewardType]
+			battlepassConfig.RewardDescriptions[rewardInfo.rewardType]
 		--Assign the rarity text and color
 		BattlepassPreviewGui.MainFrame.PreviewDescriptionFrame.RewardRarity.Text = rewardInfo.rarity
 		BattlepassPreviewGui.MainFrame.PreviewDescriptionFrame.RewardRarity.TextColor3 = rewardInfo.rarityColor
@@ -319,6 +320,75 @@ function BattlepassWidget:DisplayPreview(rewardInfo: table, level)
 				end)
 			end
 		end)
+	elseif rewardInfo.rewardType == battlepassConfig.RewardTypes.Emote then
+		BattlepassPreviewGui.MainFrame.PreviewViewportFrame.Visible = true
+		BattlepassPreviewGui.MainFrame.RewardImage.Visible = false
+		BattlepassWidget.CurrentRewardItem = nil
+		--Assign the reward type to the preview frame
+		BattlepassPreviewGui.MainFrame.PreviewDescriptionFrame.RewardType.Text = rewardInfo.rewardType:gsub("_", " ")
+		--Assign the correct reward name
+		BattlepassPreviewGui.MainFrame.PreviewDescriptionFrame.RewardName.Text = rewardInfo.emoteName:gsub("_", " ")
+		--Assign the correct reward description
+		BattlepassPreviewGui.MainFrame.PreviewDescriptionFrame.RewardDescription.Text =
+			battlepassConfig.RewardDescriptions[rewardInfo.rewardType]
+		--Assign the rarity text and color
+		BattlepassPreviewGui.MainFrame.PreviewDescriptionFrame.RewardRarity.Text = rewardInfo.rarity
+		BattlepassPreviewGui.MainFrame.PreviewDescriptionFrame.RewardRarity.TextColor3 = rewardInfo.rarityColor
+		--Set the background color of the item frame to the rarity color
+		BattlepassPreviewGui.MainFrame.BackgroundColor3 = rewardInfo.rarityColor
+		--Assign the reward required level
+		BattlepassPreviewGui.MainFrame.PreviewDescriptionFrame.RewardRequirement.Text = "Required level " .. level
+		local emoteAnimation = Instance.new("Animation")
+		--Play emote
+		emoteAnimation.AnimationId = rewardInfo.rewardEmote.animation
+		emoteAnimation.Name = rewardInfo.rewardEmote.name
+		local viewportCamera = Instance.new("Camera")
+		viewportCamera.Parent = viewportFrame
+
+		local worldModel = EmoteController:DisplayEmotePreview(rewardInfo.rewardEmote.name, viewportCamera)
+		local dtrViewportFrame = DragToRotateViewportFrame.New(viewportFrame, viewportCamera)
+
+		dtrViewportFrame:SetModel(worldModel)
+		dtrViewportFrame.MouseMode = "Default"
+
+		viewportConnection = viewportFrame.InputBegan:Connect(function(inputObject)
+			if
+				inputObject.UserInputType == Enum.UserInputType.MouseButton1
+				or inputObject.UserInputType == Enum.UserInputType.Touch
+			then
+				dtrViewportFrame:BeginDragging()
+
+				inputObject.Changed:Connect(function()
+					if inputObject.UserInputState == Enum.UserInputState.End then
+						dtrViewportFrame:StopDragging()
+					end
+				end)
+			end
+		end)
+	elseif rewardInfo.rewardType == battlepassConfig.RewardTypes.Emote_Icon then
+		warn(rewardInfo)
+		BattlepassPreviewGui.MainFrame.RewardImage.Visible = true
+		BattlepassPreviewGui.MainFrame.PreviewViewportFrame.Visible = false
+
+		BattlepassWidget.CurrentRewardItem = nil
+
+		--Assign the reward type to the preview frame
+		BattlepassPreviewGui.MainFrame.PreviewDescriptionFrame.RewardType.Text = rewardInfo.rewardType:gsub("_", " ")
+		--Assign the correct reward name
+		BattlepassPreviewGui.MainFrame.PreviewDescriptionFrame.RewardName.Text = rewardInfo.rewardEmoteIcon.name
+		--Assign the correct reward description
+		BattlepassPreviewGui.MainFrame.PreviewDescriptionFrame.RewardDescription.Text =
+			battlepassConfig.RewardDescriptions[rewardInfo.rewardType]
+		--Assign the rarity text and color
+		BattlepassPreviewGui.MainFrame.PreviewDescriptionFrame.RewardRarity.Text = rewardInfo.rarity
+		BattlepassPreviewGui.MainFrame.PreviewDescriptionFrame.RewardRarity.TextColor3 = rewardInfo.rarityColor
+		--Set the background color of the item frame to the rarity color
+		BattlepassPreviewGui.MainFrame.BackgroundColor3 = rewardInfo.rarityColor
+		--Assign the reward required level
+		BattlepassPreviewGui.MainFrame.PreviewDescriptionFrame.RewardRequirement.Text = "Required level " .. level
+
+		BattlepassPreviewGui.MainFrame.RewardImage.Image = rewardInfo.rewardEmoteIcon.imageID
+		BattlepassPreviewGui.MainFrame.RewardImage.Visible = true
 	else
 		BattlepassPreviewGui.MainFrame.RewardImage.Visible = true
 		BattlepassPreviewGui.MainFrame.PreviewViewportFrame.Visible = true
@@ -349,6 +419,49 @@ local function CreateItemRewardFrame(battlepassConfig: table, rewardInfo: table,
 	local rewardTypes = battlepassConfig.RewardTypes
 	if rewardInfo.rewardType == rewardTypes.Emote then
 		--ToDo: Code for emote
+		local emote: table = rewardInfo.rewardEmote
+		local emoteFrame = UIController:CreateEmoteFrame(rewardInfo.rewardEmote)
+		emoteFrame.Parent = rewardTypeFrame
+		--Connect the mouse enter events to the viewport
+		emoteFrame.ViewportFrame.MouseEnter:Connect(function()
+			if not BattlepassPreviewGui.Enabled then
+				BattlepassPreviewGui.Enabled = true
+			end
+			-- if currentRewardFrameInPreview then
+			-- 	currentRewardFrameInPreview.SelectionFrame.Visible = false
+			-- end
+			currentRewardFrameInPreview = emoteFrame
+			--format the data to pass to the display preview
+			local rewardInfo = {
+				rewardType = rewardTypes.Emote,
+				rarity = emote.rarity,
+				emoteName = emote.name,
+				rarityColor = battlepassConfig.RarityColors[emote.rarity],
+				rewardEmote = emote,
+			}
+			BattlepassWidget:DisplayPreview(rewardInfo, level)
+		end)
+	elseif rewardInfo.rewardType == rewardTypes.Emote_Icon then
+		local emoteIconFrame = UIController:CreateEmoteIconFrame(rewardInfo.rewardEmoteIcon)
+		emoteIconFrame.Parent = rewardTypeFrame
+		--Connect the mouse enter events to the viewport
+		emoteIconFrame.EmoteIcon.MouseEnter:Connect(function()
+			if not BattlepassPreviewGui.Enabled then
+				BattlepassPreviewGui.Enabled = true
+			end
+			-- if currentRewardFrameInPreview then
+			-- 	currentRewardFrameInPreview.SelectionFrame.Visible = false
+			-- end
+			currentRewardFrameInPreview = emoteIconFrame
+			--format the data to pass to the display preview
+			local rewardInfo = {
+				rewardType = rewardTypes.Emote_Icon,
+				rarity = rewardInfo.rewardEmoteIcon.rarity,
+				rarityColor = battlepassConfig.RarityColors[rewardInfo.rewardEmoteIcon.rarity],
+				rewardEmoteIcon = rewardInfo.rewardEmoteIcon,
+			}
+			BattlepassWidget:DisplayPreview(rewardInfo, level)
+		end)
 	elseif rewardInfo.rewardType == rewardTypes.Skin then
 		--Create the skin frame
 		local skinData = rewardInfo.rewardSkin
@@ -375,8 +488,11 @@ local function CreateItemRewardFrame(battlepassConfig: table, rewardInfo: table,
 			end)
 		end)
 	elseif rewardInfo.rewardType == rewardTypes.Crate then
-		warn(rewardInfo)
-		local crateFrame = UIController:CreateCrateFrame(rewardInfo.crateName, rewardTypeFrame, battlepassConfig.RarityColors["Mythic"])
+		local crateFrame = UIController:CreateCrateFrame(
+			rewardInfo.crateName,
+			rewardTypeFrame,
+			battlepassConfig.RarityColors["Mythic"]
+		)
 		crateFrame.Parent = rewardTypeFrame
 		--Connect the mouse enter events to the viewport
 		crateFrame.ViewportFrame.MouseEnter:Connect(function()
@@ -427,6 +543,7 @@ local function CreateItemRewardFrame(battlepassConfig: table, rewardInfo: table,
 end
 
 function BattlepassWidget:GenerateRewards(battlepassData)
+	warn(battlepassData)
 	BattlepassService:GetBattlepassConfig():andThen(function(_battlepassConfig)
 		battlepassConfig = _battlepassConfig
 		local seasonRewards = _battlepassConfig.rewards[battlepassData.currentSeason]
@@ -443,28 +560,68 @@ function BattlepassWidget:GenerateRewards(battlepassData)
 			--Set the bar size to 0
 			battlepassRewardFrame.ProgressBarFrame.BarFrame.ProgressBar.Size = UDim2.fromScale(0, 0.9)
 			battlepassRewardFrame.Parent = BattlepassWidget.MainFrame.RewardsFrame
-			--Check if the player has claimed this rank if it's alreayd completed
-			if
-				not table.find(battlepassData[battlepassData.currentSeason].ClaimedLevels, level)
-				and battlepassData[battlepassData.currentSeason].Level >= level
-			then
-				battlepassRewardFrame.ClaimFrame.Visible = true
-				local shineTween = UIController:AnimateShineForFrame(battlepassRewardFrame.ClaimFrame, false, true)
+			--Check if the player has claimed this rank and whether has claimed free or premium rewards
+			local seasonData = battlepassData[battlepassData.currentSeason]
+			--Free levels
+			if not table.find(seasonData.ClaimedLevels.Freepass, level) and seasonData.Level >= level then
+				battlepassRewardFrame.FreePadlockIcon.Visible = false
+				battlepassRewardFrame.FreeClaimFrame.Visible = true
+				local shineTween = UIController:AnimateShineForFrame(battlepassRewardFrame.FreeClaimFrame, false, true)
+				--If the reward is claimed in the battlepass reward frame, also claim it in the free reward and stop the tween
+				battlepassRewardFrame.FreeClaimFrame.ClaimButton.Destroying:Connect(function()
+					UIController:StopAnimationForTween(shineTween)
+					task.wait()
+				end)
 				--Connect the claim button
-				battlepassRewardFrame.ClaimFrame.ClaimButton.Activated:Connect(function()
-					ButtonWidget:OnActivation(battlepassRewardFrame.ClaimFrame.ClaimButton, function()
-						BattlepassService:ClaimBattlepassReward(level)
-						battlepassRewardFrame.ClaimFrame.ClaimButton:Destroy()
+				battlepassRewardFrame.FreeClaimFrame.ClaimButton.Activated:Connect(function()
+					ButtonWidget:OnActivation(battlepassRewardFrame.FreeClaimFrame.ClaimButton, function()
+						BattlepassService:ClaimBattlepassReward(level, "Freepass")
+						battlepassRewardFrame.FreeClaimFrame.ClaimButton:Destroy()
 						UIController:StopAnimationForTween(shineTween)
-						battlepassRewardFrame.ClaimFrame.ClaimedText.Visible = true
+						battlepassRewardFrame.FreeClaimFrame.ClaimedText.Visible = true
 					end)
 				end)
-			elseif table.find(battlepassData[battlepassData.currentSeason].ClaimedLevels, level) then
+			elseif table.find(seasonData.ClaimedLevels.Freepass, level) then
 				--If the player has already claimed the reward
-				battlepassRewardFrame.ClaimFrame.ClaimButton:Destroy()
-				battlepassRewardFrame.ClaimFrame.Visible = true
-				battlepassRewardFrame.ClaimFrame.ClaimedText.Visible = true
+				battlepassRewardFrame.FreeClaimFrame.ClaimButton:Destroy()
+				battlepassRewardFrame.FreeClaimFrame.Visible = true
+				battlepassRewardFrame.FreePadlockIcon.Visible = false
+				battlepassRewardFrame.FreeClaimFrame.ClaimedText.Visible = true
 			end
+
+			--Battlepass levels
+			if
+				not table.find(seasonData.ClaimedLevels.Battlepass, level)
+				and seasonData.Level >= level
+				and seasonData.Owned
+			then
+				battlepassRewardFrame.BattlepassPadlockIcon.Visible = false
+				battlepassRewardFrame.BattlepassClaimFrame.Visible = true
+				local shineTween =
+					UIController:AnimateShineForFrame(battlepassRewardFrame.BattlepassClaimFrame, false, true)
+				--Connect the claim button
+				battlepassRewardFrame.BattlepassClaimFrame.ClaimButton.Activated:Connect(function()
+					ButtonWidget:OnActivation(battlepassRewardFrame.BattlepassClaimFrame.ClaimButton, function()
+						BattlepassService:ClaimBattlepassReward(level, "Battlepass")
+						battlepassRewardFrame.BattlepassClaimFrame.ClaimButton:Destroy()
+						UIController:StopAnimationForTween(shineTween)
+						battlepassRewardFrame.BattlepassClaimFrame.ClaimedText.Visible = true
+						--Claiming the battlepass reward will also claim the free reward if the player hasn't claimed it yet
+						if not table.find(seasonData.ClaimedLevels.Freepass, level) then
+							battlepassRewardFrame.FreeClaimFrame.ClaimButton:Destroy()
+							battlepassRewardFrame.FreeClaimFrame.Visible = true
+							battlepassRewardFrame.FreeClaimFrame.ClaimedText.Visible = true
+						end
+					end)
+				end)
+			elseif table.find(seasonData.ClaimedLevels.Battlepass, level) then
+				--If the player has already claimed the reward
+				battlepassRewardFrame.BattlepassClaimFrame.ClaimButton:Destroy()
+				battlepassRewardFrame.BattlepassClaimFrame.Visible = true
+				battlepassRewardFrame.BattlepassPadlockIcon.Visible = false
+				battlepassRewardFrame.BattlepassClaimFrame.ClaimedText.Visible = true
+			end
+
 			--Generate the item rewards frames for each rank and separate them to premium rewards and free rewards
 			for _, rewardInfo in rankRewardsTable.battlepass do
 				CreateItemRewardFrame(_battlepassConfig, rewardInfo, battlepassRewardFrame.PremiumRewardsFrame, level)

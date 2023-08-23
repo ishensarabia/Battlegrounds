@@ -5,6 +5,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Knit = require(ReplicatedStorage.Packages.Knit)
 --Assets
 local Skins = require(ReplicatedStorage.Source.Assets.Skins)
+local Emotes = require(ReplicatedStorage.Source.Assets.Emotes)
 
 local StoreService = Knit.CreateService({
 	Name = "StoreService",
@@ -100,7 +101,6 @@ StoreService.bundles = {
 		},
 	},
 }
-
 
 StoreService.crates = {
 	["Skins_Crate"] = {
@@ -267,75 +267,6 @@ StoreService.crates = {
 			Mythic = 1,
 		},
 	},
-	["Knockout_Effects_Crate"] = {
-		Price = 100,
-		Currency = "BattleGems",
-		Contents = {
-			[1] = {
-				Name = "Knockout Effect 1",
-				Price = 100,
-				Type = "Knockout Effect",
-				Rarity = "Common",
-				Image = "rbxassetid://0",
-				Description = "This is a knockout effect",
-				Id = 1,
-			},
-			[2] = {
-				Name = "Knockout Effect 2",
-				Price = 100,
-				Type = "Knockout Effect",
-				Rarity = "Common",
-				Image = "rbxassetid://0",
-				Description = "This is a knockout effect",
-				Id = 2,
-			},
-			[3] = {
-				Name = "Knockout Effect 3",
-				Price = 100,
-				Type = "Knockout Effect",
-				Rarity = "Common",
-				Image = "rbxassetid://0",
-				Description = "This is a knockout effect",
-				Id = 3,
-			},
-			[4] = {
-				Name = "Knockout Effect 4",
-				Price = 100,
-				Type = "Knockout Effect",
-				Rarity = "Common",
-				Image = "rbxassetid://0",
-				Description = "This is a knockout effect",
-				Id = 4,
-			},
-			[5] = {
-				Name = "Knockout Effect 5",
-				Price = 100,
-				Type = "Knockout Effect",
-				Rarity = "Common",
-				Image = "rbxassetid://0",
-				Description = "This is a knockout effect",
-				Id = 5,
-			},
-			[6] = {
-				Name = "Knockout Effect 6",
-				Price = 100,
-				Type = "Knockout Effect",
-				Rarity = "Common",
-				Image = "rbxassetid://0",
-				Description = "This is a knockout effect",
-				Id = 6,
-			},
-			[7] = {
-				Name = "Knockout Effect 7",
-				Price = 100,
-				Type = "Knockout Effect",
-				Rarity = "Common",
-				Image = "rbxassetid://0",
-				Description = "This is a knockout effect",
-				Id = 7,
-			},
-		},
-	},
 	["Starter_Crate"] = {
 		Price = 160,
 		Currency = "Robux",
@@ -344,6 +275,76 @@ StoreService.crates = {
 			BattleCoins = 3500,
 			BattleGems = 1200,
 			Skins_Crate = 1,
+		},
+	},
+	["Emotes_Crate"] = {
+		Price = 100,
+		Currency = "BattleGems",
+		Type = "Emote",
+		Color = Color3.fromRGB(30, 138, 165),
+		Contents = {
+			[1] = {
+				Name = Emotes.Club_Dance.name,
+				Rarity = Emotes.Club_Dance.rarity,
+				EmoteAnimation = Emotes.Club_Dance.animation,
+			},
+			[2] = {
+				Name = Emotes.Sleep.name,
+				Rarity = Emotes.Sleep.rarity,
+				EmoteAnimation = Emotes.Sleep.animation,
+			},
+			[3] = {
+				Name = Emotes.Boneless.name,
+				Rarity = Emotes.Boneless.rarity,
+				EmoteAnimation = Emotes.Boneless.animation,
+			},
+			[4] = {
+				Name = Emotes.Feet_Clap.name,
+				Rarity = Emotes.Feet_Clap.rarity,
+				EmoteAnimation = Emotes.Feet_Clap.animation,
+			},
+			[5] = {
+				Name = Emotes.Dab.name,
+				Rarity = Emotes.Dab.rarity,
+				EmoteAnimation = Emotes.Dab.animation,
+			},
+			[6] = {
+				Name = Emotes.Cosita.name,
+				Rarity = Emotes.Cosita.rarity,
+				EmoteAnimation = Emotes.Cosita.animation,
+			},
+			[7] = {
+				Name = Emotes.The_Twist.name,
+				Rarity = Emotes.The_Twist.rarity,
+				EmoteAnimation = Emotes.The_Twist.animation,
+			},
+			[8] = {
+				Name = Emotes.Zombiller.name,
+				Rarity = Emotes.Zombiller.rarity,
+				EmoteAnimation = Emotes.Zombiller.animation,
+			},
+			[9] = {
+				Name = Emotes.Worming.name,
+				Rarity = Emotes.Worming.rarity,
+				EmoteAnimation = Emotes.Worming.animation,
+			},
+			[10] = {
+				Name = Emotes.Hype.name,
+				Rarity = Emotes.Hype.rarity,
+				EmoteAnimation = Emotes.Hype.animation,
+			},
+			[11] = {
+				Name = Emotes.Fresh.name,
+				Rarity = Emotes.Fresh.rarity,
+				EmoteAnimation = Emotes.Fresh.animation,
+			}
+		},
+		RaritiesPercentages = {
+			Common = 70,
+			Rare = 20,
+			Epic = 5,
+			Legendary = 4,
+			Mythic = 1,
 		},
 	},
 }
@@ -411,6 +412,17 @@ function StoreService:KnitStart()
 		return self._currencyService:AddCurrency(player, "BattleGems", 16000)
 	end
 
+
+	--Battlepass seasons
+	--ProductId 1532101515 Season 1
+	productFunctions[1532101515] = function(receipt, player)
+		local battlepassData = self._dataService:GetKeyValue(player, "Battlepass")
+		battlepassData.Season_1.Owned = true
+		self._dataService:SetKeyValue(player, "Battlepass", battlepassData)
+		warn(battlepassData)
+		return true
+	end
+
 	local function processReceipt(receiptInfo)
 		local userId = receiptInfo.PlayerId
 		local productId = receiptInfo.ProductId
@@ -461,7 +473,7 @@ function StoreService:BuyBundle(player, bundleCategory: string, bundleName: stri
 	local success, result = pcall(function()
 		return PolicyService:GetPolicyInfoForPlayerAsync(player)
 	end)
-	
+
 	if not success then
 		warn("PolicyService error: " .. result)
 	elseif result.ArePaidRandomItemsRestricted then
@@ -509,12 +521,12 @@ function StoreService.Client:BuyCrate(player, crateName: string)
 end
 
 --Open crate function
-function StoreService:OpenCrate(player, crateName: string, crateType : string)
-	warn(crateName, crateType)
+function StoreService:OpenCrate(player, crateName: string, crateType: string)
 	--check if the player has the crate
 	if not self._dataService:HasCrate(player, crateName) then
-		return nil 
+		return nil
 	end
+	warn("[Store Service] opening crate: " .. crateName )
 	local n = 0
 	local rarityChosen = nil
 	local crate = self.crates[crateName]
@@ -540,31 +552,30 @@ function StoreService:OpenCrate(player, crateName: string, crateType : string)
 
 	shuffle(crate.Contents)
 	local rewardChosen
-	for index, contentData : table in crate.Contents do
-		warn(contentData)
+	for index, contentData: table in crate.Contents do
 		if contentData.Rarity == rarityChosen then
 			--assign the reward to the player
+			rewardChosen = contentData
 			if crateType == "Skin" then
-				rewardChosen = contentData
 				self._dataService:AddSkin(player, contentData.Name)
 			end
 
 			if crateType == "Emote" then
-				rewardChosen = contentData
-				self._dataService:AddEmote(player, contentData)
+				self._dataService:AddEmote(player, contentData.Name)
 			end
 			break
 		end
 	end
-
+	local unboxTime = math.random(3,6)
 	--Remove crate from player's inventory
 	local cratesLeft = self._dataService:RemoveCrate(player, crateName, true)
 	--Fire the signal
-	self.Client.OpenCrateSignal:Fire(player, crate, rewardChosen, cratesLeft, crateName)
+	self.Client.OpenCrateSignal:Fire(player, crate, rewardChosen, cratesLeft, crateName, unboxTime)
+	return unboxTime
 end
 
 --[Client] Open crate function
-function StoreService.Client:OpenCrate(player, crateName: string, crateType : string)
+function StoreService.Client:OpenCrate(player, crateName: string, crateType: string)
 	return self.Server:OpenCrate(player, crateName, crateType)
 end
 

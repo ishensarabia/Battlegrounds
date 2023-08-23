@@ -9,6 +9,7 @@ local ViewportModel = require(ReplicatedStorage.Source.Modules.Util.ViewportMode
 local DragToRotateViewportFrame = require(ReplicatedStorage.Source.Modules.Util.DragToRotateViewportFrame)
 --Controllers
 local WeaponCustomizationController = Knit.GetController("WeaponCustomizationController")
+local EmoteController = Knit.GetController("EmoteController")
 --Screen guis
 local HoverGui
 --Gui objects
@@ -147,6 +148,9 @@ function HoverWidget:CloseHover()
 			child:Destroy()
 		end
 	end
+	--Clean the viewport frame
+	viewportFrame:ClearAllChildren()
+	--Disable the screen gui
 	HoverGui.Enabled = false
 end
 
@@ -169,8 +173,6 @@ function HoverWidget:OpenCrateInfo(params: table)
 		contentItemTemplate.RarityTextLabel.TextColor3 = RARITIES_COLORS[contentInfo.Rarity]
 		--Assign the parent
 		contentItemTemplate.Parent = ItemsDisplayFrame
-		--Assign the icon
-		contentItemTemplate.SkinBackground.Image = contentInfo.Skin
 		--Assign the display order
 		contentItemTemplate.LayoutOrder = RARITIES_DISPLAY_ORDER[contentInfo.Rarity]
 		
@@ -179,6 +181,7 @@ function HoverWidget:OpenCrateInfo(params: table)
 			contentItemTemplate.ContentIcon = contentInfo.Image
 		end
 		if params._type == "Skin" then
+			contentItemTemplate.SkinBackground.Image = contentInfo.Skin
 			--Get the weapon equipped
 			local DataService = Knit.GetService("DataService")
 			DataService:GetKeyValue("Loadout"):andThen(function(loadout)
@@ -213,6 +216,9 @@ function HoverWidget:OpenCrateInfo(params: table)
 				--Assign the viewport camera
 				viewportFrame.CurrentCamera = viewportCamera
 			end)
+		end
+		if params._type == "Emote" then
+			EmoteController:DisplayEmotePreview(contentInfo.Name, contentItemTemplate.ViewportFrame, true)
 		end
 	end
 end

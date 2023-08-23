@@ -53,7 +53,7 @@ end
 function DataService:KnitStart()
 	-- Initialize profiles table to store
 	self.profiles = {}
-	self.profileStore = ProfileService.GetProfileStore("Development1", DataConfig.profileTemplate)
+	self.profileStore = ProfileService.GetProfileStore("Development_Alpha-09.14", DataConfig.profileTemplate)
 	Players.PlayerRemoving:Connect(function(player)
 		self:onPlayerRemoving(player)
 	end)
@@ -69,6 +69,8 @@ function DataService:GetProfileData(player)
 		return profile.Data
 	end
 end
+
+
 
 function DataService:GetKeyValue(player, key: string)
 	repeat
@@ -335,18 +337,33 @@ function DataService:AddSkin(player, skinName: string)
 	end
 end
 
-function DataService:AddEmote(player, emote : table)
+function DataService:AddEmote(player, emoteName : table)
 	local profile = self.profiles[player]
+	warn(profile.Data.Emotes)
 	if profile then
-		--Make sure the emote is not already in the table
-		for _, v in pairs(profile.Data.Emotes) do
-			if v.name == emote.name then
-				return false
-			end
+		if profile.Data.Emotes.EmotesOwned[emoteName] then
+			profile.Data.Emotes.EmotesOwned[emoteName] += 1
+		else
+			profile.Data.Emotes.EmotesOwned[emoteName] = 1
 		end
-		table.insert(profile.Data.Emotes, emote)
 	end
-	
+	warn(profile.Data.Emotes.EmotesOwned)
+end
+
+function DataService:SaveEmote(player, emoteIndex, emoteName)
+	local playerEmotes = self:GetEmotes(player)
+	if playerEmotes then
+		--format the emote name to be the same as the emote name in the emotes table
+		emoteName = emoteName:gsub(" ", "_")
+		playerEmotes.EmotesEquipped[emoteIndex] = emoteName
+	end
+end
+
+function DataService:RemoveEmote(player, emoteIndex)
+	local emotes = self:GetEmotes(player)
+	if emotes then
+		emotes.EmotesEquipped[emoteIndex] = nil
+	end
 end
 
 function DataService:RemoveCrate(player, crateName: string, needsValue: boolean?)

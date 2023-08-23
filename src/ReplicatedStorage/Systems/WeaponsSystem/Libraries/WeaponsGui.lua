@@ -62,10 +62,14 @@ function WeaponsGui.new(weaponsSystem)
 		self.crosshairRight = self.crosshairFrame:WaitForChild("Right")
 		self.crosshairTop = self.crosshairFrame:WaitForChild("Top")
 		self.origCrosshairScales = {} -- these will be used to size crosshair pieces when screen size changes
-		self.origCrosshairScales[self.crosshairBottom] = Vector2.new(self.crosshairBottom.Size.X.Scale, self.crosshairBottom.Size.Y.Scale)
-		self.origCrosshairScales[self.crosshairLeft] = Vector2.new(self.crosshairLeft.Size.X.Scale, self.crosshairLeft.Size.Y.Scale)
-		self.origCrosshairScales[self.crosshairRight] = Vector2.new(self.crosshairRight.Size.X.Scale, self.crosshairRight.Size.Y.Scale)
-		self.origCrosshairScales[self.crosshairTop] = Vector2.new(self.crosshairTop.Size.X.Scale, self.crosshairTop.Size.Y.Scale)
+		self.origCrosshairScales[self.crosshairBottom] =
+			Vector2.new(self.crosshairBottom.Size.X.Scale, self.crosshairBottom.Size.Y.Scale)
+		self.origCrosshairScales[self.crosshairLeft] =
+			Vector2.new(self.crosshairLeft.Size.X.Scale, self.crosshairLeft.Size.Y.Scale)
+		self.origCrosshairScales[self.crosshairRight] =
+			Vector2.new(self.crosshairRight.Size.X.Scale, self.crosshairRight.Size.Y.Scale)
+		self.origCrosshairScales[self.crosshairTop] =
+			Vector2.new(self.crosshairTop.Size.X.Scale, self.crosshairTop.Size.Y.Scale)
 		self.crosshairNormalSize = self.crosshairFrame.AbsoluteSize
 
 		self.hitMarker = self.scalingElementsFolder:WaitForChild("HitMarker"):WaitForChild("HitMarkerImage")
@@ -77,23 +81,36 @@ function WeaponsGui.new(weaponsSystem)
 		self.largeTouchscreen = self.gui:WaitForChild("LargeTouchscreen")
 
 		self.smallAimButton = self.smallTouchscreen:WaitForChild("AimButton")
-		self.smallAimButton.Activated:Connect(function() self:onTouchAimButtonActivated() end)
+		self.smallAimButton.Activated:Connect(function()
+			self:onTouchAimButtonActivated()
+		end)
 		self.largeAimButton = self.largeTouchscreen:WaitForChild("AimButton")
-		self.largeAimButton.Activated:Connect(function() self:onTouchAimButtonActivated() end)
+		self.largeAimButton.Activated:Connect(function()
+			self:onTouchAimButtonActivated()
+		end)
 		self.smallFireButton = self.smallTouchscreen:WaitForChild("FireButton")
-		self.smallFireButton.InputBegan:Connect(function(inputObj) self:onTouchFireButton(inputObj, Enum.UserInputState.Begin) end)
-		self.smallFireButton.InputEnded:Connect(function(inputObj) self:onTouchFireButton(inputObj, Enum.UserInputState.End) end)
+		self.smallFireButton.InputBegan:Connect(function(inputObj)
+			self:onTouchFireButton(inputObj, Enum.UserInputState.Begin)
+		end)
+		self.smallFireButton.InputEnded:Connect(function(inputObj)
+			self:onTouchFireButton(inputObj, Enum.UserInputState.End)
+		end)
 		self.largeFireButton = self.largeTouchscreen:WaitForChild("FireButton")
-		self.largeFireButton.InputBegan:Connect(function(inputObj) self:onTouchFireButton(inputObj, Enum.UserInputState.Begin) end)
-		self.largeFireButton.InputEnded:Connect(function(inputObj) self:onTouchFireButton(inputObj, Enum.UserInputState.End) end)
+		self.largeFireButton.InputBegan:Connect(function(inputObj)
+			self:onTouchFireButton(inputObj, Enum.UserInputState.Begin)
+		end)
+		self.largeFireButton.InputEnded:Connect(function(inputObj)
+			self:onTouchFireButton(inputObj, Enum.UserInputState.End)
+		end)
 
 		self.smallFireButton.Visible = false
 		self.largeFireButton.Visible = false
 
 		self.gui.Parent = LocalPlayer:WaitForChild("PlayerGui")
-		self.gui:GetPropertyChangedSignal("AbsoluteSize"):Connect(function() self:onScreenSizeChanged() end)
+		self.gui:GetPropertyChangedSignal("AbsoluteSize"):Connect(function()
+			self:onScreenSizeChanged()
+		end)
 		self:onScreenSizeChanged()
-
 
 		WeaponData.OnClientEvent:Connect(function(cmd, otherPlayerPosition)
 			if cmd == "HitByOtherPlayer" then
@@ -153,15 +170,36 @@ function WeaponsGui:onScreenSizeChanged()
 	self.crosshairNormalSize = self.crosshairFrame.AbsoluteSize
 
 	-- Update crosshair sizes...they must use offset because crosshairFrame changes size frequently
-	self.crosshairBottom.Size = UDim2.new(0, self.origCrosshairScales[self.crosshairBottom].X * self.crosshairNormalSize.X, 0, self.origCrosshairScales[self.crosshairBottom].Y * self.crosshairNormalSize.Y)
-	self.crosshairLeft.Size = UDim2.new(0, self.origCrosshairScales[self.crosshairLeft].X * self.crosshairNormalSize.X, 0, self.origCrosshairScales[self.crosshairLeft].Y * self.crosshairNormalSize.Y)
-	self.crosshairRight.Size = UDim2.new(0, self.origCrosshairScales[self.crosshairRight].X * self.crosshairNormalSize.X, 0, self.origCrosshairScales[self.crosshairRight].Y * self.crosshairNormalSize.Y)
-	self.crosshairTop.Size = UDim2.new(0, self.origCrosshairScales[self.crosshairTop].X * self.crosshairNormalSize.X, 0, self.origCrosshairScales[self.crosshairTop].Y * self.crosshairNormalSize.Y)
+	self.crosshairBottom.Size = UDim2.new(
+		0,
+		self.origCrosshairScales[self.crosshairBottom].X * self.crosshairNormalSize.X,
+		0,
+		self.origCrosshairScales[self.crosshairBottom].Y * self.crosshairNormalSize.Y
+	)
+	self.crosshairLeft.Size = UDim2.new(
+		0,
+		self.origCrosshairScales[self.crosshairLeft].X * self.crosshairNormalSize.X,
+		0,
+		self.origCrosshairScales[self.crosshairLeft].Y * self.crosshairNormalSize.Y
+	)
+	self.crosshairRight.Size = UDim2.new(
+		0,
+		self.origCrosshairScales[self.crosshairRight].X * self.crosshairNormalSize.X,
+		0,
+		self.origCrosshairScales[self.crosshairRight].Y * self.crosshairNormalSize.Y
+	)
+	self.crosshairTop.Size = UDim2.new(
+		0,
+		self.origCrosshairScales[self.crosshairTop].X * self.crosshairNormalSize.X,
+		0,
+		self.origCrosshairScales[self.crosshairTop].Y * self.crosshairNormalSize.Y
+	)
 end
 
 -- This scales the scale amount non-linearly according to scaleWeight
 function WeaponsGui:getWeightedScaleAmount(originalScaleAmount, newScreenDim, referenceScreenDim)
-	return (1 - self.scaleWeight) * originalScaleAmount * referenceScreenDim / newScreenDim + self.scaleWeight * originalScaleAmount
+	return (1 - self.scaleWeight) * originalScaleAmount * referenceScreenDim / newScreenDim
+		+ self.scaleWeight * originalScaleAmount
 end
 
 function WeaponsGui:updateScale(guiObject, viewportSize)
@@ -173,8 +211,16 @@ function WeaponsGui:updateScale(guiObject, viewportSize)
 				self.originalScaleAmounts[guiObject] = Vector2.new(xScale, yScale)
 			end
 
-			xScale = self:getWeightedScaleAmount(self.originalScaleAmounts[guiObject].X, viewportSize.X, self.referenceViewportSize.X)
-			yScale = self:getWeightedScaleAmount(self.originalScaleAmounts[guiObject].Y, viewportSize.Y, self.referenceViewportSize.Y)
+			xScale = self:getWeightedScaleAmount(
+				self.originalScaleAmounts[guiObject].X,
+				viewportSize.X,
+				self.referenceViewportSize.X
+			)
+			yScale = self:getWeightedScaleAmount(
+				self.originalScaleAmounts[guiObject].Y,
+				viewportSize.Y,
+				self.referenceViewportSize.Y
+			)
 			guiObject.Size = UDim2.new(xScale, 0, yScale, 0)
 		end
 		return -- makes it so only the most outer container will be scaled
@@ -192,7 +238,9 @@ function WeaponsGui:setEnabled(enabled)
 
 	self.enabled = enabled
 	if self.enabled then
-		self.connections.renderStepped = RunService.RenderStepped:Connect(function(dt) self:onRenderStepped(dt) end)
+		self.connections.renderStepped = RunService.RenderStepped:Connect(function(dt)
+			self:onRenderStepped(dt)
+		end)
 	else
 		self:setZoomed(false)
 
@@ -271,7 +319,12 @@ function WeaponsGui:setCrosshairScaleTarget(target, dampingRatio, frequency)
 	end
 
 	self.crosshairScaleTarget = target
-	SpringService:Target(self, self.crosshairDampingRatio, self.crosshairFrequency, { crosshairScale = self.crosshairScaleTarget })
+	SpringService:Target(
+		self,
+		self.crosshairDampingRatio,
+		self.crosshairFrequency,
+		{ crosshairScale = self.crosshairScaleTarget }
+	)
 end
 
 function WeaponsGui:setCrosshairScale(scale)
@@ -280,10 +333,15 @@ function WeaponsGui:setCrosshairScale(scale)
 	end
 
 	self.crosshairScale = scale
-	SpringService:Target(self, self.crosshairDampingRatio, self.crosshairFrequency, { crosshairScale = self.crosshairScaleTarget })
+	SpringService:Target(
+		self,
+		self.crosshairDampingRatio,
+		self.crosshairFrequency,
+		{ crosshairScale = self.crosshairScaleTarget }
+	)
 end
 
-function WeaponsGui:OnHitOtherPlayer(damage, humanoidHit) -- show hit indicator, then fade
+function WeaponsGui:OnHitOtherPlayer(damage, humanoidHit, isHeadshot: boolean) -- show hit indicator, then fade
 	self.hitMarker.ImageTransparency = 0
 	local tweenInfo = TweenInfo.new(0.8)
 	local goal = {}
@@ -291,7 +349,7 @@ function WeaponsGui:OnHitOtherPlayer(damage, humanoidHit) -- show hit indicator,
 	local tween = TweenService:Create(self.hitMarker, tweenInfo, goal)
 	tween:Play()
 
-	DamageBillboardHandler:ShowDamageBillboard(damage, humanoidHit.Parent:FindFirstChild("Head"))
+	DamageBillboardHandler:ShowDamageBillboard(damage, humanoidHit.Parent:FindFirstChild("Head"), isHeadshot)
 end
 
 function WeaponsGui:onRenderStepped(dt)
@@ -305,7 +363,7 @@ function WeaponsGui:onRenderStepped(dt)
 	if self.weaponsSystem.camera.isDashing then
 		self:setZoomed(false)
 	end
-	
+
 	if self.crosshairFrame and self.crosshairEnabled then
 		local crosshairSize = self.crosshairNormalSize * self.crosshairScale * self.crosshairWeaponScale
 		self.crosshairFrame.Size = UDim2.new(0, crosshairSize.X, 0, crosshairSize.Y)

@@ -10,8 +10,8 @@ local Assets = ReplicatedStorage.Assets
 --Modules
 local ViewportModel = require(ReplicatedStorage.Source.Modules.Util.ViewportModel)
 --Widgets
-local HoverWidget 
-local ButtonWidget 
+local HoverWidget
+local ButtonWidget
 
 local RARITIES_COLORS = {
 	Common = Color3.fromRGB(39, 180, 126),
@@ -23,12 +23,12 @@ local RARITIES_COLORS = {
 function UIController:KnitStart()
 	for key, child in (UIModules:GetChildren()) do
 		if child:IsA("ModuleScript") then
-			require(child)
+			self[child.Name] = require(child)
 		end
 	end
 	self._WeaponCustomizationController = Knit.GetController("WeaponCustomizationController")
 	self._ShineLoops = {}
-	HoverWidget =  require(game.StarterPlayer.StarterPlayerScripts.Source.UI_Widgets.HoverWidget)
+	HoverWidget = require(game.StarterPlayer.StarterPlayerScripts.Source.UI_Widgets.HoverWidget)
 	ButtonWidget = require(game.StarterPlayer.StarterPlayerScripts.Source.UI_Widgets.ButtonWidget)
 end
 
@@ -127,7 +127,31 @@ function UIController:CreateCrateFrame(crateName: string, parent: GuiObject, rar
 	return crateFrame
 end
 
-function UIController:CreateWeaponPreviewViewport() end
+--create emote frame
+function UIController:CreateEmoteFrame(emote)
+	local emoteFrame = Assets.GuiObjects.Frames.EmoteTemplateFrame:Clone()
+	emoteFrame.NameTextLabel.Text = emote.Name or emote.name
+	emoteFrame.RarityTextLabel.Text = emote.Rarity or emote.rarity
+	--set rarity color
+	emoteFrame.RarityTextLabel.TextColor3 = RARITIES_COLORS[emote.Rarity or emote.rarity]
+	emoteFrame.ItemFrame.ImageColor3 = RARITIES_COLORS[emote.Rarity or emote.rarity]
+	task.spawn(function()
+		Knit.GetController("EmoteController"):DisplayEmotePreview(emote.Name or emote.name, emoteFrame.ViewportFrame, true)
+	end)
+	return emoteFrame
+end
+
+--create emote icon frame
+function UIController:CreateEmoteIconFrame(emoteIcon)
+	local emoteIconFrame = Assets.GuiObjects.Frames.EmoteIconTemplateFrame:Clone()
+	emoteIconFrame.NameTextLabel.Text = emoteIcon.name
+	emoteIconFrame.RarityTextLabel.Text = emoteIcon.rarity
+	--set rarity color
+	emoteIconFrame.RarityTextLabel.TextColor3 = RARITIES_COLORS[emoteIcon.rarity]
+	emoteIconFrame.ItemFrame.ImageColor3 = RARITIES_COLORS[emoteIcon.rarity]
+	emoteIconFrame.EmoteIcon.Image = emoteIcon.imageID
+	return emoteIconFrame
+end
 
 function UIController:AnimateShineForFrame(frame: Frame, transitionTransparency: boolean, shouldLoop: boolean)
 	local gradient = frame:FindFirstChildOfClass("UIGradient")

@@ -1,4 +1,5 @@
 --Services
+local GuiService = game:GetService("GuiService")
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
@@ -137,6 +138,40 @@ function WeaponPreviewWidget:ClosePreview()
 	end)
 end
 
+local function visualizeRay(pos, vector)
+	local distance = vector.Magnitude
+	local p = Instance.new("Part")
+	p.Anchored = true
+	p.CanCollide = false
+	p.Size = Vector3.new(0.5, 0.5, distance)
+	p.BrickColor = BrickColor.Random()
+	p.CanQuery = false
+	p.CFrame = CFrame.lookAt(pos, pos+vector)*CFrame.new(0, 0, -distance/2-5)
+	game.Debris:AddItem(p,1)
+	return p
+end
+
+local function RaycastInViewportFrame(viewportFrame, raycastDistance, raycastParams)
+	raycastDistance = raycastDistance or 1000
+	local camera = viewportFrame.CurrentCamera
+	local worldModel = viewportFrame:FindFirstChildWhichIsA("WorldModel")
+	local mousePosition = UserInputService:GetMouseLocation() - GuiService:GetGuiInset() - viewportFrame.AbsolutePosition -- account for viewportframe offset
+	local relativePosition = ((mousePosition - (viewportFrame.AbsoluteSize/2)) * Vector2.new(1, -1))/(viewportFrame.AbsoluteSize/2) -- get the relative position of the click with center of viewportFrame as origin: -1 is left/bottom and 1 is right/top for X and Y respectively
+	local projectedY = math.tan(math.rad(camera.FieldOfView)/2)*raycastDistance -- the projected height of a 2D frame raycastDistance studs from the camera with same aspect ratio
+	local projectedX = projectedY * (viewportFrame.AbsoluteSize.X/viewportFrame.AbsoluteSize.Y) -- projected width from aspect ratio
+	local projectedPosition = Vector2.new(projectedX, projectedY) * relativePosition -- the projected position of the input on the similar frame
+	local worldPosition = (camera.CFrame * CFrame.new(projectedPosition.X, projectedPosition.Y, -raycastDistance)).Position -- the 3d position of said projected position
+	
+	-- local part = visualizeRay(camera.CFrame.Position, (worldPosition - camera.CFrame.Position).Unit * raycastDistance)
+	-- part.Parent = workspace
+	-- local part = visualizeRay(camera.CFrame.Position, (worldPosition - camera.CFrame.Position).Unit * raycastDistance)
+	-- part.Parent = worldModel
+	-- local part = visualizeRay(camera.CFrame.Position, (worldPosition - camera.CFrame.Position).Unit * raycastDistance)
+	-- part.Parent = viewportFrame
+
+	return worldModel:Raycast(camera.CFrame.Position, (worldPosition - camera.CFrame.Position).Unit * raycastDistance, raycastParams)
+end
+
 function WeaponPreviewWidget:OpenPreview(weaponID: string, callback)
 	weaponPreviewGui.Enabled = true
 	local camera = Instance.new("Camera")
@@ -149,8 +184,8 @@ function WeaponPreviewWidget:OpenPreview(weaponID: string, callback)
 	itemInfoFrame.ItemTitleFrame.Title.Text = string.upper(formattedWeaponName)
 	itemInfoFrame.Description.Text = ReplicatedStorage.Weapons.Preview[weaponID]:GetAttribute("Description")
 	--Generate world models
-	-- local worldModel = Instance.new("WorldModel")
-	-- worldModel.Parent = viewportFrame
+	local worldModel = Instance.new("WorldModel")
+	worldModel.Parent = viewportFrame
 	local weaponModel = ReplicatedStorage.Weapons.Preview[weaponID]:Clone()
 	--Check if the item is a tool get the model
 	if weaponModel:IsA("Tool") then
@@ -163,16 +198,25 @@ function WeaponPreviewWidget:OpenPreview(weaponID: string, callback)
 	--Set up customization
 	WeaponPreviewWidget.itemModel = weaponModel
 	WeaponPreviewWidget.weaponID = weaponID
-	-- weaponModel.Parent = worldModel
+	--Set up the primary part
+	worldModel.PrimaryPart = weaponModel.PrimaryPart
+	weaponModel.Parent = worldModel
 
-	dtrViewportFrame:SetModel(weaponModel)
+	dtrViewportFrame:SetModel(worldModel)
 	dtrViewportFrame.MouseMode = "Default"
 
 	viewportConnection = viewportFrame.InputBegan:Connect(function(inputObject)
 		if
 			inputObject.UserInputType == Enum.UserInputType.MouseButton1
 			or inputObject.UserInputType == Enum.UserInputType.Touch
-		then
+			
+		then			
+			-- perform raycast
+			local result = RaycastInViewportFrame(viewportFrame, 100)
+			if result then
+				print("Clicked part:", result.Instance.Name)
+			end
+			
 			dtrViewportFrame:BeginDragging()
 
 			inputObject.Changed:Connect(function()
@@ -183,7 +227,5 @@ function WeaponPreviewWidget:OpenPreview(weaponID: string, callback)
 		end
 	end)
 end
-
-
 
 return WeaponPreviewWidget:Initialize()

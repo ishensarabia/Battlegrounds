@@ -8,7 +8,7 @@ local Knit = require(ReplicatedStorage.Packages.Knit)
 local Sounds = {
 	buttonClick = "rbxassetid://4499400560",
 	Dash = "rbxassetid://8653395088",
-	Slide = "rbxassetid://6429226498",
+	Slide = "rbxassetid://9117933230",
 }
 local AudioService = Knit.CreateService({
 	Name = "AudioService",

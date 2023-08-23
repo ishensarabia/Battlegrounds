@@ -47,6 +47,8 @@ local FeaturedItemsFrame
 local DailyItemsMainFrame
 local CategoriesFrame
 local ItemsScrollingFrame
+-- Variables
+local isOpeningCrate = false
 
 local buttonTweenInfo = TweenInfo.new(0.15, Enum.EasingStyle.Linear, Enum.EasingDirection.InOut, 0, true, 0)
 
@@ -128,7 +130,6 @@ function StoreWidget:Initialize()
 	end
 	--Connect store signals
 	StoreService.CrateAddedSignal:Connect(function(crateName: string, totalAmountOfCrates: number)
-		warn("Crate added", crateName, totalAmountOfCrates)
 		--if the frame exists, update the open button text
 		if ItemsScrollingFrame:FindFirstChild(crateName) then			
 			ItemsScrollingFrame[crateName].OpenButton.Visible = true
@@ -321,9 +322,16 @@ function StoreWidget:GenerateCratesFrames(crates: table)
 		end)
 		--Connect the open event
 		crateFrame.OpenButton.Activated:Connect(function()
-			ButtonWidget:OnActivation(crateFrame.OpenButton, function()
-				StoreService:OpenCrate(crateName, crateData.Type)
-			end)
+			if not isOpeningCrate then
+				isOpeningCrate = true	
+				ButtonWidget:OnActivation(crateFrame.OpenButton, function()
+					StoreService:OpenCrate(crateName, crateData.Type):andThen(function(unboxTime)						
+						task.delay(unboxTime, function()
+							isOpeningCrate = false
+						end)
+					end)
+				end)
+			end
 		end)
 	end
 end

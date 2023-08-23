@@ -23,6 +23,12 @@ DataConfig.profileTemplate = {
 			Prestige = "Beginner",
 			Customization = {},
 		},
+		M4A4 = {
+			Owned = true,
+			Rank = 0,
+			Prestige = "Beginner",
+			Customization = {},
+		},
 		["Rail-Rifle"] = {
 			Owned = true,
 			Rank = 0,
@@ -53,7 +59,10 @@ DataConfig.profileTemplate = {
 			Level = 1,
 			Experience = 0,
 			Owned = false,
-			ClaimedLevels = {},
+			ClaimedLevels = {
+				Freepass = {},
+				Battlepass = {},
+			},
 		},
 	},
 	Challenges = {
@@ -62,14 +71,8 @@ DataConfig.profileTemplate = {
 	},
 	Crates = {},
 	Emotes = {
-		EmotesOwned = {
-			"Sleep",
-			"Club Dance",
-		},
-		EmotesEquipped = {
-
-		},
-
+		EmotesOwned = {},
+		EmotesEquipped = {},
 	},
 }
 

@@ -9,27 +9,36 @@ local NotificationWidget = require(game.StarterPlayer.StarterPlayerScripts.Sourc
 function NotificationController:KnitStart() end
 
 NotificationController.Notifications = {
-    KO = "KO",
-    Death = "Death"
+	Wipeout = "Wipeout",
+	Death = "Death",
+	Assist = "Assist",
 }
 
 function NotificationController:KnitInit()
-    --Get the ScoreService
+	--Get the ScoreService
 	local ScoreService = Knit.GetService("ScoreService")
-    --Connect to notification signals
-    ScoreService.KO_Notification:Connect(function(damageDealt : number, player : Player)
+	--Connect to notification signals
+	ScoreService.Wipeout_Notification:Connect(function(damageDealt: number, player: Player)
+		local params = {
+			damageDealt = damageDealt,
+			playerWipedOut = player,
+		}
+		NotificationWidget:DisplayNotification(self.Notifications.Wipeout, params)
+	end)
+	ScoreService.Death_Notification:Connect(function(killer: Player)
+		local params = {
+			killer = killer,
+		}
+		NotificationWidget:DisplayNotification(self.Notifications.Death, params)
+	end)
+    ScoreService.Assist_Notification:Connect(function(playerWipedOutAssist : Player, damageDealt : number)
         local params = {
-            damageDealt = damageDealt,
-            playerKnockedOut = player
+			damageDealt = damageDealt,
+			playerWipedOutAssist = playerWipedOutAssist.Name
         }
-        NotificationWidget:DisplayNotification(self.Notifications.KO, params)
+        NotificationWidget:DisplayNotification(self.Notifications.Assist, params)
     end)
-    ScoreService.Death_Notification:Connect(function(killer : Player)
-        local params = {
-            killer = killer,
-        }
-        NotificationWidget:DisplayNotification(self.Notifications.Death, params)
-    end)
+        
 end
 
 return NotificationController

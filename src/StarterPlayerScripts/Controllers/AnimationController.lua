@@ -10,11 +10,12 @@ function AnimationController:InitAnimation(character, animationName: string, ani
 	local animationTrack = Instance.new("Animation")
 	animationTrack.AnimationId = animationID
 	animationTrack.Parent = character
-	self._animationTracks[animationName] =
-		character:WaitForChild("Humanoid").Animator:LoadAnimation(animationTrack)
+	self._animationTracks[animationName] = character:WaitForChild("Humanoid").Animator:LoadAnimation(animationTrack)
 end
 
-function AnimationController:PlayAnimation(animationName: string, playbackSpeed : number)
+function AnimationController:PlayAnimation(animationName: string, playbackSpeed: number)
+	--Format the animation name
+	animationName = animationName:gsub(" ", "_")
 	self._animationTracks[animationName]:Play()
 	if playbackSpeed then
 		self._animationTracks[animationName]:AdjustSpeed(playbackSpeed)
@@ -24,6 +25,8 @@ end
 
 --Stop animation function
 function AnimationController:StopAnimation(animationName: string)
+	--Format the animation name
+	animationName = animationName:gsub(" ", "_")
 	self._animationTracks[animationName]:Stop()
 end
 
@@ -56,7 +59,7 @@ function AnimationController:KnitInit()
 				self:InitAnimation(character, animationName, animationID)
 			end
 		end
-        DisableHandOut(character)
+		DisableHandOut(character)
 	end)
 end
 

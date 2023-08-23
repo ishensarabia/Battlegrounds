@@ -69,6 +69,13 @@ local function DisplayReward(chosenReward, rewardType)
 				skinFrame.Position = UDim2.fromScale(0, 0)
 			end)
 	end
+	if rewardType == "Emote" then
+		local emoteFrame = UIController:CreateEmoteFrame(chosenReward)
+		--Set the size and position of the emote frame
+		emoteFrame.Parent = rewardFrame.ItemFrame
+		emoteFrame.Size = UDim2.fromScale(1, 1)
+		emoteFrame.Position = UDim2.fromScale(0, 0)
+	end
 	--Connect the close button
 	rewardFrame.CloseButtonFrame.BackgroundButton.Activated:Connect(function()
 		ButtonWidget:OnActivation(rewardFrame.CloseButtonFrame.BackgroundButton, function()
@@ -109,8 +116,8 @@ function UnboxingWidget:Initialize(button: GuiButton, callback, customSoundName:
 	--Hide the gui objects by size for animation purposes
 	HideGuiObjects()
 	--Connect signal
-	StoreService.OpenCrateSignal:Connect(function(crate: table, rewardChosen: table)
-		UnboxingWidget:OpenCrate(crate, rewardChosen)
+	StoreService.OpenCrateSignal:Connect(function(crate: table, rewardChosen: table, unboxingTime)
+		UnboxingWidget:OpenCrate(crate, rewardChosen, unboxingTime)
 	end)
 	return UnboxingWidget
 end
@@ -124,11 +131,11 @@ local function lerp(a, b, t)
 	return a + (b - a) * t
 end
 
-function UnboxingWidget:OpenCrate(crate: table, chosenReward: table)
+function UnboxingWidget:OpenCrate(crate: table, chosenReward: table, unboxTime : number)
+	warn(unboxTime)
 	ShowGuiObjects()
-	local numItems = rnd:NextInteger(20, 100)
+	local numItems = rnd:NextInteger(20, 33)
 	local chosenPosition = rnd:NextInteger(15, numItems - 5)
-	local unboxTime = rnd:NextInteger(3, 6)
 
 	for i = 1, numItems do
 		local rarityChosen = chosenReward.rarity
@@ -160,11 +167,16 @@ function UnboxingWidget:OpenCrate(crate: table, chosenReward: table)
 				end
 			end
 		end
-
-		UIController:CreateSkinFrame(randomItemChosen.Skin, randomItemChosen.Name, randomItemChosen.Rarity)
-			:andThen(function(_newItemFrame)
-				_newItemFrame.Parent = unboxingFrame.ItemsFrame.ItemsContainer
-			end)
+		if crate.Type == "Skin" then
+			UIController:CreateSkinFrame(randomItemChosen.Skin, randomItemChosen.Name, randomItemChosen.Rarity)
+				:andThen(function(_newItemFrame)
+					_newItemFrame.Parent = unboxingFrame.ItemsFrame.ItemsContainer
+				end)
+		end
+		if crate.Type == "Emote" then
+			local emoteFrame = UIController:CreateEmoteFrame(randomItemChosen)
+			emoteFrame.Parent = unboxingFrame.ItemsFrame.ItemsContainer
+		end
 	end
 
 	unboxingFrame.ItemsFrame.ItemsContainer.Position = UDim2.new(0, 0, 0.5, 0)

@@ -143,6 +143,7 @@ function ShoulderCamera.new(weaponsSystem)
 	self.minPitch = math.rad(-75) -- min degrees camera can angle down
 	self.maxPitch = math.rad(75) -- max degrees camera can cangle up
 	self.normalOffset = Vector3.new(2.25, 2.25, 10.5) -- this is the camera's offset from the player
+	self.crouchedOffset = Vector3.new(2.25, 0.25, 10)
 	self.zoomedOffsetDistance = 8 -- number of studs to zoom in from default offset when zooming
 	self.normalCrosshairScale = 1
 	self.zoomedCrosshairScale = 0.75
@@ -163,7 +164,11 @@ function ShoulderCamera.new(weaponsSystem)
 	self.zoomWalkSpeed = 8
 	self.normalWalkSpeed = 13.33
 	self.sprintingWalkSpeed = 19.99
+	self.crouchWalkSpeed = 7
 	self.dashingWalkSpeed = 0
+	--Field of Views
+	self.dashingFieldOfView = 75
+	self.slidingFieldOfView = 75
 
 	-- Current state
 	self.enabled = false
@@ -367,8 +372,15 @@ function ShoulderCamera:onRenderStep(dt)
 	-- Handle gamepad input
 	self:processGamepadInput(dt)
 
+	-- Camera offsets
+	if self.isCrouching or self.isSliding then
+		self.currentOffset = self.crouchedOffset
+	else
+		self.currentOffset = self.normalOffset	
+	end
+
 	-- Smoothly zoom to desired values
-	if self.isDashing then
+	if self.isDashing or self.isSliding then
 		self.zoomState = false
 	end
 	if self.hasScope then
@@ -399,6 +411,14 @@ function ShoulderCamera:onRenderStep(dt)
 		if self.isDashing then
 			self.desiredWalkSpeed = self.dashingWalkSpeed
 		end
+		if self.isCrouching then
+			self.desiredWalkSpeed = self.crouchWalkSpeed
+		end
+
+		--Handle field of view changes
+		if self.isDashing or self.isSliding then
+			self.desiredFieldOfView = self.dashingFieldOfView
+		end
 		ShoulderCamera.SpringService:Target(self.currentHumanoid, 0.95, 4, { WalkSpeed = self.desiredWalkSpeed })
 	end
 
@@ -407,9 +427,9 @@ function ShoulderCamera:onRenderStep(dt)
 	local rootPartUnrotatedCFrame = CFrame.new(rootPartPos)
 	local yawRotation = CFrame.Angles(0, self.yaw, 0)
 	local pitchRotation = CFrame.Angles(self.pitch + self.currentRecoil.Y, 0, 0)
-	local xOffset = CFrame.new(self.normalOffset.X, 0, 0)
-	local yOffset = CFrame.new(0, self.normalOffset.Y, 0)
-	local zOffset = CFrame.new(0, 0, self.normalOffset.Z)
+	local xOffset = CFrame.new(self.currentOffset.X, 0, 0)
+	local yOffset = CFrame.new(0, self.currentOffset.Y, 0)
+	local zOffset = CFrame.new(0, 0, self.currentOffset.Z)
 	local collisionRadius = self:getCollisionRadius()
 	local cameraYawRotationAndXOffset = yawRotation -- First rotate around the Y axis (look left/right)
 		* xOffset -- Then perform the desired offset (so camera is centered to side of player instead of directly on player)
@@ -502,7 +522,7 @@ function ShoulderCamera:onRenderStep(dt)
 			self.timeUntilZoomOut = self.defaultTimeUntilZoomOut
 		end
 
-		if occlusionDistance / self.normalOffset.Z > 0.8 and self.timeLastPoppedWayIn == 0 then
+		if occlusionDistance / self.currentOffset.Z > 0.8 and self.timeLastPoppedWayIn == 0 then
 			self.timeLastPoppedWayIn = currentTime
 		end
 
@@ -518,7 +538,7 @@ function ShoulderCamera:onRenderStep(dt)
 		-- If occlusion pops camera in to almost first person for a short time, pop out instantly
 		if
 			currentTime < self.timeLastPoppedWayIn + self.defaultTimeUntilZoomOut
-			and self.lastOcclusionDistance / self.normalOffset.Z > 0.8
+			and self.lastOcclusionDistance / self.currentOffset.Z > 0.8
 		then
 			self.lastOcclusionDistance = occlusionDistance
 			self.lastOcclusionReachedTime = currentTime
@@ -536,7 +556,7 @@ function ShoulderCamera:onRenderStep(dt)
 			self.occlusionTweenObject.Value = self.lastOcclusionDistance
 			local tweenInfo = TweenInfo.new(self.tweenOutTime)
 			local goal = {}
-			goal.Value = self.lastOcclusionDistance - self.normalOffset.Z
+			goal.Value = self.lastOcclusionDistance - self.currentOffset.Z
 			self.curOcclusionTween = TweenService:Create(self.occlusionTweenObject, tweenInfo, goal)
 			self.curOcclusionTween:Play()
 		end

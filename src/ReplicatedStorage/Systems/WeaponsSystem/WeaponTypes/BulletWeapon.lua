@@ -117,7 +117,9 @@ function BulletWeapon:onEquippedChanged()
 		end
 
 		if self.equipped then
-			ContextActionService:BindAction("ReloadWeapon", function(...) self:onReloadAction(...) end, false, Enum.KeyCode.R, Enum.KeyCode.ButtonX)
+			ContextActionService:BindAction("ReloadWeapon", function(...)
+				self:onReloadAction(...)
+			end, false, Enum.KeyCode.R, Enum.KeyCode.ButtonX)
 		else
 			ContextActionService:UnbindAction("ReloadWeapon")
 
@@ -153,10 +155,15 @@ function BulletWeapon:animateBoltAction(isOpen)
 		self:tryPlaySound("BoltCloseSound")
 	end
 
-	local actionMoveTime = isOpen and self:getConfigValue("ActionOpenTime", 0.025) or self:getConfigValue("ActionCloseTime", 0.075)
+	local actionMoveTime = isOpen and self:getConfigValue("ActionOpenTime", 0.025)
+		or self:getConfigValue("ActionCloseTime", 0.075)
 	local targetCFrame = isOpen and self.boltMotorTarget.CFrame or self.boltMotorStart.CFrame
 
-	local boltTween = TweenService:Create(self.boltMotor, TweenInfo.new(actionMoveTime, Enum.EasingStyle.Quad, Enum.EasingDirection.InOut), { C0 = targetCFrame })
+	local boltTween = TweenService:Create(
+		self.boltMotor,
+		TweenInfo.new(actionMoveTime, Enum.EasingStyle.Quad, Enum.EasingDirection.InOut),
+		{ C0 = targetCFrame }
+	)
 	boltTween:Play()
 	boltTween.Completed:Wait()
 end
@@ -198,7 +205,14 @@ function BulletWeapon:simulateFire(firingPlayer, fireInfo)
 		casing.Anchored = false
 		casing.Archivable = false
 		casing.CFrame = self.casingEjectPoint.WorldCFrame
-		casing.Velocity = self.casingEjectPoint.Parent.Velocity + (self.casingEjectPoint.WorldAxis * localRandom:NextNumber(self:getConfigValue("CasingEjectSpeedMin", 15), self:getConfigValue("CasingEjectSpeedMax", 18)))
+		casing.Velocity = self.casingEjectPoint.Parent.Velocity
+			+ (
+				self.casingEjectPoint.WorldAxis
+				* localRandom:NextNumber(
+					self:getConfigValue("CasingEjectSpeedMin", 15),
+					self:getConfigValue("CasingEjectSpeedMax", 18)
+				)
+			)
 		casing.Parent = workspace.CurrentCamera
 		CollectionService:AddTag(casing, "WeaponsSystemIgnore")
 
@@ -253,7 +267,7 @@ function BulletWeapon:getIgnoreList(includeLocalPlayer)
 	if not ignoreList or now - self.ignoreListRefreshTime > IGNORE_LIST_LIFETIME then
 		ignoreList = {
 			self.instanceIsTool and self.instance.Parent or self.instance,
-			workspace.CurrentCamera
+			workspace.CurrentCamera,
 		}
 		if not RunService:IsServer() then
 			if includeLocalPlayer and Players.LocalPlayer and Players.LocalPlayer.Character then
@@ -343,15 +357,21 @@ function BulletWeapon:simulateProjectile(firingPlayer, fireInfo, projectileIdx, 
 		muzzleParticles.Parent.CFrame = CFrame.new(origin, origin + dir)
 		local numSteps = 5
 		for _ = 1, numSteps do
-			muzzleParticles.Parent.Velocity = Vector3.new(localRandom:NextNumber(-10, 10), localRandom:NextNumber(-10, 10), localRandom:NextNumber(-10, 10))
+			muzzleParticles.Parent.Velocity = Vector3.new(
+				localRandom:NextNumber(-10, 10),
+				localRandom:NextNumber(-10, 10),
+				localRandom:NextNumber(-10, 10)
+			)
 			muzzleParticles:Emit(numMuzzleParticles / numSteps)
 		end
 	end
 
 	-- Show muzzle flash
 	if self.tipAttach and self.muzzleFlash0 and self.muzzleFlash1 and self.muzzleFlashBeam and projectileIdx == 1 then
-		local minFlashRotation, maxFlashRotation = self:getConfigValue("MuzzleFlashRotation0", -math.pi), self:getConfigValue("MuzzleFlashRotation1", math.pi)
-		local minFlashSize, maxFlashSize = self:getConfigValue("MuzzleFlashSize0", 1), self:getConfigValue("MuzzleFlashSize1", 1)
+		local minFlashRotation, maxFlashRotation =
+			self:getConfigValue("MuzzleFlashRotation0", -math.pi), self:getConfigValue("MuzzleFlashRotation1", math.pi)
+		local minFlashSize, maxFlashSize =
+			self:getConfigValue("MuzzleFlashSize0", 1), self:getConfigValue("MuzzleFlashSize1", 1)
 		local flashRotation = localRandom:NextNumber(minFlashRotation, maxFlashRotation)
 		local flashSize = localRandom:NextNumber(minFlashSize, maxFlashSize)
 		local baseCFrame = self.tipAttach.CFrame * CFrame.Angles(0, 0, flashRotation)
@@ -465,7 +485,6 @@ function BulletWeapon:simulateProjectile(firingPlayer, fireInfo, projectileIdx, 
 					self.weaponsSystem.getRemoteEvent("WeaponHit"):FireServer(self.instance, hitInfoClone)
 				end
 
-
 				-- Deal with all effects that start/stop/change on hit
 
 				-- Disable trail particles
@@ -495,7 +514,6 @@ function BulletWeapon:simulateProjectile(firingPlayer, fireInfo, projectileIdx, 
 					explosion.Position = hitPoint + (hitNormal * 0.5)
 					explosion.BlastRadius = blastRadius
 					explosion.BlastPressure = 0 -- no blast pressure because the real explosion happens on server
-					explosion.ExplosionType = Enum.ExplosionType.NoCraters
 					explosion.DestroyJointRadiusPercent = 0
 					explosion.Visible = true
 					if localPlayerInitiatedShot then
@@ -503,14 +521,21 @@ function BulletWeapon:simulateProjectile(firingPlayer, fireInfo, projectileIdx, 
 						explosion.Hit:Connect(function(explodedPart, hitDist)
 							local humanoid = self.weaponsSystem.getHumanoid(explodedPart)
 							--Ragdoll player hit by explosion
-							if humanoid and
-							explodedPart.Name == "UpperTorso" and
-							humanoid:GetState() ~= Enum.HumanoidStateType.Dead and
-							self.weaponsSystem.gui and
-							explodedPart.Parent ~= self.player.Character and
-							self.weaponsSystem.playersOnDifferentTeams(self.weaponsSystem.getPlayerFromHumanoid(humanoid), self.player)
+							if
+								humanoid
+								and explodedPart.Name == "UpperTorso"
+								and humanoid:GetState() ~= Enum.HumanoidStateType.Dead
+								and self.weaponsSystem.gui
+								and explodedPart.Parent ~= self.player.Character
+								and self.weaponsSystem.playersOnDifferentTeams(
+									self.weaponsSystem.getPlayerFromHumanoid(humanoid),
+									self.player
+								)
 							then
-								self.weaponsSystem.gui:OnHitOtherPlayer(self:calculateDamage(hitInfo.d), humanoid)
+								self.weaponsSystem.gui:OnHitOtherPlayer(
+									self:calculateDamage(hitInfo.d, hitInfo.part),
+									humanoid
+								)
 							end
 						end)
 					end
@@ -563,12 +588,12 @@ function BulletWeapon:simulateProjectile(firingPlayer, fireInfo, projectileIdx, 
 				-- Manage/show decals, billboards, and models (such as an arrow) that appear where the projectile hit (only if the hit object was not a humanoid/player)
 				local hitPointObjectSpace = hitPart.CFrame:pointToObjectSpace(hitPoint)
 				local hitNormalObjectSpace = hitPart.CFrame:vectorToObjectSpace(hitNormal)
-				if not NO_BULLET_DECALS and
-				   hitPart and
-				   not hitPart.Parent or not hitPart.Parent:FindFirstChildOfClass("Humanoid") and
-				   hitPointObjectSpace and
-				   hitNormalObjectSpace and
-				   self.hitMarkTemplate
+				if
+					not NO_BULLET_DECALS and hitPart and not hitPart.Parent
+					or not hitPart.Parent:FindFirstChildOfClass("Humanoid")
+						and hitPointObjectSpace
+						and hitNormalObjectSpace
+						and self.hitMarkTemplate
 				then
 					-- Clone hitMark (this contains all the decals/billboards/models to show on the hit surface)
 					local hitMark = self.hitMarkTemplate:Clone()
@@ -583,11 +608,16 @@ function BulletWeapon:simulateProjectile(firingPlayer, fireInfo, projectileIdx, 
 						local up = incomingVec
 						local right = -forward:Cross(up).Unit
 						up = forward:Cross(right)
-						local orientationCFrame = CFrame.fromMatrix(hitPointObjectSpace + hitNormalObjectSpace * 0.05, right, up, -forward)
+						local orientationCFrame =
+							CFrame.fromMatrix(hitPointObjectSpace + hitNormalObjectSpace * 0.05, right, up, -forward)
 						hitMark.CFrame = hitPart.CFrame:toWorldSpace(orientationCFrame)
 					else
 						-- Make hitmark appear stuck in the hit surface from the direction the projectile came from (good for things like arrows)
-						hitMark.CFrame = hitPart.CFrame * CFrame.new(hitPointObjectSpace, hitPointObjectSpace + hitPart.CFrame:vectorToObjectSpace(incomingVec))
+						hitMark.CFrame = hitPart.CFrame
+							* CFrame.new(
+								hitPointObjectSpace,
+								hitPointObjectSpace + hitPart.CFrame:vectorToObjectSpace(incomingVec)
+							)
 					end
 
 					-- Weld hitMark to the hitPart
@@ -601,7 +631,7 @@ function BulletWeapon:simulateProjectile(firingPlayer, fireInfo, projectileIdx, 
 					if glowDecal then
 						coroutine.wrap(function()
 							local heartbeat = RunService.Heartbeat
-							for i = 0, 1, 1/60 do
+							for i = 0, 1, 1 / 60 do
 								heartbeat:Wait()
 								glowDecal.Transparency = (i ^ 2)
 							end
@@ -669,7 +699,6 @@ function BulletWeapon:simulateProjectile(firingPlayer, fireInfo, projectileIdx, 
 			pTravelDistance = math.max(0, timeSinceStart * bulletSpeed)
 		end
 
-
 		-- Update visual effects each frame
 
 		-- Update CFrame/velocity of projectile if the projectile uses a model (such as rocket or grenade)
@@ -709,7 +738,10 @@ function BulletWeapon:simulateProjectile(firingPlayer, fireInfo, projectileIdx, 
 
 		-- Destroy projectile and attached visual effects when visual effects are done showing or max bullet time has been reached
 		local timeSinceParticleEffectsFinished = now - visualEffectsFinishTime
-		if (flyingVisualEffectsFinished and timeSinceParticleEffectsFinished > 0) or timeSinceStart > MAX_BULLET_TIME then
+		if
+			(flyingVisualEffectsFinished and timeSinceParticleEffectsFinished > 0)
+			or timeSinceStart > MAX_BULLET_TIME
+		then
 			if bulletEffect then
 				bulletEffect:Destroy()
 				bulletEffect = nil
@@ -727,22 +759,27 @@ function BulletWeapon:simulateProjectile(firingPlayer, fireInfo, projectileIdx, 
 	end
 end
 
-function BulletWeapon:calculateDamage(travelDistance)
+function BulletWeapon:calculateDamage(travelDistance, hitPart)
 	local zeroDamageDistance = self:getConfigValue("ZeroDamageDistance", 10000)
 	local fullDamageDistance = self:getConfigValue("FullDamageDistance", 1000)
 	local distRange = zeroDamageDistance - fullDamageDistance
 	local falloff = math.clamp(1 - (math.max(0, travelDistance - fullDamageDistance) / math.max(1, distRange)), 0, 1)
-	return math.max(self:getConfigValue("HitDamage", 10) * falloff, 0)
+	local damage = self:getConfigValue("HitDamage")
+	if hitPart.Name == "Head" then
+		damage = damage * 2
+		return math.max(damage * falloff, 0), true
+	end
+	return math.max(damage * falloff, 0)
 end
 
 function BulletWeapon:applyDamage(hitInfo)
-	local damage = self:calculateDamage(hitInfo.d)
+	local damage = self:calculateDamage(hitInfo.d, hitInfo.part)
 
 	if damage <= 0 then
 		return
 	end
-	
-	self.weaponsSystem.doDamage(hitInfo.h, damage, nil, self.player)
+
+	self.weaponsSystem.doDamage(hitInfo.h, damage, nil, self.player, hitInfo)
 end
 
 function BulletWeapon:onHit(hitInfo)
@@ -754,19 +791,34 @@ function BulletWeapon:onHit(hitInfo)
 		local humanoid = self.weaponsSystem.getHumanoid(hitPart)
 		hitInfo.h = humanoid or hitPart
 
-		if IsServer and
-		   (not hitInfo.h:IsA("Humanoid") or
-		   self.weaponsSystem.playersOnDifferentTeams(self.weaponsSystem.getPlayerFromHumanoid(hitInfo.h), self.player))
+		if
+			IsServer
+			and (
+				not hitInfo.h:IsA("Humanoid")
+				or self.weaponsSystem.playersOnDifferentTeams(
+					self.weaponsSystem.getPlayerFromHumanoid(hitInfo.h),
+					self.player
+				)
+			)
 		then
 			self:applyDamage(hitInfo)
-		elseif hitInfo.h:IsA("Humanoid") and
-			hitInfo.h:GetState() ~= Enum.HumanoidStateType.Dead and
-			self.weaponsSystem.gui and
-			self.player == Players.LocalPlayer and
-			self.weaponsSystem.playersOnDifferentTeams(self.weaponsSystem.getPlayerFromHumanoid(hitInfo.h), self.player)
+		elseif
+			hitInfo.h:IsA("Humanoid")
+			and hitInfo.h:GetState() ~= Enum.HumanoidStateType.Dead
+			and self.weaponsSystem.gui
+			and self.player == Players.LocalPlayer
+			and self.weaponsSystem.playersOnDifferentTeams(
+				self.weaponsSystem.getPlayerFromHumanoid(hitInfo.h),
+				self.player
+			)
 		then
 			-- Show hit indicators on gui of client that shot projectile if players are not on same team
-			self.weaponsSystem.gui:OnHitOtherPlayer(self:calculateDamage(hitInfo.d), hitInfo.h)
+			local damage, isHeadshot = self:calculateDamage(hitInfo.d, hitInfo.part)
+			if isHeadshot then
+				self.weaponsSystem.gui:OnHitOtherPlayer(damage, hitInfo.h, isHeadshot)
+			else
+				self.weaponsSystem.gui:OnHitOtherPlayer(damage, hitInfo.h)
+			end
 		end
 	end
 
@@ -781,30 +833,37 @@ function BulletWeapon:onHit(hitInfo)
 		explosion.Position = hitPoint + (hitNormal * 0.5)
 		explosion.BlastRadius = blastRadius
 		explosion.BlastPressure = blastPressure
-		explosion.ExplosionType = Enum.ExplosionType.NoCraters
+		explosion.ExplosionType = Enum.ExplosionType.Craters
 		explosion.DestroyJointRadiusPercent = 0
 		explosion.Visible = false
 
 		explosion.Hit:Connect(function(explodedPart, hitDist)
 			local damageMultiplier = (1 - math.clamp((hitDist / blastRadius), 0, 1))
 			local damageToDeal = blastDamage * damageMultiplier
-			local destructibleObject = ancestorHasTag(explodedPart,'DestructibleObject')
-			if (destructibleObject) then
-				require(game.ServerStorage.Source.Components.DestructibleObject):FromInstance(destructibleObject):DestroyObject(self.player)
+			local destructibleObject = ancestorHasTag(explodedPart, "DestructibleObject")
+			if destructibleObject then
+				require(game.ServerStorage.Source.Components.DestructibleObject)
+					:FromInstance(destructibleObject)
+					:DestroyObject(self.player)
 			end
 
 			local humanoid = self.weaponsSystem.getHumanoid(explodedPart)
 			if humanoid then
-				if explodedPart.Name == "UpperTorso" and
-				   humanoid:GetState() ~= Enum.HumanoidStateType.Dead and
-				   self.weaponsSystem.playersOnDifferentTeams(self.weaponsSystem.getPlayerFromHumanoid(humanoid), self.player)
+				if
+					explodedPart.Name == "UpperTorso"
+					and humanoid:GetState() ~= Enum.HumanoidStateType.Dead
+					and self.weaponsSystem.playersOnDifferentTeams(
+						self.weaponsSystem.getPlayerFromHumanoid(humanoid),
+						self.player
+					)
 				then
 					-- Do damage to players/humanoids
 					local hitPlayer = Players:GetPlayerFromCharacter(humanoid.Parent)
-					if (hitPlayer and hitPlayer.Character) then
+					if hitPlayer and hitPlayer.Character then
 						local direction = (hitPlayer.Character.HumanoidRootPart.Position - explosion.Position).Unit
 						hitPlayer.Character.HumanoidRootPart:ApplyImpulse(direction * 360)
-						Knit.GetService("RagdollService"):RagdollPlayer(hitPlayer.Character, ragdollTime, {explosionDirection = direction})
+						Knit.GetService("RagdollService")
+							:RagdollPlayer(hitPlayer.Character, ragdollTime, { explosionDirection = direction })
 					end
 					self.weaponsSystem.doDamage(humanoid, damageToDeal, nil, self.player)
 				end
@@ -813,7 +872,6 @@ function BulletWeapon:onHit(hitInfo)
 				self.weaponsSystem.doDamage(explodedPart, damageToDeal, nil, self.player)
 			end
 		end)
-		
 
 		explosion.Parent = workspace
 	end
@@ -922,8 +980,12 @@ end
 
 function BulletWeapon:onRenderStepped(dt)
 	BaseWeapon.onRenderStepped(self, dt)
-	if not self.tipAttach then return end
-	if not self.equipped then return end
+	if not self.tipAttach then
+		return
+	end
+	if not self.equipped then
+		return
+	end
 
 	local tipCFrame = self.tipAttach.WorldCFrame
 	if self.player == Players.LocalPlayer then
@@ -974,7 +1036,11 @@ function BulletWeapon:onRenderStepped(dt)
 			local aimYAngle = math.deg(self.recoilIntensity)
 			if self.weaponsSystem.camera.enabled then
 				-- Gets pitch and recoil from camera to figure out how high/low to aim the gun
-				aimYAngle = math.deg(self.weaponsSystem.camera:getRelativePitch() + self.weaponsSystem.camera.currentRecoil.Y + self.recoilIntensity)
+				aimYAngle = math.deg(
+					self.weaponsSystem.camera:getRelativePitch()
+						+ self.weaponsSystem.camera.currentRecoil.Y
+						+ self.recoilIntensity
+				)
 			end
 			local aimTimePos = 2 * ((aimYAngle - MIN_ANGLE) / (MAX_ANGLE - MIN_ANGLE))
 
@@ -1003,8 +1069,12 @@ function BulletWeapon:setChargingParticles(charge)
 end
 
 function BulletWeapon:onStepped(dt)
-	if not self.tipAttach then return end
-	if not self.equipped then return end
+	if not self.tipAttach then
+		return
+	end
+	if not self.equipped then
+		return
+	end
 
 	BaseWeapon.onStepped(self, dt)
 
@@ -1035,7 +1105,8 @@ function BulletWeapon:onStepped(dt)
 					if not chargingSound.Playing and self.charge < 1 and chargeDelta > 0 then
 						chargingSound:Play()
 					end
-					chargingSound.PlaybackSpeed = self.chargeSoundPitchMin + (self.charge * (self.chargeSoundPitchMax - self.chargeSoundPitchMin))
+					chargingSound.PlaybackSpeed = self.chargeSoundPitchMin
+						+ (self.charge * (self.chargeSoundPitchMax - self.chargeSoundPitchMin))
 				end
 			else
 				if chargeDelta > 0 and self.charge <= 1 and not chargingSound.Playing then
@@ -1054,7 +1125,8 @@ function BulletWeapon:onStepped(dt)
 					if not dischargingSound.Playing and self.charge > 0 then
 						dischargingSound:Play()
 					end
-					dischargingSound.PlaybackSpeed = self.chargeSoundPitchMin + (self.charge * (self.chargeSoundPitchMax - self.chargeSoundPitchMin))
+					dischargingSound.PlaybackSpeed = self.chargeSoundPitchMin
+						+ (self.charge * (self.chargeSoundPitchMax - self.chargeSoundPitchMin))
 				end
 			else
 				if chargeDelta < 0 and self.charge >= 0 and not dischargingSound.Playing then
@@ -1133,7 +1205,12 @@ function BulletWeapon:isCharged()
 end
 
 function BulletWeapon:canFire()
-	return self.player == Players.LocalPlayer and (self.burstFiring or self.activated) and not self.triggerDisconnected and not self.reloading and self:isCharged() and self.startupFinished
+	return self.player == Players.LocalPlayer
+		and (self.burstFiring or self.activated)
+		and not self.triggerDisconnected
+		and not self.reloading
+		and self:isCharged()
+		and self.startupFinished
 end
 
 function BulletWeapon:doLocalFire()

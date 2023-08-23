@@ -40,8 +40,8 @@ ChallengesConfig.challenges = {
 		},
         {
 			name = "Make those coins rain!",
-			description = "Earn 250 coins",
-			typeOfProgression = "EarnCoins",
+			description = "Earn 250 BattleCoins",
+			typeOfProgression = "BattleCoins",
 			goal = 250,
 			rewards = {
 				{

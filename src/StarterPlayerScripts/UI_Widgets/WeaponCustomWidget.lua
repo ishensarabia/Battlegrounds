@@ -114,6 +114,11 @@ function WeaponCustomizationWidget:GenerateWeaponParts(weaponModel)
 		end
 	end
 end
+local function splitTitleCaps(str)
+	str = str:gsub("(%u)", " %1")
+	return str:gsub("^%s", "")
+	
+end
 
 local function GenerateWeaponPartsFrames()
 	local customPartNumber = 1
@@ -125,7 +130,7 @@ local function GenerateWeaponPartsFrames()
 			customPartFrame.Parent = partsFrame
 			customPartFrame.LayoutOrder = index
 			customPartFrame.Frame.Number.Text = customPartNumber
-			customPartFrame.Frame.Word.Text = child:GetAttribute("CustomPart")
+			customPartFrame.Frame.Word.Text = splitTitleCaps(child:GetAttribute("CustomPart"))
 			WeaponCustomizationWidget.weaponPartsFrames[child:GetAttribute("CustomPart")] = customPartFrame
 			customPartNumber = customPartNumber + 1
 			customPartFrame.Frame.BackgroundButton.Activated:Connect(function()
@@ -254,7 +259,7 @@ local function GenerateSkinsButtons()
 			customizationButtonFrame.Name = skinName
 			customizationButtonFrame.Parent = customizationItemsFrame
 			customizationButtonFrame.Frame.IconButton.Image = Skins[skinName].skinID
-			customizationButtonFrame.Frame.Title.Text = skinName
+			customizationButtonFrame.Frame.Title.Text = splitTitleCaps(skinName)
 			-- customizationButtonFrame.Frame.BackgroundButton.ImageColor3 = RARITIES_COLORS[skinAmount.Rarity]
 
 			--Connect the button

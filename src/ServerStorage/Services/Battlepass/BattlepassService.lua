@@ -54,7 +54,7 @@ function BattlepassService.Client:GetSeasonExperince(player)
 	return self.Server:GetSeasonExperience(player)
 end
 
-function BattlepassService:ClaimBattlepassReward(player, rewardLevel: number)
+function BattlepassService:ClaimBattlepassReward(player, rewardLevel: number, rewardType: string)
 	local battlepassData = self:GetBattlepassData(player)
 	local seasonData = battlepassData[battlepassData.currentSeason]
 	local seasonRewards = BattlepassConfig.rewards[battlepassData.currentSeason]
@@ -64,40 +64,46 @@ function BattlepassService:ClaimBattlepassReward(player, rewardLevel: number)
 	warn(
 		seasonData.ClaimedLevels,
 		rewardLevel,
-		table.find(seasonData.ClaimedLevels, rewardLevel),
-		seasonData.ClaimedLevels[rewardLevel]
+		rewardType
 	)
-	if not seasonData.ClaimedLevels[rewardLevel] then
-		--Check if the player has reached the required level
-		if seasonData.Level >= rewardLevel then
+	--if it's premium reward check if the player has the battlepass
+	if rewardType == "Battlepass" then
+		if not seasonData.ClaimedLevels.Battlepass[rewardLevel] then
 			--Check if the player owns the battlepass
-			if battlepassData.OwnsBattlepass then
+			if seasonData.Owned then
+				warn("Owns the battlepass")
 				--Give the player the rewards
-				for rewardCategory, levelItemRewards in levelRewards do
-					for index, rewardData: table in levelItemRewards do
-						if
-							rewardData.rewardType == BattlepassConfig.RewardTypes.BattleCoins
-							or rewardData.rewardType == BattlepassConfig.RewardTypes.BattleGems
-						then
-							--Add currency
-							self._currencyService:AddCurrency(player, rewardData.rewardType, rewardData.amount)
-						end
-						if rewardData.rewardType == BattlepassConfig.RewardTypes.Skin then
-							--Add skin
-							self._dataService:AddSkin(player, rewardData.rewardSkin.name)
-						end
-						if rewardData.rewardType == BattlepassConfig.RewardTypes.Crate then
-							--Add crate
-							local totalAmountOfCrates = self._dataService:AddCrate(player, rewardData.crateName)
-							--Fire the signal
-							self._storeService.Client.CrateAddedSignal:Fire(player, rewardData.crateName, totalAmountOfCrates)
-						end
+				for index, rewardData: table in levelRewards.battlepass do
+					warn(rewardData)
+					if
+						rewardData.rewardType == BattlepassConfig.RewardTypes.BattleCoins
+						or rewardData.rewardType == BattlepassConfig.RewardTypes.BattleGems
+					then
+						--Add currency
+						warn("Adding currency")
+						self._currencyService:AddCurrency(player, rewardData.rewardType, rewardData.rewardAmount)
+					end
+					if rewardData.rewardType == BattlepassConfig.RewardTypes.Skin then
+						--Add skin
+						self._dataService:AddSkin(player, rewardData.rewardSkin.name)
+					end
+					if rewardData.rewardType == BattlepassConfig.RewardTypes.Crate then
+						--Add crate
+						local totalAmountOfCrates = self._dataService:AddCrate(player, rewardData.crateName)
+						--Fire the signal
+						self._storeService.Client.CrateAddedSignal:Fire(
+							player,
+							rewardData.crateName,
+							totalAmountOfCrates
+						)
+					end
+					if rewardData.rewardType == BattlepassConfig.RewardTypes.Emote then
+						self._dataService:AddEmote(player, rewardData.rewardEmote.name)
 					end
 				end
-			else
-				--Give the player the rewards
-				for rewardCategory, levelItemRewards in levelRewards do
-					for index, rewardData: table in levelItemRewards do
+				--If it hasn't been claimed the free reward claim it as well
+				if not seasonData.ClaimedLevels.Freepass[rewardLevel] then
+					for index, rewardData in levelRewards.freepass do
 						if
 							rewardData.rewardType == BattlepassConfig.RewardTypes.BattleCoins
 							or rewardData.rewardType == BattlepassConfig.RewardTypes.BattleGems
@@ -109,27 +115,72 @@ function BattlepassService:ClaimBattlepassReward(player, rewardLevel: number)
 							--Add skin
 							self._dataService:AddSkin(player, rewardData.rewardSkin.name)
 						end
-
 						if rewardData.rewardType == BattlepassConfig.RewardTypes.Crate then
 							--Add crate
 							local totalAmountOfCrates = self._dataService:AddCrate(player, rewardData.crateName)
 							--Fire the signal
-							self._storeService.Client.CrateAddedSignal:Fire(player, rewardData.crateName, totalAmountOfCrates)
+							self._storeService.Client.CrateAddedSignal:Fire(
+								player,
+								rewardData.crateName,
+								totalAmountOfCrates
+							)
+						end
+						if rewardData.rewardType == BattlepassConfig.RewardTypes.Emote then
+							self._dataService:AddEmote(player, rewardData.rewardEmote.name)
 						end
 					end
 				end
+				table.insert(seasonData.ClaimedLevels.Battlepass, rewardLevel)
+				table.insert(seasonData.ClaimedLevels.Freepass, rewardLevel)
+			else
+				warn("Doesn't own the battlepass")
+				player:Kick("You tried to claim a battlepass reward without owning the battlepass, this results in exploiting, you've been banned from the experience")
 			end
-			--Mark the reward as claimed
-			table.insert(seasonData.ClaimedLevels, rewardLevel)
-			--Save the data
-			self._dataService:SetKeyValue(player, "Battlepass", battlepassData)
 		end
 	end
+
+	if rewardType == "Freepass" then
+		warn("Claiming freepass reward")
+		if not seasonData.ClaimedLevels.Freepass[rewardLevel] then
+			if #levelRewards.freepass > 0 then
+				for index, rewardData in levelRewards.freepass do
+					if
+						rewardData.rewardType == BattlepassConfig.RewardTypes.BattleCoins
+						or rewardData.rewardType == BattlepassConfig.RewardTypes.BattleGems
+					then
+						--Add currency
+						self._currencyService:AddCurrency(player, rewardData.rewardType, rewardData.rewardAmount)
+					end
+					if rewardData.rewardType == BattlepassConfig.RewardTypes.Skin then
+						--Add skin
+						self._dataService:AddSkin(player, rewardData.rewardSkin.name)
+					end
+					if rewardData.rewardType == BattlepassConfig.RewardTypes.Crate then
+						--Add crate
+						local totalAmountOfCrates = self._dataService:AddCrate(player, rewardData.crateName)
+						--Fire the signal
+						self._storeService.Client.CrateAddedSignal:Fire(
+							player,
+							rewardData.crateName,
+							totalAmountOfCrates
+						)
+					end
+					if rewardData.rewardType == BattlepassConfig.RewardTypes.Emote then
+						self._dataService:AddEmote(player, rewardData.rewardEmote.name)
+					end
+				end
+				table.insert(seasonData.ClaimedLevels.Freepass, rewardLevel)
+			end
+		end
+	end
+
+	self._dataService:SetKeyValue(player, "Battlepass", battlepassData)
 end
 
 --client claim reward function
-function BattlepassService.Client:ClaimBattlepassReward(player: Player, rewardLevel: number)
-	self.Server:ClaimBattlepassReward(player, rewardLevel)
+function BattlepassService.Client:ClaimBattlepassReward(player: Player, rewardLevel: number, rewardType : string)
+	warn(player, rewardLevel, rewardType)
+	self.Server:ClaimBattlepassReward(player, rewardLevel, rewardType)
 end
 
 function BattlepassService:AddBattlepassExperience(player, amount: number)

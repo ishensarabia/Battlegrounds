@@ -159,7 +159,7 @@ Players.PlayerAdded:Connect(function(player)
 			resyncClothes(player)
 			task.wait() --Without this physics may not activate on platformstand
 			deactivateVelocity(player)
-			ragdollFreeze(player.character, humanoid:GetState())
+			-- ragdollFreeze(player.character, humanoid:GetState())
 		end)
 	end)
 end)
