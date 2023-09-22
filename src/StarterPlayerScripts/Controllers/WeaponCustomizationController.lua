@@ -38,7 +38,7 @@ end
 
 function WeaponCustomizationController:CreateWeaponPreviewWithSkin(weaponID : string, skinID : string)
     warn(weaponID, skinID)
-	local weaponModel = ReplicatedStorage.Weapons.Preview[weaponID]:Clone()
+	local weaponModel = ReplicatedStorage.Weapons[weaponID]:FindFirstChildWhichIsA("Model"):Clone()
 	--Check if the item is a tool get the model
 	if weaponModel:IsA("Tool") then
 		weaponModel = weaponModel:FindFirstChildOfClass("Model"):Clone()

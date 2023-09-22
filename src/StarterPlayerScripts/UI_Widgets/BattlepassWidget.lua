@@ -115,7 +115,7 @@ function BattlepassWidget:Initialize()
 			----Fill the progress bar of previous levels
 			for i = 1, currentSeasonData.Level do
 				if not currentSeasonData.ClaimedLevels[i] and currentSeasonData.Level >= i then
-					rewardsFrame[i].ProgressBarFrame.BarFrame.ProgressBar.Size = UDim2.fromScale(1, 0.9)
+					rewardsFrame[i].ProgressBarFrame.BarFrame.ProgressBar.Size = UDim2.fromOffset(100, 20)
 					rewardsFrame[i].FreeClaimFrame.Visible = true
 				end
 			end
@@ -631,7 +631,7 @@ function BattlepassWidget:GenerateRewards(battlepassData)
 			end
 			--Assign the correct UIGridLayout cell size for the premium rewards according to the amount of rewards
 			if #battlepassRewardFrame.PremiumRewardsFrame:GetChildren() <= 6 then
-				battlepassRewardFrame.PremiumRewardsFrame.UIGridLayout.CellSize = UDim2.fromScale(0.3, 1)
+				battlepassRewardFrame.PremiumRewardsFrame.UIGridLayout.CellSize = UDim2.fromScale(0.49, 1)
 			end
 
 			if #battlepassRewardFrame.PremiumRewardsFrame:GetChildren() > 6 then
@@ -639,6 +639,17 @@ function BattlepassWidget:GenerateRewards(battlepassData)
 			end
 		end
 	end)
+end
+
+local function ScaleToOffset(x, y, parentFrame)
+	if parentFrame then
+		x *= parentFrame.AbsoluteSize.X
+		y *= parentFrame.AbsoluteSize.Y
+		-- else
+		-- 	x *= viewportSize.X
+		-- 	y *= viewportSize.Y
+	end
+	return math.round(x), math.round(y)
 end
 
 ---@diagnostic disable-next-line: undefined-type
@@ -687,7 +698,9 @@ function BattlepassWidget:OpenBattlepass(callback: Function)
 			currentLevelFrame.BarFrame.XPText.Text = currentSeasonData.Experience .. "/" .. experienceNeeded
 			--Fill the progress bar of previous levels
 			for i = 1, currentSeasonData.Level do
-				rewardsFrame[i].ProgressBarFrame.BarFrame.ProgressBar.Size = UDim2.fromScale(1, 0.9)
+				local progressBar = rewardsFrame[i].ProgressBarFrame.BarFrame.ProgressBar
+				local x, y = ScaleToOffset(1, 0.9, rewardsFrame[i].ProgressBarFrame.BarFrame)
+				progressBar.Size = UDim2.fromOffset(x, y)
 			end
 			--Get the current level to update the progress bar of the item reward rank
 			local currentRank = currentSeasonData.Level

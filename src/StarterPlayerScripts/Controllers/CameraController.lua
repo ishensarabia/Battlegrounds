@@ -8,6 +8,7 @@ local Knit = require(ReplicatedStorage.Packages.Knit)
 local Promise = require(Knit.Util.Promise)
 local TweenObject = require(ReplicatedStorage.Source.Modules.Util.TweenObject)
 local Janitor = require(ReplicatedStorage.Packages.Janitor)
+local Bezier = require(ReplicatedStorage.Source.Modules.Util.Bezier)
 
 --Class
 local CameraController = Knit.CreateController({ Name = "CameraController" })
@@ -18,23 +19,57 @@ local player = Players.LocalPlayer
 function CameraController:KnitStart() end
 
 function CameraController:TransitionBetweenPoints(points: Folder)
+	-- if self.activeTween then
+	-- 	self:CancelActiveTween()
+	-- 	warn("Active tween, returning false")
+	-- end
 	local cameraPoints = points:GetChildren()
 	for i = 1, #cameraPoints do
-		if points[i]:IsA("BasePart") and self.isInMenu then
-			task.wait()
-			camera.CameraType = Enum.CameraType.Scriptable
-			local cameraTweenPromise = TweenService:Create(camera, TweenInfo.new(33), { CFrame = points[i].CFrame })
-			self.activeTween = cameraTweenPromise
-			cameraTweenPromise:Play()
-			cameraTweenPromise.Completed:Wait()
-			camera.CFrame = points[i].CFrame
+		if points:FindFirstChild(i) then			
+			if points[i]:IsA("BasePart") then
+				if self.isInMenu then
+					warn("transitioning between points")
+					task.wait()
+					camera.CameraType = Enum.CameraType.Scriptable
+					-- TweenObject:TweenCamera(TweenInfo.new(33),{CFrame = points[i].CFrame})
+					local cameraTweenPromise = TweenService:Create(camera, TweenInfo.new(33), { CFrame = points[i].CFrame })
+					self.activeTween = cameraTweenPromise
+					cameraTweenPromise:Play()
+					cameraTweenPromise.Completed:Wait()
+					camera.CFrame = points[i].CFrame
+				else
+					camera.CameraType = Enum.CameraType.Custom
+					self:CancelActiveTween()
+					break	
+				end
+			end
+		end
+	end
+end
+
+function CameraController:TransitionBetweenCurves(points : Folder)
+	if self.activeTween then
+		return
+	end
+	local cameraPoints = points:GetChildren()
+	table.sort(cameraPoints,function(a, b)
+		return a.Name < b.Name
+	end)
+	local newBezier = Bezier.new(table.unpack(cameraPoints))
+	local _TweenInfo = TweenInfo.new(15, Enum.EasingStyle.Sine, Enum.EasingDirection.Out, 0, false, 0)
+	for index, child in cameraPoints do
+		if child:IsA("BasePart") then			
+			local tween = newBezier:CreateCFrameTween(camera, {"CFrame"},_TweenInfo)
+			tween:Play()
 		end
 	end
 end
 
 function CameraController:CancelActiveTween()
 	if self.activeTween then
+		warn("Cancelling active tween")
 		self.activeTween:Cancel()
+		self.activeTween = nil
 	end
 end
 
@@ -59,9 +94,15 @@ function CameraController:ChangeMode(mode: string, params: table)
 		end)
 	end
 
+	if mode == "Menu" then
+		self:SetCameraType("Scriptable")
+	end
+
 	if mode == "Play" then
 		RunService:UnbindFromRenderStep("RespawnCamera")
 		self:SetCameraType("Custom")
+		self.isInMenu = false
+		self:CancelActiveTween()
 	end
 end
 

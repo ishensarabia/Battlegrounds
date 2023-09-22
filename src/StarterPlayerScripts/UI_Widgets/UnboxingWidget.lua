@@ -116,7 +116,8 @@ function UnboxingWidget:Initialize(button: GuiButton, callback, customSoundName:
 	--Hide the gui objects by size for animation purposes
 	HideGuiObjects()
 	--Connect signal
-	StoreService.OpenCrateSignal:Connect(function(crate: table, rewardChosen: table, unboxingTime)
+	StoreService.OpenCrateSignal:Connect(function(crate: table, rewardChosen: table, cratesLeft: number, crateName: string, unboxingTime : number)
+		warn(crate,rewardChosen,unboxingTime)
 		UnboxingWidget:OpenCrate(crate, rewardChosen, unboxingTime)
 	end)
 	return UnboxingWidget
@@ -132,7 +133,6 @@ local function lerp(a, b, t)
 end
 
 function UnboxingWidget:OpenCrate(crate: table, chosenReward: table, unboxTime : number)
-	warn(unboxTime)
 	ShowGuiObjects()
 	local numItems = rnd:NextInteger(20, 33)
 	local chosenPosition = rnd:NextInteger(15, numItems - 5)

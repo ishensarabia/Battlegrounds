@@ -8,7 +8,7 @@ local Players = game:GetService("Players")
 --Services
 local ServerStorage = game:GetService("ServerStorage")
 local TweenService = game:GetService("TweenService")
-local movementThreshold = 5
+local movementThreshold = 6.33
 --Module dependencies
 --Class
 local DestructibleObject = Component.new({
@@ -29,10 +29,10 @@ end
 
 function DestructibleObject:DestroyObject(player)
 	--Make sure the object is constructed before destroying it
-	if not self.isConstructed or self.isBeingConstructed then
+	if not self.isConstructed then
 		return
 	end
-	warn("Object destroyed")
+	warn("Object : " .. self.Instance.Name .. " has been destroyed")
 	self.isConstructed = false
 	local DataService = Knit.GetService("DataService")
 	if player then
@@ -40,67 +40,78 @@ function DestructibleObject:DestroyObject(player)
 		Knit.GetService("ChallengesService"):UpdateChallengeProgression(player, "DestroyObjects", 1)
 	end
 	--Setup proximity prompts
-	for index, child in pairs(self.Instance.Interactable:GetChildren()) do
-		if child:IsA("BasePart") then
-			local constructPrompt = child.Attachment:FindFirstChild("ProximityPrompt")
-				or Instance.new("ProximityPrompt")
-			constructPrompt.Parent = child.Attachment
-			constructPrompt.RequiresLineOfSight = false
-			constructPrompt.ActionText = "Build"
-			table.insert(self.constructPrompts, constructPrompt)
-			self._janitor:Add(constructPrompt)
+	if self.Instance:FindFirstChild("Interactable") then
+		for index, child in pairs(self.Instance.Interactable:GetChildren()) do
+			if child:IsA("BasePart") then
+				local constructPrompt = Instance.new("ProximityPrompt")
+				constructPrompt.Parent = child.Attachment
+				constructPrompt.RequiresLineOfSight = false
+				constructPrompt.ActionText = "Build"
+				warn("created attachment" .. constructPrompt.Name)
+				table.insert(self.constructPrompts, constructPrompt)
+				self._janitor:Add(constructPrompt)
 
-			self._janitor:Add(constructPrompt.PromptButtonHoldBegan:Connect(function(player)
-				warn('Prompt hold began')
-				player.Character.Humanoid:UnequipTools()
-				self:ConstructObject(player)
-			end))
+				self._janitor:Add(constructPrompt.PromptButtonHoldBegan:Connect(function(player)
+					player.Character.Humanoid:UnequipTools()
+					self:ConstructObject(player)
+				end))
 
-			self._janitor:Add(constructPrompt.Triggered:Connect(function(player)
-				warn("Prompt trigerred")
-				player.Character.Humanoid:UnequipTools()
-				self.isConstructed = true
-				self:ConstructObject(player)
-				Knit.GetService("ChallengesService"):UpdateChallengeProgression(player, "BuildObjects", 1)
-				self._janitor:Cleanup()
-			end))
+				self._janitor:Add(constructPrompt.Triggered:Connect(function(player)
+					player.Character.Humanoid:UnequipTools()
+					self._janitor:Cleanup()
+					self.isConstructed = true
+					self:ConstructObject(player)
+					--Make sure it's a successful build by checking after 1.33 seconds
+					task.delay(1.33, function()
+						if self.isConstructed then
+							warn("Challenge progression")
+							Knit.GetService("ChallengesService"):UpdateChallengeProgression(player, "BuildObjects", 1)
+						end
+					end)
+				end))
 
-			self._janitor:Add(constructPrompt.PromptButtonHoldEnded:Connect(function(player)
-				-- if (not self.isConstructed) then
-				self:CancelConstruction()
-				-- end
-			end))
+				self._janitor:Add(constructPrompt.PromptButtonHoldEnded:Connect(function(player)
+					-- if (not self.isConstructed) then
+					self:CancelConstruction()
+					-- end
+				end))
+			end
 		end
-	end
 
+		self:_setBuildTime()
+	end
+	warn("Destroying object")
 	for key, child in pairs(self.Instance:GetChildren()) do
 		if child:IsA("BasePart") then
 			child.Anchored = false
 		end
 	end
-
-	self:_setBuildTime()
 end
 
 function DestructibleObject:Start()
-	self:_setModelPartCFrames()
+	if self.Instance:FindFirstChild("Interactable") then		
+		self:_setModelPartCFrames()
+	end
 	--Check for the object parts changed attribute, if it changes then destroy the object as it is not anchored correctly
-	for index, child in (self.Instance:GetChildren()) do
-		if child:IsA("BasePart") then
-			child.Touched:Connect(function()
-				if self.isBeingConstructed then
-					warn("Is being constructed")
-					return
-				end
-				local part = child
-				local previousPosition = self._partsCFrames[part:GetAttribute("PartIndex")].Position
-				
-				local movementMagnitude = (part.Position - previousPosition).Magnitude
-				
-				if movementMagnitude > movementThreshold then
-					self:DestroyObject()
-				end
-			end)
+	if self.Instance:FindFirstChild("Interactable") then		
+		for index, child in (self.Instance:GetChildren()) do
+			if child:IsA("BasePart") then
+				child.Touched:Connect(function()
+					if self.isBeingConstructed then
+						warn("Is being constructed")
+						return
+					end
+					local part = child
+					local previousPosition = self._partsCFrames[part:GetAttribute("PartIndex")].Position
+	
+					local movementMagnitude = (part.Position - previousPosition).Magnitude
+	
+					if movementMagnitude > movementThreshold and not self.isBeingConstructed and self.isConstructed then
+						warn("Destoying object because of movement for object : " .. self.Instance.Name)
+						self:DestroyObject()
+					end
+				end)
+			end
 		end
 	end
 end
@@ -193,9 +204,11 @@ function DestructibleObject:ConstructObject(player)
 		end
 	end
 
-	for key, child in (self.Instance:GetChildren()) do
-		if child:IsA("BasePart") then
-			child.CanCollide = true
+	if self.isConstructed then
+		for key, child in (self.Instance:GetChildren()) do
+			if child:IsA("BasePart") then
+				child.CanCollide = true
+			end
 		end
 	end
 

@@ -2,7 +2,6 @@ local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local player = Players.LocalPlayer
 --Widgets
-local WeaponCustomWidget = require(game.StarterPlayer.StarterPlayerScripts.Source.UI_Widgets.WeaponCustomWidget)
 
 --Module dependencies
 local Knit = require(ReplicatedStorage.Packages.Knit)
@@ -16,7 +15,6 @@ local Cutscenes = {
 
 
 function MenuController:KnitStart()
-    
 end
 
 function MenuController:startCutscene(cutscene : string)
@@ -27,16 +25,38 @@ function MenuController:startCutscene(cutscene : string)
 end
 
 function MenuController:Play()
-    local CameraController = Knit.GetController("CameraController")
-    CameraController.isInMenu = false
-    CameraController:CancelActiveTween()
-    CameraController:SetCameraType("Custom")
-    CameraController:ChangeMode("Play")
+    self._cameraController.isInMenu = false
+    self.isInMenu = false
+    self._cameraController:CancelActiveTween()
+    self._cameraController:SetCameraType("Custom")
+    self._cameraController:ChangeMode("Play")
     Knit.GetService("PlayerService"):SpawnCharacter()
 end
 
-function MenuController:KnitInit()
+function MenuController:ShowMenu()
+    if self.isInMenu then
+        return
+    end
+    Knit.GetController("UIController").MainMenuWidget:ShowMenu()
+    self.isInMenu = true
+    self._cameraController:ChangeMode("Menu")
+    Knit.GetController("UIController").MainMenuWidget:InitializeCameraTransition()
     
+end
+
+function MenuController:ShowPlayButton()
+    if self.isInMenu then
+        Knit.GetController("UIController").MainMenuWidget:ShowPlayButton()
+    end
+end
+
+function MenuController:HidePlayButton()
+    Knit.GetController("UIController").MainMenuWidget:HidePlayButton()
+end
+
+function MenuController:KnitInit()
+    self._cameraController = Knit.GetController("CameraController")
+    self.isInMenu = true
 end
 
 

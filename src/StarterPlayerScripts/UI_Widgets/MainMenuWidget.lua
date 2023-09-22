@@ -28,10 +28,12 @@ local storeButtonFrame
 local mainFrame
 local playButton
 local active = true
+local cameraTransitionConn
 --Constants
 local DEFAULT_CATEGORY = "Firearms"
 
 function MainMenuWidget:HideMenu()
+	active = false
 	local inventoryButtonsFrameTween =
 		TweenService:Create(inventoryButtonsFrame, TweenInfo.new(0.325), { Position = UDim2.fromScale(1, 0.3) })
 
@@ -59,6 +61,8 @@ function MainMenuWidget:HideMenu()
 end
 
 function MainMenuWidget:CloseMenu()
+	active = false
+
 	local inventoryButtonsFrameTween =
 		TweenService:Create(inventoryButtonsFrame, TweenInfo.new(0.325), { Position = UDim2.fromScale(1, 0.3) })
 
@@ -86,9 +90,30 @@ function MainMenuWidget:CloseMenu()
 	playButtonTween:Play()
 	playerPreviewTween:Play()
 	battlepassButtonTween:Play()
+	battlepassButtonTween.Completed:Connect(function(playbackState)
+		MainMenuGui.Enabled = false
+	end)
+end
+
+function MainMenuWidget:HidePlayButton()
+	local playButtonTween =
+		TweenService:Create(playButton, TweenInfo.new(0.325), { Position = UDim2.fromScale(1, 0.781) })
+	playButtonTween:Play()
+end
+
+function MainMenuWidget:ShowPlayButton()
+	if active then		
+		local playButtonTween =
+			TweenService:Create(playButton, TweenInfo.new(0.325), { Position = UDim2.fromScale(0.411, 0.781) })
+		playButtonTween:Play()
+	end
 end
 
 local function ShowMenu()
+	active = true
+	if not MainMenuGui.Enabled then
+		MainMenuGui.Enabled = true
+	end
 	local inventoryButtonsFrameTween =
 		TweenService:Create(inventoryButtonsFrame, TweenInfo.new(0.325), { Position = UDim2.fromScale(0.87, 0.3) })
 
@@ -119,11 +144,19 @@ local function ShowMenu()
 	StoreButtonTween:Play()
 	challengesButtonTween:Play()
 	inventoryButtonsFrameTween:Play()
-	playButtonTween:Play()
+	if Knit.GetController("GameModeController")._canRespawn then
+		playButtonTween:Play()
+	else
+		MainMenuWidget:HidePlayButton()
+	end
 	playerPreviewTween:Play()
 	battlepassButtonTween:Play()
-	active = true
 	game.Lighting.Blur.Enabled = true
+end
+
+function MainMenuWidget:ShowMenu()
+	ShowMenu()
+	warn("Showing menu")
 end
 
 local function setupMainMenuButtons()
@@ -171,7 +204,7 @@ local function setupMainMenuButtons()
 	storeButtonFrame.button.Activated:Connect(function()
 		local function callback()
 			MainMenuWidget:HideMenu()
-			StoreWidget:OpenStore("DailyItems", ShowMenu)
+			StoreWidget:OpenStore("Crates", ShowMenu)
 		end
 		ButtonWidget:OnActivation(storeButtonFrame, callback)
 	end)
@@ -186,6 +219,20 @@ local function setupMainMenuButtons()
 		ButtonWidget:OnActivation(playButton, callback)
 	end)
 end
+
+function MainMenuWidget:InitializeCameraTransition()
+	warn("Initialize camera transition")
+	local CameraController = Knit.GetController("CameraController")
+	CameraController.isInMenu = true
+	--Set up main menu cutscene
+	local currentMap = workspace:WaitForChild("Map")
+	local cutscenePoints = currentMap.Cutscene
+	workspace.CurrentCamera.CFrame = cutscenePoints.StartingCamera.CFrame
+	task.spawn(function()
+		CameraController:TransitionBetweenPoints(cutscenePoints)
+	end)
+end
+
 function MainMenuWidget:Initialize()
 	--Set up environment for main menu
 	game.Lighting.Blur.Enabled = true
@@ -199,7 +246,6 @@ function MainMenuWidget:Initialize()
 	local battleCoinsFrame = mainFrame.BattleCoinsFrame
 	local battleGemsFrame = mainFrame.BattleGemsFrame
 	playerPreviewViewportFrame = PlayerGui.MainMenuGui.CharacterCanvas.ViewportFrame
-	local CameraController = Knit.GetController("CameraController")
 	--Set up currencies
 	local currencyService = Knit.GetService("CurrencyService")
 	currencyService:GetCurrencyValue("BattleCoins"):andThen(function(currencyValue)
@@ -222,22 +268,7 @@ function MainMenuWidget:Initialize()
 			battleGemsFrame.AmountLabel.Text = newCurrencyValue
 		end
 	end)
-
-	--Set up main menu cutscene
-	local currentArenaInstance = workspace:WaitForChild("Arena")
-	local cutscenePoints = currentArenaInstance.Cutscene
-	workspace.CurrentCamera.CFrame = currentArenaInstance.StartingCamera.CFrame
-	CameraController.isInMenu = true
-	task.spawn(function()
-		while active do
-			CameraController:TransitionBetweenPoints(cutscenePoints)
-		end
-	end)
-
-	--Set up respawn menu
-	Players.LocalPlayer.CharacterAdded:Connect(function(character)
-		character:WaitForChild("Humanoid").Died:Connect(function() end)
-	end)
+	self:InitializeCameraTransition()
 	--Set up player preview
 	local worldModel = Instance.new("WorldModel")
 	worldModel.Parent = playerPreviewViewportFrame
@@ -284,10 +315,12 @@ function MainMenuWidget:Initialize()
 	--Connect to death event
 	Players.LocalPlayer.CharacterAdded:Connect(function(character)
 		character:WaitForChild("Humanoid").Died:Connect(function()
-			RespawnWidget:Initialize(ShowMenu)
+			if not active and not Knit.GetController("MenuController").isInMenu then
+				RespawnWidget:Initialize(ShowMenu)
+			end
 		end)
 	end)
-	return true
+	return self
 end
 
 return MainMenuWidget:Initialize()

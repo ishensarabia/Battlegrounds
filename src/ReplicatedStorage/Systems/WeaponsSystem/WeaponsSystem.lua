@@ -455,7 +455,7 @@ local function _defaultDamageCallback(
 		local taker = Players:GetPlayerFromCharacter(targetHumanoid.Parent)
 		if taker then
 			--If it's a player register dmage dealt
-			Knit.GetService("ScoreService"):RegisterDamageDealt(dealer, taker, amount, hitInfo)
+			Knit.GetService("ScoreService"):RegisterDamageDealt(dealer, taker, amount, hitInfo, damageData)
 		end
 		targetHumanoid:TakeDamage(amount)
 	end

@@ -779,7 +779,7 @@ function BulletWeapon:applyDamage(hitInfo)
 		return
 	end
 
-	self.weaponsSystem.doDamage(hitInfo.h, damage, nil, self.player, hitInfo)
+	self.weaponsSystem.doDamage(hitInfo.h, damage, nil, self.player, hitInfo, self.instance.Name)
 end
 
 function BulletWeapon:onHit(hitInfo)

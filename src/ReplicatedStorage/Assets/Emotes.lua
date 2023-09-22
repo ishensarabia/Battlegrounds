@@ -73,6 +73,12 @@ local emotes = {
 		defaultTempo = 1,
 		rarity = "Legendary",
 	},
+	The_Robot = {
+		name = "The Robot",
+		animation = "rbxassetid://14834257724",
+		defaultTempo = 1,
+		rarity = "Epic",
+	},
 }
 
 return emotes

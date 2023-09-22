@@ -30,7 +30,7 @@ function StatsService:KnitStart()
 				if stamina == 0 then
 					character:SetAttribute("UsingStamina", false)
 				end
-				if stamina < MAX_STAMINA and not character:GetAttribute("UsingStamina") then
+				if stamina < MAX_STAMINA and character:GetAttribute("UsingStamina") == false or not character:GetAttribute("UsingStamina") then
 					character:SetAttribute("Stamina", math.clamp(stamina + 0.1, 0, MAX_STAMINA))
 				end
 			end)

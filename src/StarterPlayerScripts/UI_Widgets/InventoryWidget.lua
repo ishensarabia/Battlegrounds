@@ -5,7 +5,7 @@ local Packages = game.ReplicatedStorage.Packages
 local Knit = require(ReplicatedStorage.Packages.Knit)
 --Assets
 local Assets = ReplicatedStorage.Assets
-local WeaponsIcons = require(ReplicatedStorage.Source.Assets.Icons.WeaponsIcons)
+local Weapons = ReplicatedStorage.Weapons
 --Widget
 local ButtonWidget = require(game.StarterPlayer.StarterPlayerScripts.Source.UI_Widgets.ButtonWidget)
 local WeaponPreviewWidget = require(game.StarterPlayer.StarterPlayerScripts.Source.UI_Widgets.WeaponPreviewWidget)
@@ -138,12 +138,14 @@ function InventoryWidget:OpenInventory(inventoryType: string, callback, category
 	Knit.GetService("DataService"):GetKeyValue(InventoryWidget.inventoryType):andThen(function(inventoryItems: table)
 		for itemID, itemTable in inventoryItems do
 			--Filter the category
-			if WeaponsIcons[InventoryWidget.category][itemID] then
+			--Get the tool to identify if it has texture
+			local weapon : Tool = Weapons[itemID]
+			if weapon.TextureId then
 				local itemFrame = Assets.GuiObjects.Frames.ItemFrame:Clone()
 				itemFrame.Parent = itemsFrame
 				local formattedItemName = string.gsub(itemID, "_", " ")
 				itemFrame.Frame:WaitForChild("ItemName").Text = formattedItemName
-				itemFrame.Frame:WaitForChild("ItemIcon").Image = WeaponsIcons[InventoryWidget.category][itemID]
+				itemFrame.Frame:WaitForChild("ItemIcon").Image = weapon.TextureId
 				itemFrame.Frame.ItemIcon.Activated:Connect(function()
 					ButtonWidget:OnActivation(itemFrame.Frame, function()
 						InventoryWidget.state = "WeaponPreview"

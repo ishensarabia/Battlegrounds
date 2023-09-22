@@ -230,6 +230,7 @@ function StoreWidget:CreateBundlesFrames(bundles: table, category: string)
 		--Connect the buy button
 		bundleFrame.BuyButton.Activated:Connect(function()
 			ButtonWidget:OnActivation(bundleFrame.BuyButton, function()
+				warn("Buying bundle")
 				StoreService:BuyBundle(category, bundleName)
 			end)
 		end)

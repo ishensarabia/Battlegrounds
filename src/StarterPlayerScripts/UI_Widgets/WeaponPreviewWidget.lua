@@ -182,11 +182,11 @@ function WeaponPreviewWidget:OpenPreview(weaponID: string, callback)
 	--Set up item frame properties
 	local formattedWeaponName = string.gsub(weaponID, "_", " ")
 	itemInfoFrame.ItemTitleFrame.Title.Text = string.upper(formattedWeaponName)
-	itemInfoFrame.Description.Text = ReplicatedStorage.Weapons.Preview[weaponID]:GetAttribute("Description")
+	itemInfoFrame.Description.Text = ReplicatedStorage.Weapons[weaponID]:GetAttribute("Description") or ""
 	--Generate world models
 	local worldModel = Instance.new("WorldModel")
 	worldModel.Parent = viewportFrame
-	local weaponModel = ReplicatedStorage.Weapons.Preview[weaponID]:Clone()
+	local weaponModel = ReplicatedStorage.Weapons[weaponID]:Clone()
 	--Check if the item is a tool get the model
 	if weaponModel:IsA("Tool") then
 		weaponModel = weaponModel:FindFirstChildOfClass("Model"):Clone()

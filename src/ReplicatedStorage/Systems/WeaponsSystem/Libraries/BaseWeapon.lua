@@ -102,7 +102,7 @@ function BaseWeapon:doInitialSetup()
 				if self:getAmmoInWeapon() <= 0 then
 					-- Have to wait a frame, otherwise the reload animation will not play
 					coroutine.wrap(function()
-						wait()
+						task.wait()
 						self:reload()
 					end)()
 				end
@@ -623,7 +623,11 @@ function BaseWeapon:onReloaded(player, fromNetwork)
 		if reloadTrackKey then
 			self.reloadTrack = self:getAnimTrack(reloadTrackKey)
 			if self.reloadTrack then
+				player.Character.Humanoid.SecondHandleIK.Enabled = false
 				self.reloadTrack:Play()
+				self.reloadTrack.Stopped:Connect(function()
+					player.Character.Humanoid.SecondHandleIK.Enabled = true
+				end)
 			end
 		end
 

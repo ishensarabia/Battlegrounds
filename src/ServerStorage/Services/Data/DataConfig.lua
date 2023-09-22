@@ -29,6 +29,67 @@ DataConfig.profileTemplate = {
 			Prestige = "Beginner",
 			Customization = {},
 		},
+		Kriss_Vector = {
+			Owned = true,
+			Rank = 0,
+			Prestige = "Beginner",
+			Customization = {},
+		},
+		["SPAS-12"] = {
+			Owned = true,
+			Rank = 0,
+			Prestige = "Beginner",
+			Customization = {},
+		},
+		["AA-12"] =  {
+			Owned = true,
+			Rank = 0,
+			Prestige = "Beginner",
+			Customization = {},
+		},
+		["Barrett-M82A1"] = {
+			Owned = true,
+			Rank = 0,
+			Prestige = "Beginner",
+			Customization = {},
+		},
+		["BFG-50"] =  {
+			Owned = true,
+			Rank = 0,
+			Prestige = "Beginner",
+			Customization = {},
+		},
+		["AUG-3"] = {
+			Owned = true,
+			Rank = 0,
+			Prestige = "Beginner",
+			Customization = {},
+		},
+		["AK-47"] =  {
+			Owned = true,
+			Rank = 0,
+			Prestige = "Beginner",
+			Customization = {},
+		},
+		["D-Eagle"] =  {
+			Owned = true,
+			Rank = 0,
+			Prestige = "Beginner",
+			Customization = {},
+		},
+		["SCAR-L"] = {
+			Owned = true,
+			Rank = 0,
+			Prestige = "Beginner",
+			Customization = {},
+		},
+		MK14 =  {
+			Owned = true,
+			Rank = 0,
+			Prestige = "Beginner",
+			Customization = {},
+		},
+
 		["Rail-Rifle"] = {
 			Owned = true,
 			Rank = 0,

@@ -241,11 +241,6 @@ function ShoulderCamera.new(weaponsSystem)
 	RunService:BindToRenderStep(CAMERA_RENDERSTEP_NAME, Enum.RenderPriority.Camera.Value - 1, function(dt)
 		self:onRenderStep(dt)
 	end)
-	RunService:BindToRenderStep(SPRINT_ACTION_NAME, Enum.RenderPriority.Camera.Value, function()
-		if self.sprintingInputActivated then
-			self.StatsService:ExecuteAction("Sprint")
-		end
-	end)
 
 	return self
 end
@@ -400,7 +395,10 @@ function ShoulderCamera:onRenderStep(dt)
 			and not self.zoomState
 			and self.currentCharacter:GetAttribute("Stamina") > 0
 		then
+			self.StatsService:ExecuteAction("Sprint")
 			self.desiredWalkSpeed = self.sprintingWalkSpeed
+		else
+			self.StatsService:StopAction("Sprint")
 		end
 		if self.currentCharacter:GetAttribute("Stamina") < 1 then
 			self.desiredWalkSpeed = self.normalWalkSpeed

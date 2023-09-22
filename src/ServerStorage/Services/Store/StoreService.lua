@@ -337,7 +337,7 @@ StoreService.crates = {
 				Name = Emotes.Fresh.name,
 				Rarity = Emotes.Fresh.rarity,
 				EmoteAnimation = Emotes.Fresh.animation,
-			}
+			},
 		},
 		RaritiesPercentages = {
 			Common = 70,
@@ -412,7 +412,6 @@ function StoreService:KnitStart()
 		return self._currencyService:AddCurrency(player, "BattleGems", 16000)
 	end
 
-
 	--Battlepass seasons
 	--ProductId 1532101515 Season 1
 	productFunctions[1532101515] = function(receipt, player)
@@ -469,6 +468,7 @@ end
 
 --Buy bundle function
 function StoreService:BuyBundle(player, bundleCategory: string, bundleName: string)
+	warn(player, bundleName, bundleCategory)
 	local bundle = self.bundles[bundleCategory][bundleName]
 	local success, result = pcall(function()
 		return PolicyService:GetPolicyInfoForPlayerAsync(player)
@@ -526,7 +526,7 @@ function StoreService:OpenCrate(player, crateName: string, crateType: string)
 	if not self._dataService:HasCrate(player, crateName) then
 		return nil
 	end
-	warn("[Store Service] opening crate: " .. crateName )
+	warn("[Store Service] opening crate: " .. crateName)
 	local n = 0
 	local rarityChosen = nil
 	local crate = self.crates[crateName]
@@ -566,10 +566,11 @@ function StoreService:OpenCrate(player, crateName: string, crateType: string)
 			break
 		end
 	end
-	local unboxTime = math.random(3,6)
+	local unboxTime = math.random(3, 6)
 	--Remove crate from player's inventory
 	local cratesLeft = self._dataService:RemoveCrate(player, crateName, true)
 	--Fire the signal
+	warn(player, crate, rewardChosen, cratesLeft, crateName, unboxTime)
 	self.Client.OpenCrateSignal:Fire(player, crate, rewardChosen, cratesLeft, crateName, unboxTime)
 	return unboxTime
 end

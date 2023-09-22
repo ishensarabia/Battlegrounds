@@ -265,7 +265,11 @@ BattlepassConfig.rewards = {
 		},
 		[10] = {
 			freepass = {},
-			battlepass = {},
+			battlepass = {[1] = {
+				rewardType = BattlepassConfig.RewardTypes.Emote,
+				rewardEmote = Emotes.The_Robot,
+				rarityColor = BattlepassConfig.RarityColors[Emotes.The_Robot.rarity],
+			}},
 		}
 	},
 }

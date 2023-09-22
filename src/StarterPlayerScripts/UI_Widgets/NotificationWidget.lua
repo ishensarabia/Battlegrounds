@@ -9,9 +9,10 @@ local Knit = require(ReplicatedStorage.Packages.Knit)
 local NotificationWidget = {}
 local isInitialized = false
 --Notifiaction tween info
-local notificationTweenInfo = TweenInfo.new(0.9, Enum.EasingStyle.Exponential, Enum.EasingDirection.Out, 0, true, 0)
+local notificationTweenInfo = TweenInfo.new(1.33, Enum.EasingStyle.Elastic, Enum.EasingDirection.Out, 0, true, 0)
+local transparencyTweenInfo = TweenInfo.new(1.3, Enum.EasingStyle.Bounce, Enum.EasingDirection.InOut, 0, true)
 --Constants
-local DELAY_TIME_BEFORE_NOTIFICATION = 0.96
+local DELAY_TIME_BEFORE_NOTIFICATION = 0.33
 
 function NotificationWidget:Initialize()
 	if not game.Players.LocalPlayer.PlayerGui:FindFirstChild("NotificationGui") then
@@ -72,10 +73,44 @@ end
 
 --Function to create a notification
 function NotificationWidget:DisplayNotification(notificationType: string, params: table)
+	warn(params)
 	if not isInitialized then
 		NotificationWidget:Initialize()
 	end
 	NotificationWidget.NotificationGui.Enabled = true
+
+	if notificationType == NotificationWidget.NotificationController.Notifications.Feed then
+		local wipeoutFeedFrame = NotificationWidget.NotificationGui.WipeoutFeedFrame
+		local wipeoutFeedCanvas = Assets.GuiObjects.Frames.WipeoutFeedCanvas:Clone()
+		wipeoutFeedCanvas.Parent = wipeoutFeedFrame
+		wipeoutFeedCanvas.UsernameTextLabel.Text = params.wiperName
+		wipeoutFeedCanvas.UsernameWipedTextLabel.Text = params.playerWipedOut.Name
+		wipeoutFeedCanvas.WeaponImage.Image = ReplicatedStorage.Weapons[params.weaponName].TextureId
+		local transparencyTween = TweenService:Create(wipeoutFeedCanvas, TweenInfo.new(1.66), { GroupTransparency = 1 })
+		task.delay(3.33, function()
+			transparencyTween:Play()
+			transparencyTween.Completed:Connect(function(playbackState)
+				wipeoutFeedCanvas:Destroy()
+			end)
+		end)
+	end
+
+	if notificationType == NotificationWidget.NotificationController.Notifications.Wipeout_Streak then
+		warn("wipeout streak")
+		local wipeoutFeedFrame = NotificationWidget.NotificationGui.WipeoutFeedFrame
+		local wipeoutStreakFeedCanvas = Assets.GuiObjects.Frames.WipeoutStreakFeedCanvas:Clone()
+		wipeoutStreakFeedCanvas.Parent = wipeoutFeedFrame
+		wipeoutStreakFeedCanvas.UsernameTextLabel.Text = params.playerName
+		wipeoutStreakFeedCanvas.WipeoutStreakTextLabel.Text = params.streakName
+		local transparencyTween =
+			TweenService:Create(wipeoutStreakFeedCanvas, TweenInfo.new(1.66), { GroupTransparency = 1 })
+		task.delay(3.33, function()
+			transparencyTween:Play()
+			transparencyTween.Completed:Connect(function()
+				wipeoutStreakFeedCanvas:Destroy()
+			end)
+		end)
+	end
 
 	if notificationType == NotificationWidget.NotificationController.Notifications.Wipeout then
 		local wipeoutNotificationFrame = NotificationWidget.NotificationGui.WipeoutNotificationFrame
@@ -137,6 +172,16 @@ function NotificationWidget:DisplayNotification(notificationType: string, params
 		userWipedFrame.Transparency = 1
 		damageDealtFrame.Transparency = 1
 		wipeoutRewardsFrame.Transparency = 1
+		--Trasnparency
+		userWipedFrame.UsernameTextLabel.TextTransparency = 1
+		userWipedFrame.WipedOutTextLabel.TextTransparency = 1
+		damageDealtFrame.DamageAmountTextLabel.TextTransparency = 1
+		damageDealtFrame.DamageDealtTextLabel.TextTransparency = 1
+		wipeoutRewardsFrame.BattleCoinsTextLabel.TextTransparency = 1
+		wipeoutRewardsFrame.BattleCoinsTextLabel.ImageLabel.ImageTransparency = 1
+		wipeoutRewardsFrame.BattlepassExperienceTextLabel.TextTransparency = 1
+		wipeoutRewardsFrame.BattlepassExperienceTextLabel.ImageLabel.ImageTransparency = 1
+		wipeoutRewardsFrame.ExperienceGained.TextTransparency = 1
 		--play the sound
 		NotificationWidget.AudioController:PlaySound("knockout")
 		--Assing layout order for the frames
@@ -155,6 +200,12 @@ function NotificationWidget:DisplayNotification(notificationType: string, params
 			notificationTweenInfo,
 			{ Size = userWipedFrame.UsernameTextLabel:GetAttribute("TargetSize") }
 		)
+		local userWipedOutTransparencyTween =
+			TweenService:Create(userWipedFrame.WipedOutTextLabel, transparencyTweenInfo, { TextTransparency = 0 })
+		local userWipedUsernameTransparencyTween =
+			TweenService:Create(userWipedFrame.UsernameTextLabel, transparencyTweenInfo, { TextTransparency = 0 })
+		userWipedUsernameTransparencyTween:Play()
+		userWipedOutTransparencyTween:Play()
 		userWipedOutTextLabelTween:Play()
 		task.delay(DELAY_TIME_BEFORE_NOTIFICATION, function()
 			--Username text label tween
@@ -163,6 +214,7 @@ function NotificationWidget:DisplayNotification(notificationType: string, params
 				notificationTweenInfo,
 				{ Size = userWipedFrame.UsernameTextLabel:GetAttribute("TargetSize") }
 			)
+
 			userWipedUsernameTextLabelTween:Play()
 			userWipedUsernameTextLabelTween.Completed:Connect(function()
 				userWipedOutTextLabelTween:Destroy()
@@ -172,60 +224,85 @@ function NotificationWidget:DisplayNotification(notificationType: string, params
 		end)
 
 		--Create DamageDealtFrame tween
-		if not isDisplayingDamageDealtFrame then
-			local damageDealtTextTween = TweenService:Create(
-				damageDealtFrame.DamageDealtTextLabel,
-				notificationTweenInfo,
-				{ Size = damageDealtFrame.DamageDealtTextLabel:GetAttribute("TargetSize") }
-			)
-			damageDealtTextTween:Play()
-			task.delay(DELAY_TIME_BEFORE_NOTIFICATION, function()
-				if not isDisplayingDamageDealtFrame then
-					local damageDealtAmountTextTween = TweenService:Create(
-						damageDealtFrame.DamageAmountTextLabel,
-						notificationTweenInfo,
-						{ Size = damageDealtFrame.DamageAmountTextLabel:GetAttribute("TargetSize") }
-					)
-					damageDealtAmountTextTween:Play()
-					damageDealtAmountTextTween.Completed:Connect(function()
-						damageDealtFrame:Destroy()
-					end)
-				end
+		local damageDealtTextTween = TweenService:Create(
+			damageDealtFrame.DamageDealtTextLabel,
+			notificationTweenInfo,
+			{ Size = damageDealtFrame.DamageDealtTextLabel:GetAttribute("TargetSize") }
+		)
+		local damageDealtTransparencyTween =
+			TweenService:Create(damageDealtFrame.DamageDealtTextLabel, transparencyTweenInfo, { TextTransparency = 0 })
+		local damaDealtAmountTransparencyTween =
+			TweenService:Create(damageDealtFrame.DamageAmountTextLabel, transparencyTweenInfo, { TextTransparency = 0 })
+		damaDealtAmountTransparencyTween:Play()
+		damageDealtTransparencyTween:Play()
+		damageDealtTextTween:Play()
+		task.delay(DELAY_TIME_BEFORE_NOTIFICATION, function()
+			local damageDealtAmountTextTween =
+				TweenService:Create(damageDealtFrame.DamageAmountTextLabel, notificationTweenInfo, {
+					Size = damageDealtFrame.DamageAmountTextLabel:GetAttribute("TargetSize"),
+				})
+
+			damageDealtAmountTextTween:Play()
+			damageDealtAmountTextTween.Completed:Connect(function()
+				damageDealtFrame:Destroy()
 			end)
-		end
+		end)
 
 		--Create WipeoutRewardsFrame
-		if not isDisplayingWipeoutRewardsFrame then
-			local battlepassExperienceGainedTween = TweenService:Create(
-				wipeoutRewardsFrame.BattlepassExperienceTextLabel,
-				notificationTweenInfo,
-				{ Size = wipeoutRewardsFrame.BattlepassExperienceTextLabel:GetAttribute("TargetSize") }
-			)
-			local battleCoinsGainedTween = TweenService:Create(
-				wipeoutRewardsFrame.BattleCoinsTextLabel,
-				notificationTweenInfo,
-				{ Size = wipeoutRewardsFrame.BattleCoinsTextLabel:GetAttribute("TargetSize") }
-			)
-			local experienceGainedTween = TweenService:Create(
-				wipeoutRewardsFrame.ExperienceGained,
-				notificationTweenInfo,
-				{ Size = wipeoutRewardsFrame.ExperienceGained:GetAttribute("TargetSize") }
-			)
-			battleCoinsGainedTween:Play()
+		local battlepassExperienceGainedTween =
+			TweenService:Create(wipeoutRewardsFrame.BattlepassExperienceTextLabel, notificationTweenInfo, {
+				Size = wipeoutRewardsFrame.BattlepassExperienceTextLabel:GetAttribute("TargetSize"),
+			})
+		local battlepassExperienceGainedTransparencyTween = TweenService:Create(
+			wipeoutRewardsFrame.BattlepassExperienceTextLabel,
+			transparencyTweenInfo,
+			{ TextTransparency = 0 }
+		)
+		local battleCoinsGainedTween = TweenService:Create(
+			wipeoutRewardsFrame.BattleCoinsTextLabel,
+			notificationTweenInfo,
+			{ Size = wipeoutRewardsFrame.BattleCoinsTextLabel:GetAttribute("TargetSize") }
+		)
+		local battleCoinsGainedTransparencyTween = TweenService:Create(
+			wipeoutRewardsFrame.BattleCoinsTextLabel,
+			transparencyTweenInfo,
+			{ TextTransparency = 0 }
+		)
+		local experienceGainedTween = TweenService:Create(
+			wipeoutRewardsFrame.ExperienceGained,
+			notificationTweenInfo,
+			{ Size = wipeoutRewardsFrame.ExperienceGained:GetAttribute("TargetSize") }
+		)
+		local experienceGainedTransparencyTween =
+			TweenService:Create(wipeoutRewardsFrame.ExperienceGained, transparencyTweenInfo, { TextTransparency = 0 })
+		--Icon tweens
+		local battleCoinsIconTransparencyTween = TweenService:Create(
+			wipeoutRewardsFrame.BattleCoinsTextLabel.ImageLabel,
+			transparencyTweenInfo,
+			{ ImageTransparency = 0 }
+		)
+		local battlepassExperienceIconTransparencyTween = TweenService:Create(
+			wipeoutRewardsFrame.BattlepassExperienceTextLabel.ImageLabel,
+			transparencyTweenInfo,
+			{ ImageTransparency = 0 }
+		)
+		battleCoinsIconTransparencyTween:Play()
+		battlepassExperienceIconTransparencyTween:Play()
+		battleCoinsGainedTransparencyTween:Play()
+		battleCoinsGainedTween:Play()
+		task.delay(DELAY_TIME_BEFORE_NOTIFICATION - 0.66, function()
+			experienceGainedTween:Play()
+			experienceGainedTransparencyTween:Play()
 			task.delay(DELAY_TIME_BEFORE_NOTIFICATION - 0.66, function()
 				if not isDisplayingWipeoutRewardsFrame then
-					experienceGainedTween:Play()
-					task.delay(DELAY_TIME_BEFORE_NOTIFICATION - 0.66, function()
-						if not isDisplayingWipeoutRewardsFrame then
-							battlepassExperienceGainedTween:Play()
-							battlepassExperienceGainedTween.Completed:Connect(function()
-								wipeoutRewardsFrame:Destroy()
-							end)
-						end
+					battlepassExperienceGainedTransparencyTween:Play()
+					battlepassExperienceGainedTween:Play()
+					battlepassExperienceGainedTween.Completed:Connect(function()
+						wipeoutRewardsFrame:Destroy()
 					end)
 				end
 			end)
-		end
+		end)
 
 		--Check if the player accomplished a badge streak
 		if params.badgeStreak then
@@ -297,7 +374,7 @@ function NotificationWidget:DisplayNotification(notificationType: string, params
 		)
 
 		damageDealtTween:Play()
-		task.delay(DELAY_TIME_BEFORE_NOTIFICATION - .66, function()
+		task.delay(DELAY_TIME_BEFORE_NOTIFICATION - 0.66, function()
 			usernameTween:Play()
 			assistTextTween:Play()
 			assistTextTween.Completed:Connect(function()

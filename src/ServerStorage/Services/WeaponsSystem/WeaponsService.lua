@@ -80,6 +80,7 @@ function WeaponsService:SetIKForWeapon(player, instance: Instance)
 	--Animate the selected weapon
 	if not self.IKSessions[player.UserId] then
 		local IKController = Instance.new("IKControl")
+		IKController.Name = "SecondHandleIK"
 		self.IKSessions[player.UserId] = IKController
 		IKController.Parent = player.Character.Humanoid
 		IKController.ChainRoot = player.Character.LeftUpperArm

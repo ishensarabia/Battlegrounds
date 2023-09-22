@@ -12,19 +12,30 @@ local ScoreService = Knit.CreateService({
 	Name = "ScoreService",
 	Wipeout_Notification = Signal.new(),
 	Client = {
+		Wipeout_Streak_Notification = Knit.CreateSignal(),
 		Wipeout_Notification = Knit.CreateSignal(),
 		Assist_Notification = Knit.CreateSignal(),
 		Death_Notification = Knit.CreateSignal(),
 	},
+	Wipeout_Streaks = {
+		[5] = "is on a <font color = 'rgb(26, 115, 216)'>RAMPAGE STREAK </font>";
+		[10] = "is on a <font color = 'rgb(4, 204, 144)'>DOMINANCE STREAK</font>";
+		[15] = "is on an  <font color = 'rgb(255, 32, 20)'>ANNIHILATION STREAK</font>";
+		[20] = "is the <font color = 'rgb(72, 55, 104)'>NIGHTMARE</font>";
+		[25] = "is the <font color = 'rgb(155, 0, 0)'>CARNAGE</font>";
+		[30] = "is the <font color = 'rgb(255, 99, 8)'>CHAOS</font>";
+	}
 })
+
 
 function ScoreService:KnitStart()
 	self.HitSessions = {}
+	self.WipeoutStreaks = {}
 	self._leaderboardService = Knit.GetService("LeaderboardService")
 	self._challengesService = Knit.GetService("ChallengesService")
 end
 
-function ScoreService:RegisterDamageDealt(dealer: Player, taker: Player, amount: number, hitInfo)
+function ScoreService:RegisterDamageDealt(dealer: Player, taker: Player, amount: number, hitInfo, damageData)
 	--Make sure dealer is not auto-inflicting
 	if dealer.UserId == taker.UserId then
 		return
@@ -46,7 +57,7 @@ function ScoreService:RegisterDamageDealt(dealer: Player, taker: Player, amount:
 		self.HitSessions[taker.UserId].headshotDealer = dealer
 	end
 	self.HitSessions[taker.UserId].lastDamageDealer = dealer
-	taker:SetAttribute("KillerID", dealer.UserId)
+	self.HitSessions[taker.UserId].weaponDealtName = damageData
 end
 
 local function damageToBattleCoins(damage: number)
@@ -59,28 +70,46 @@ function ScoreService:RewardHitSession(taker: Player)
 	if self.HitSessions[taker.UserId] then
 		for damageDealerID, amount in self.HitSessions[taker.UserId] do
 			if type(damageDealerID) == "number" then
-				local player = Players:GetPlayerByUserId(damageDealerID)
-				if player then
+				local rewardPlayer = Players:GetPlayerByUserId(damageDealerID)
+				if rewardPlayer then
 					--Notify the leaderboard service to update the player's score
-					self._leaderboardService:UpdatePlayerScore(player, amount)
-					local damageDealerDataProfile = dataService:GetProfileData(player)
+					self._leaderboardService:UpdatePlayerScore(rewardPlayer, amount)
+					local damageDealerDataProfile = dataService:GetProfileData(rewardPlayer)
 					damageDealerDataProfile.BattleCoins += damageToBattleCoins(amount)
 					self._challengesService:UpdateChallengeProgression(
-						player,
+						rewardPlayer,
 						"BattleCoins",
 						damageToBattleCoins(amount)
 					)
 					--Check for headshot
 					if
 						self.HitSessions[taker.UserId].headshotDealer
-						and self.HitSessions[taker.UserId].headshotDealer == player
+						and self.HitSessions[taker.UserId].headshotDealer == rewardPlayer
 					then
-						warn("Headshot awarded for player : " .. player.Name)
-						self._challengesService:UpdateChallengeProgression(player, "HeadshotKnockouts", 1)
+						warn("Headshot awarded for player : " .. rewardPlayer.Name)
+						self._challengesService:UpdateChallengeProgression(rewardPlayer, "HeadshotKnockouts", 1)
 						damageDealerDataProfile.BattleCoins += damageToBattleCoins(amount * 0.66)
 					end
-					if player == self.HitSessions[taker.UserId].lastDamageDealer then
-						self.Client.Wipeout_Notification:Fire(player, amount, player)
+					-- Check if the player achieved a wipeout streak (e.g., 5, 10, 15, 20)
+					if self.WipeoutStreaks[rewardPlayer] then
+						self.WipeoutStreaks[rewardPlayer] += 5
+					else
+						self.WipeoutStreaks[rewardPlayer] = 5
+					end
+					self.Client.Wipeout_Notification:FireAll(
+						amount,
+						taker,
+						self.HitSessions[taker.UserId].weaponDealtName,
+						self.HitSessions[taker.UserId].lastDamageDealer.Name
+					)
+					warn(self.WipeoutStreaks[rewardPlayer] % 5 )
+					
+					if self.WipeoutStreaks[rewardPlayer] % 5 == 0  then
+						-- Reward the player for the wipeout streak
+						local rewardAmount = self.WipeoutStreaks[rewardPlayer] * 10 -- Adjust the reward as needed
+						self._leaderboardService:UpdatePlayerScore(rewardPlayer, rewardAmount)
+						self._challengesService:UpdateChallengeProgression(rewardPlayer, "WipeoutStreak", 1)
+						self.Client.Wipeout_Streak_Notification:FireAll(rewardPlayer.Name, self.Wipeout_Streaks[self.WipeoutStreaks[rewardPlayer]])
 					end
 				end
 			end
@@ -129,11 +158,15 @@ function ScoreService:KnitInit()
 			humanoid.Died:Connect(function()
 				--reward hit dealers
 				self:RewardHitSession(player)
+				--Clear any streaks
+				if self.WipeoutStreaks[player] then
+					self.WipeoutStreaks[player] = nil
+				end
 				--notify the player's death
 				-- get the player who deliver the final blow (if there's any)
-				if player:GetAttribute("KillerID") then					
+				if player:GetAttribute("KillerID") then
 					local killer = Players:GetPlayerByUserId(player:GetAttribute("KillerID"))
-					if killer then					
+					if killer then
 						self.Client.Death_Notification:Fire(player, killer)
 					end
 				end

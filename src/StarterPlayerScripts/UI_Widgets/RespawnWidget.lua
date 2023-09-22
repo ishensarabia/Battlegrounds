@@ -13,6 +13,9 @@ local RespawnWidget = {}
 local player = Players.LocalPlayer
 
 function RespawnWidget:Initialize(callback)
+	if not Knit.GetController("GameModeController")._canRespawn then
+		return
+	end
 	local respawnGui
 	if not game.Players.LocalPlayer.PlayerGui:FindFirstChild("RespawnGui") then
 		respawnGui = Assets.GuiObjects.ScreenGuis.RespawnGui or game.Players.LocalPlayer.PlayerGui.RespawnGui

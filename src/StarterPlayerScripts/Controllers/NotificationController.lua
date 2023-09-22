@@ -1,3 +1,4 @@
+local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Knit = require(ReplicatedStorage.Packages.Knit)
 
@@ -9,21 +10,36 @@ local NotificationWidget = require(game.StarterPlayer.StarterPlayerScripts.Sourc
 function NotificationController:KnitStart() end
 
 NotificationController.Notifications = {
+	Wipeout_Streak = "Wipeout_Streak";
 	Wipeout = "Wipeout",
 	Death = "Death",
 	Assist = "Assist",
+	Feed = "Feed",
 }
 
 function NotificationController:KnitInit()
 	--Get the ScoreService
 	local ScoreService = Knit.GetService("ScoreService")
 	--Connect to notification signals
-	ScoreService.Wipeout_Notification:Connect(function(damageDealt: number, player: Player)
+	ScoreService.Wipeout_Notification:Connect(function(damageDealt: number, playerWipedOut: Player, weaponName : string, wiperName)
+		warn(damageDealt, playerWipedOut, weaponName, wiperName)
 		local params = {
 			damageDealt = damageDealt,
-			playerWipedOut = player,
+			playerWipedOut = playerWipedOut,
+			wiperName = wiperName,
+			weaponName = weaponName
 		}
-		NotificationWidget:DisplayNotification(self.Notifications.Wipeout, params)
+		if Players.LocalPlayer.Name == wiperName then			
+			NotificationWidget:DisplayNotification(self.Notifications.Wipeout, params)
+		end
+		NotificationWidget:DisplayNotification(self.Notifications.Feed, params)
+	end)
+	ScoreService.Wipeout_Streak_Notification:Connect(function(playerName : string, streakName : string)
+		local params = {
+			playerName = playerName,
+			streakName = streakName
+		}
+		NotificationWidget:DisplayNotification(self.Notifications.Wipeout_Streak, params)
 	end)
 	ScoreService.Death_Notification:Connect(function(killer: Player)
 		local params = {
