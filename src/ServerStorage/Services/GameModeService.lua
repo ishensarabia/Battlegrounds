@@ -18,7 +18,7 @@ local GameModeService = Knit.CreateService({
 --Constants
 local GAMEMODES = {
 	FreeForAll = {
-		Time = 6,
+		Time = 60,
 		Description = "Kill everyone and be the last one standing!",
 	},
 	TeamDeathmatch = {
@@ -33,6 +33,8 @@ GameModeService.currentGameMode = nil
 
 function GameModeService:KnitStart()
 	self._leaderboardService = Knit.GetService("LeaderboardService")
+	self._challengesService = Knit.GetService("ChallengesService")
+
 	if self.currentGameMode == nil then
 		task.wait(10)
 		self:InitializeElection()
@@ -99,7 +101,7 @@ function GameModeService:StartGameMode()
 		local mapVotes = self:GetVoteCount("Map")
 		local mostVotedMap, highestVote = getMostVoted(mapVotes, "Map")
 		if mostVotedMap then
-			-- self:LoadMap(mostVotedMap)		
+			self:LoadMap(mostVotedMap)		
 		end
 		self.currentGameMode = mostVotedGameMode
 		self.Client.InitializeGameModeSignal:FireAll(GAMEMODES[mostVotedGameMode].Time)
@@ -119,6 +121,7 @@ function GameModeService:LoadMap(map : string)
 	workspace.Map:ClearAllChildren()
 	--Set the parent
 	selectedMap.Parent = workspace.Map
+	selectedMap.Cutscene.Parent = workspace.Map
 	--Check if there's any terrain and load it
 	local terrainRegion = selectedMap:FindFirstChildWhichIsA("TerrainRegion")
 	if terrainRegion then
@@ -135,10 +138,13 @@ function GameModeService:EndGameMode()
 	--Get the results of the game mode
 	local leaderboard = self._leaderboardService:GetLeaderboard()
 	--Get top 3 players
-	local topPlayers = self._leaderboardService:GetTopPlayers(#leaderboard)
+	local topPlayers = self._leaderboardService:GetTopPlayers(5)
 	--Display the top players 
 	self.Client.EndGameSignal:FireAll(topPlayers)
-	warn(topPlayers)
+	for index, playerScoreData in topPlayers do
+		warn(playerScoreData)
+		self._challengesService:UpdateChallengeProgression(playerScoreData.player, "TopPlayers", 1)
+	end
 	self._leaderboardService:ResetLeaderboard()
 	--Notify the players of the results
 	--Start a new game mode

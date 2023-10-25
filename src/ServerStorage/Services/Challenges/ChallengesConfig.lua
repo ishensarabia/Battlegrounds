@@ -180,8 +180,8 @@ ChallengesConfig.challenges = {
 		},
 		{
 			name = "Top of the list!",
-			description = "Reach the top 10 of the leaderboard 3 times",
-			typeOfProgression = "Top10Leaderboard",
+			description = "Reach the top 5 of the leaderboard 3 times",
+			typeOfProgression = "TopPlayers",
 			goal = 3,
 			rewards = {
 				{

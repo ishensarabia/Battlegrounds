@@ -17,35 +17,77 @@ local timeLeftTextLabel
 local gamemodesFrame
 local mapsFrame
 local closeButton
-
 local inventoryTweenInfo = TweenInfo.new(0.15, Enum.EasingStyle.Linear, Enum.EasingDirection.InOut, 0, false, 0)
+local hideMinimizedFrameTween
 
 function GameModeElectionWidget:Initialize()
 	--Mount inventory widget
 	local player = game.Players.LocalPlayer
 	gameModeElectionGui = Assets.GuiObjects.ScreenGuis.GameModeElectionGui
-	gamemodesFrame = gameModeElectionGui.GamemodesFrame
-	mapsFrame = gameModeElectionGui.MapsFrame
-	closeButton = gameModeElectionGui.CloseButton
+	gamemodesFrame = gameModeElectionGui.MainFrame.GamemodesFrame
+	mapsFrame = gameModeElectionGui.MainFrame.MapsFrame
+	closeButton = gameModeElectionGui.MainFrame.CloseButton
 	gameModeElectionGui.Enabled = false
 	gameModeElectionGui.Parent = player.PlayerGui
+	--Hide components by group transparency
 
-	timeLeftTextLabel = gameModeElectionGui.TimeLeftTextLabel
+	
+	timeLeftTextLabel = gameModeElectionGui.MainFrame.TimeLeftTextLabel
 	--Connect the close button
+	hideMinimizedFrameTween =
+		TweenService:Create(gameModeElectionGui.MinimizedFrame, TweenInfo.new(0.69), { GroupTransparency = 1 })
 	closeButton.Activated:Connect(function()
-		ButtonWidget:OnActivation(closeButton,function()			
-			self:CloseElectionFrame()
+		ButtonWidget:OnActivation(closeButton, function()
+			self:MinimizeElectionFrame()
+		end)
+	end)
+	gameModeElectionGui.MinimizedFrame.button.Activated:Connect(function()
+		ButtonWidget:OnActivation(gameModeElectionGui.MinimizedFrame, function()
+			self:ShowElectionFrame()
+			hideMinimizedFrameTween:Play()
 		end)
 	end)
 	return GameModeElectionWidget
 end
 
+function GameModeElectionWidget:hideMinimizedFrame()
+	
+end
+
+function GameModeElectionWidget:ShowElectionFrame()
+	TweenService:Create(gameModeElectionGui.MainFrame, TweenInfo.new(0.69), { GroupTransparency = 0 }):Play()
+end
+
+function GameModeElectionWidget:HideElectionFrame()
+	TweenService:Create(gameModeElectionGui.MainFrame, TweenInfo.new(0.69), { GroupTransparency = 1 }):Play()
+end
+
+function GameModeElectionWidget:MinimizeElectionFrame()
+	self:HideElectionFrame()
+	TweenService:Create(gameModeElectionGui.MinimizedFrame, TweenInfo.new(0.69), { GroupTransparency = 0 }):Play()
+	warn("Minimized Election")
+end
+
 function GameModeElectionWidget:OpenElectionFrame(timeToVote)
+	--Enable gui
+	gameModeElectionGui.Enabled = true
 	if not self.GamemodeService then
 		--Get services and controllers needed
 		self.GamemodeService = Knit.GetService("GameModeService")
 	end
-	gameModeElectionGui.Enabled = true
+	if not self.UIController then
+		self.UIController = Knit.GetController("UIController")
+	end
+	if self.UIController.MainMenuWidget then
+		if self.UIController.MainMenuWidget.active then
+			self:ShowElectionFrame()
+		else
+			self:MinimizeElectionFrame()
+		end
+	else
+		hideMinimizedFrameTween:Play()
+		self:ShowElectionFrame()	
+	end
 	--Connect the buttons
 	for index, child in gamemodesFrame:GetChildren() do
 		if child:IsA("TextButton") then
@@ -63,7 +105,7 @@ function GameModeElectionWidget:OpenElectionFrame(timeToVote)
 		end
 	end
 	--Update the time to vote
-	for i = timeToVote, 0, -1 do
+	for i = timeToVote - 2, 0, -1 do
 		if i == 1 then
 			timeLeftTextLabel.Text = string.format("VOTING GAME MODE: %s SECOND LEFT", tostring(i))
 		elseif i == 0 then
@@ -98,14 +140,13 @@ local function resetMapButtons()
 	end
 end
 
-
-function GameModeElectionWidget:UpdateVotes(votes: table, typeOfVotes : string)
+function GameModeElectionWidget:UpdateVotes(votes: table, typeOfVotes: string)
 	if typeOfVotes == "Map" then
-		for mapName, voteCount in votes do			
+		for mapName, voteCount in votes do
 			self:UpdateMapVotes(mapName, voteCount)
 		end
 	end
-	if typeOfVotes == "GameMode" then		
+	if typeOfVotes == "GameMode" then
 		--Reset the vote count to make sure it's not showing the old votes
 		resetGameModesButtons()
 		for gameModeName, voteCount in votes do
@@ -114,10 +155,10 @@ function GameModeElectionWidget:UpdateVotes(votes: table, typeOfVotes : string)
 	end
 end
 
-function GameModeElectionWidget:UpdateMapVotes(mapName : string, voteCount)
-	local mapFrame =  mapsFrame:FindFirstChild(mapName)
+function GameModeElectionWidget:UpdateMapVotes(mapName: string, voteCount)
+	local mapFrame = mapsFrame:FindFirstChild(mapName)
 	if mapFrame then
-		mapFrame:FindFirstChildWhichIsA("Frame").VotesTextLabel.Text = string.format( "VOTES (%s)",voteCount)
+		mapFrame:FindFirstChildWhichIsA("Frame").VotesTextLabel.Text = string.format("VOTES (%s)", voteCount)
 	end
 end
 
@@ -129,9 +170,15 @@ function GameModeElectionWidget:UpdateGameModeVoteCount(gameModeName: string, vo
 end
 
 function GameModeElectionWidget:CloseElectionFrame(timeToBVote)
-	gameModeElectionGui.Enabled = false
-	resetGameModesButtons()
-	resetMapButtons()
+	local minimizedTween =
+		TweenService:Create(gameModeElectionGui.MinimizedFrame, TweenInfo.new(0.33), { GroupTransparency = 1 })
+	minimizedTween:Play()
+	self:HideElectionFrame()
+	minimizedTween.Completed:Connect(function(playbackState)
+		gameModeElectionGui.Enabled = false
+		resetGameModesButtons()
+		resetMapButtons()
+	end)
 end
 
 return GameModeElectionWidget:Initialize()

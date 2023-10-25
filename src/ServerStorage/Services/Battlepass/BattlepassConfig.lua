@@ -13,7 +13,7 @@ BattlepassConfig.RewardTypes = {
 	Skin = "Skin",
 	Emote = "Emote",
 	Emote_Icon = "Emote_Icon",
-	Knockout_Effect = "Knockout_Effect"
+	Knockout_Effect = "Knockout_Effect",
 }
 
 --Reward descriptions
@@ -77,30 +77,29 @@ BattlepassConfig.rewards = {
 			},
 			battlepass = {
 				[1] = {
+					rewardType = BattlepassConfig.RewardTypes.Skin,
+					rewardSkin = Skins.SpiderSpirit,
+					rarityColor = BattlepassConfig.RarityColors[Skins.SpiderSpirit.rarity],
+				},
+				[2] = {
 					rewardType = BattlepassConfig.RewardTypes.Emote_Icon,
 					rarityColor = BattlepassConfig.RarityColors[EmoteIcons.Im_Fine_Skull.rarity],
 					rewardEmoteIcon = EmoteIcons.Im_Fine_Skull,
-				},
-				[2] = {
-					rewardType = BattlepassConfig.RewardTypes.BattleGems,
-					rewardAmount = 100,
-					rarity = BattlepassConfig.Rarity.Common,
-					rarityColor = BattlepassConfig.RarityColors[BattlepassConfig.Rarity.Common],
-				},
-				[3] = {
-					rewardType = BattlepassConfig.RewardTypes.Experience_Boost,
-					rarity = BattlepassConfig.Rarity.Rare,
-					rarityColor = BattlepassConfig.RarityColors[BattlepassConfig.Rarity.Rare],
 				},
 			},
 		},
 		[2] = {
 			freepass = {
 				[1] = {
-					rewardType = BattlepassConfig.RewardTypes.BattleGems,
-					rewardAmount = 100,
-					rarity = BattlepassConfig.Rarity.Common,
-					rarityColor = BattlepassConfig.RarityColors[BattlepassConfig.Rarity.Common],
+					rewardType = BattlepassConfig.RewardTypes.Crate,
+					crateName = "Skins_Crate",
+					rarity = BattlepassConfig.Rarity.Rare,
+					rarityColor = BattlepassConfig.RarityColors[BattlepassConfig.Rarity.Rare],
+				},
+				[2] = {
+					rewardType = BattlepassConfig.RewardTypes.Emote,
+					rewardEmote = Emotes.Ballin,
+					rarityColor = BattlepassConfig.RarityColors[Emotes.Ballin.rarity],
 				},
 			},
 			battlepass = {
@@ -265,12 +264,224 @@ BattlepassConfig.rewards = {
 		},
 		[10] = {
 			freepass = {},
-			battlepass = {[1] = {
-				rewardType = BattlepassConfig.RewardTypes.Emote,
-				rewardEmote = Emotes.The_Robot,
-				rarityColor = BattlepassConfig.RarityColors[Emotes.The_Robot.rarity],
-			}},
-		}
+			battlepass = {
+				[1] = {
+					rewardType = BattlepassConfig.RewardTypes.Emote,
+					rewardEmote = Emotes.The_Robot,
+					rarityColor = BattlepassConfig.RarityColors[Emotes.The_Robot.rarity],
+				},
+			},
+		},
+		[11] = {
+			freepass = {
+				[1] = {
+					rewardType = BattlepassConfig.RewardTypes.Skin,
+					rewardSkin = Skins.Tech,
+					rarityColor = BattlepassConfig.RarityColors[Skins.Tech.rarity],
+				},
+			},
+			battlepass = {},
+		},
+		[12] = {
+			freepass = {},
+			battlepass = {},
+		},
+		[13] = {
+			freepass = {
+				[1] = {
+					rewardType = BattlepassConfig.RewardTypes.BattleGems,
+					rewardAmount = 100,
+					rarity = BattlepassConfig.Rarity.Common,
+					rarityColor = BattlepassConfig.RarityColors[BattlepassConfig.Rarity.Common],
+				},
+			},
+			battlepass = {},
+		},
+		[14] = {
+			freepass = {
+				[1] = {
+					rewardType = BattlepassConfig.RewardTypes.Crate,
+					crateName = "Skins_Crate",
+					rarity = BattlepassConfig.Rarity.Rare,
+					rarityColor = BattlepassConfig.RarityColors[BattlepassConfig.Rarity.Rare],
+				},
+			},
+			battlepass = {},
+		},
+		[15] = {
+			freepass = {},
+			battlepass = {
+				[1] = {
+					rewardType = BattlepassConfig.RewardTypes.Skin,
+					rewardSkin = Skins.SkullRoses,
+					rarityColor = BattlepassConfig.RarityColors[Skins.SkullRoses.rarity],
+				},
+			},
+		},
+		[16] = {
+			freepass = {},
+			battlepass = {},
+		},
+		[17] = {
+			freepass = {},
+			battlepass = {
+				[1] = {
+					rewardType = BattlepassConfig.RewardTypes.Emote,
+					rewardEmote = Emotes.Did_it,
+					rarityColor = BattlepassConfig.RarityColors[Emotes.Did_it.rarity],
+				},
+			},
+		},
+		[18] = {
+			freepass = {},
+			battlepass = {},
+		},
+		[19] = {
+			freepass = {},
+			battlepass = {
+				[1] = {
+					rewardType = BattlepassConfig.RewardTypes.Skin,
+					rewardSkin = Skins.SpiderSense,
+					rarityColor = BattlepassConfig.RarityColors[Skins.SpiderSense.rarity],
+				},
+			},
+		},
+		[20] = {
+			freepass = {},
+			battlepass = {},
+		},
+		[21] = {
+			freepass = {},
+			battlepass = {
+				[1] = {
+					rewardType = BattlepassConfig.RewardTypes.Emote,
+					rewardEmote = Emotes.Rider,
+					rarityColor = BattlepassConfig.RarityColors[Emotes.Rider.rarity],
+				},
+			},
+		},
+		[22] = {
+			freepass = {},
+			battlepass = {},
+		},
+		[23] = {
+			freepass = {},
+			battlepass = {},
+		},
+		[24] = {
+			freepass = {},
+			battlepass = {
+				[1] = {
+					rewardType = BattlepassConfig.RewardTypes.Emote,
+					rewardEmote = Emotes.Slitherin,
+					rarityColor = BattlepassConfig.RarityColors[Emotes.Slitherin.rarity],
+				},
+			},
+		},
+		[25] = {
+			freepass = {},
+			battlepass = {},
+		},
+		[26] = {
+			freepass = {},
+			battlepass = {},
+		},
+		[27] = {
+			freepass = {},
+			battlepass = {},
+		},
+		[28] = {
+			freepass = {},
+			battlepass = {},
+		},
+		[29] = {
+			freepass = {},
+			battlepass = {},
+		},
+		[30] = {
+			freepass = {},
+			battlepass = {},
+		},
+		[31] = {
+			freepass = {},
+			battlepass = {},
+		},
+		[32] = {
+			freepass = {},
+			battlepass = {},
+		},
+		[33] = {
+			freepass = {},
+			battlepass = {},
+		},
+		[34] = {
+			freepass = {},
+			battlepass = {},
+		},
+		[35] = {
+			freepass = {},
+			battlepass = {},
+		},
+		[36] = {
+			freepass = {},
+			battlepass = {},
+		},
+		[37] = {
+			freepass = {},
+			battlepass = {},
+		},
+		[38] = {
+			freepass = {},
+			battlepass = {},
+		},
+		[39] = {
+			freepass = {},
+			battlepass = {},
+		},
+		[40] = {
+			freepass = {},
+			battlepass = {},
+		},
+		[41] = {
+			freepass = {},
+			battlepass = {},
+		},
+		[42] = {
+			freepass = {},
+			battlepass = {},
+		},
+		[43] = {
+			freepass = {},
+			battlepass = {},
+		},
+		[44] = {
+			freepass = {},
+			battlepass = {},
+		},
+		[45] = {
+			freepass = {},
+			battlepass = {},
+		},
+		[46] = {
+			freepass = {},
+			battlepass = {},
+		},
+		[47] = {
+			freepass = {},
+			battlepass = {},
+		},
+		[48] = {
+			freepass = {},
+			battlepass = {},
+		},
+		[49] = {
+			freepass = {},
+			battlepass = {},
+		},
+		[50] = {
+			freepass = {},
+			battlepass = {},
+		},
 	},
 }
 

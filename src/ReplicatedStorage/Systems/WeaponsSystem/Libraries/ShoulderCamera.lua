@@ -395,7 +395,6 @@ function ShoulderCamera:onRenderStep(dt)
 			and not self.zoomState
 			and self.currentCharacter:GetAttribute("Stamina") > 0
 		then
-			self.StatsService:ExecuteAction("Sprint")
 			self.desiredWalkSpeed = self.sprintingWalkSpeed
 		else
 			self.StatsService:StopAction("Sprint")

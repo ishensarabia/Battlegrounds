@@ -51,9 +51,9 @@ local function MergeDataWithTemplate(data, template)
 end
 
 function DataService:KnitStart()
-	-- Initialize profiles table to store
+	-- Initialize profiles table0 to store
 	self.profiles = {}
-	self.profileStore = ProfileService.GetProfileStore("Development_Alpha-09.16", DataConfig.profileTemplate)
+	self.profileStore = ProfileService.GetProfileStore("Development_Alpha_0.07", DataConfig.profileTemplate)
 	Players.PlayerRemoving:Connect(function(player)
 		self:onPlayerRemoving(player)
 	end)
@@ -69,8 +69,6 @@ function DataService:GetProfileData(player)
 		return profile.Data
 	end
 end
-
-
 
 function DataService:GetKeyValue(player, key: string)
 	repeat
@@ -216,15 +214,17 @@ function DataService.Client:GetLoadout(player)
 	return self.Server:GetLoadout(player)
 end
 
-function DataService:SetWeaponEquipped(player, weapon: string)
+function DataService:SetWeaponEquipped(player, weapon: string, loadoutSlot: string)
 	local profile = self.profiles[player]
+	warn(profile.Data.Loadout, loadoutSlot)
 	if profile and profile.Data.Weapons[weapon] then
 		profile.Data.Loadout.WeaponEquipped = weapon
+		profile.Data.Loadout[loadoutSlot] = weapon
 	end
 end
 
-function DataService.Client:SetWeaponEquipped(player, weapon: string)
-	self.Server:SetWeaponEquipped(player, weapon)
+function DataService.Client:SetWeaponEquipped(player, weapon: string, loadoutSlot: string)
+	self.Server:SetWeaponEquipped(player, weapon, loadoutSlot)
 end
 
 --Get weapon equipped function
@@ -238,7 +238,6 @@ end
 function DataService.Client:GetWeaponEquipped(player)
 	return self.Server:GetWeaponEquipped(player)
 end
-
 
 function DataService:onPlayerAdded(player)
 	local profile = self.profileStore:LoadProfileAsync("Player_" .. player.UserId, "ForceLoad")
@@ -337,32 +336,48 @@ function DataService:AddSkin(player, skinName: string)
 	end
 end
 
-function DataService:AddEmote(player, emoteName : table)
+function DataService:AddEmote(player, emoteName: string, emoteType: string)
 	local profile = self.profiles[player]
-	warn(profile.Data.Emotes)
+	-- warn(profile.Data.Emotes)
 	if profile then
 		if profile.Data.Emotes.EmotesOwned[emoteName] then
-			profile.Data.Emotes.EmotesOwned[emoteName] += 1
+			-- profile.Data.Emotes.EmotesOwned[emoteName] += 1
 		else
-			profile.Data.Emotes.EmotesOwned[emoteName] = 1
+			profile.Data.Emotes.EmotesOwned[emoteName] = {}
+			profile.Data.Emotes.EmotesOwned[emoteName].Amount = 1
+			profile.Data.Emotes.EmotesOwned[emoteName].Type = emoteType
 		end
 	end
-	warn(profile.Data.Emotes.EmotesOwned)
+	-- warn(profile.Data.Emotes.EmotesOwned)
 end
 
-function DataService:SaveEmote(player, emoteIndex, emoteName)
+--Function to save emotes (animation and icon) and other emote data and so
+function DataService:SaveEmote(player, emoteIndex, emoteName, emoteType: string)
+	warn(player, emoteIndex, emoteName, emoteType)
 	local playerEmotes = self:GetEmotes(player)
 	if playerEmotes then
 		--format the emote name to be the same as the emote name in the emotes table
 		emoteName = emoteName:gsub(" ", "_")
-		playerEmotes.EmotesEquipped[emoteIndex] = emoteName
+		emoteName = emoteName:gsub("'", "")
+		--Check if there's any emote equipped in the emote index
+		if not playerEmotes.EmotesEquipped[emoteIndex] then		
+			playerEmotes.EmotesEquipped[emoteIndex] = {}
+		end
+		--Identify the emote type
+		if emoteType == "Animation" then
+			playerEmotes.EmotesEquipped[emoteIndex].animationEmote = emoteName
+		end
+		if emoteType == "Icon" then
+			playerEmotes.EmotesEquipped[emoteIndex].iconEmote = emoteName
+		end
 	end
+	warn(playerEmotes)
 end
 
-function DataService:RemoveEmote(player, emoteIndex)
+function DataService:RemoveEmote(player, emoteIndex, emoteType: string)
 	local emotes = self:GetEmotes(player)
 	if emotes then
-		emotes.EmotesEquipped[emoteIndex] = nil
+		emotes.EmotesEquipped[emoteIndex][emoteType] = nil
 	end
 end
 

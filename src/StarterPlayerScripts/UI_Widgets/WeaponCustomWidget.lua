@@ -38,7 +38,7 @@ local function SetupCustomizationButtons()
 		ButtonWidget:OnActivation(weaponCustomizationGui.BackButtonFrame, backButtonCallback)
 		WeaponCustomizationWidget:CloseCustomization(WeaponCustomizationWidget.customizationCategory)
 	end)
-	weaponCustomizationGui.ConfirmButtonFrame.BackgroundButton.Activated:Connect(function()
+	weaponCustomizationGui.ConfirmButtonFrame.IconButton.Activated:Connect(function()
 		ButtonWidget:OnActivation(weaponCustomizationGui.ConfirmButtonFrame, function()
 			backButtonCallback()
 			WeaponCustomizationWidget:CloseCustomization(WeaponCustomizationWidget.customizationCategory)
@@ -57,7 +57,7 @@ local function SetupCustomizationButtons()
 			PlayerPreviewController:SpawnWeaponInCharacterMenu()
 		end)
 	end)
-	weaponCustomizationGui.CancelButtonFrame.BackgroundButton.Activated:Connect(function()
+	weaponCustomizationGui.CancelButtonFrame.IconButton.Activated:Connect(function()
 		ButtonWidget:OnActivation(weaponCustomizationGui.CancelButtonFrame, function()
 			backButtonCallback()
 			WeaponCustomizationWidget:CloseCustomization(WeaponCustomizationWidget.customizationCategory)
@@ -71,8 +71,19 @@ local function ClearPartsFrame()
 	table.clear(WeaponCustomizationWidget.weaponPartsFrames)
 end
 
+local function setTransparencyForWeaponParts(model, value: number)
+	for index, child in model:GetChildren() do
+		for index, child in child:GetChildren() do
+			if child:IsA("Texture") then
+				child.Transparency = value
+			end
+		end
+		child.Transparency = value
+	end
+end
+
 local function SelectWeaponPart(weaponPartName: string, customPartFrame)
-	WeaponCustomizationWidget.weaponPartNumber = weaponPartName
+	WeaponCustomizationWidget.weaponPartName = weaponPartName
 	if WeaponCustomizationWidget.currentEditingPart then
 		--Toggle other parts
 		for index, partFrame in WeaponCustomizationWidget.weaponPartsFrames do
@@ -104,6 +115,11 @@ local function SelectWeaponPart(weaponPartName: string, customPartFrame)
 	end
 end
 
+function WeaponCustomizationWidget:SelectWeaponPart(weaponPartName: string)
+	WeaponCustomizationWidget.weaponPartName = weaponPartName
+	WeaponCustomizationWidget.currentEditingPart = WeaponCustomizationWidget.customParts[weaponPartName]
+end
+
 function WeaponCustomizationWidget:GenerateWeaponParts(weaponModel)
 	if #WeaponCustomizationWidget.customParts > 0 then
 		table.clear(WeaponCustomizationWidget.customParts)
@@ -117,7 +133,6 @@ end
 local function splitTitleCaps(str)
 	str = str:gsub("(%u)", " %1")
 	return str:gsub("^%s", "")
-	
 end
 
 local function GenerateWeaponPartsFrames()
@@ -181,6 +196,8 @@ function WeaponCustomizationWidget:SetModification(customizationValue, customPar
 				for i = 1, 6, 1 do
 					local texture = Instance.new("Texture")
 					texture.Name = "Skin"
+					texture.StudsPerTileU = 0.2
+					texture.StudsPerTileV = 0.3
 					texture.Texture = customizationValue
 					table.insert(textures, texture)
 					texture.Parent = WeaponCustomizationWidget.currentEditingPart
@@ -216,6 +233,7 @@ function WeaponCustomizationWidget:RemoveSkin(customPartName: string)
 end
 
 function WeaponCustomizationWidget:CloseCustomization(category: string)
+	WeaponCustomizationWidget.isActive = false
 	local closePartselectorTween = TweenService:Create(
 		partsFrame,
 		TweenInfo.new(0.363),
@@ -230,16 +248,16 @@ function WeaponCustomizationWidget:CloseCustomization(category: string)
 		{ Position = UDim2.fromScale(1, customizationItemsFrame:GetAttribute("TargetPosition").Y) }
 	)
 	closeCustomizationTween:Play()
-	closeCustomizationTween.Completed:Connect(function(playbackState)
-		weaponCustomizationGui.Enabled = false
-		weaponCustomizationGui.RemoveSkinButtonFrame.Visible = false
-		--Clean the customizationItemsFrame buttons frames
-		for index, child in customizationItemsFrame:GetChildren() do
-			if child:IsA("Frame") then
-				child:Destroy()
-			end
+	closeCustomizationTween.Completed:Wait()
+	setTransparencyForWeaponParts(WeaponCustomizationWidget.model, 0)
+	weaponCustomizationGui.Enabled = false
+	weaponCustomizationGui.RemoveSkinButtonFrame.Visible = false
+	--Clean the customizationItemsFrame buttons frames
+	for index, child in customizationItemsFrame:GetChildren() do
+		if child:IsA("Frame") then
+			child:Destroy()
 		end
-	end)
+	end
 end
 
 local function GenerateSkinsButtons()
@@ -249,10 +267,10 @@ local function GenerateSkinsButtons()
 	end
 	DataService:GetKeyValue("Skins"):andThen(function(skins: table)
 		for skinName, skinAmount in skins do
-			local skinName = string.gsub(skinName, "-", "") 
+			local skinName = string.gsub(skinName, "-", "")
 			skinName = string.gsub(skinName, " ", "")
 			skinName = string.gsub(skinName, "_", "")
-			skinName = string.gsub(skinName, "&", "")			
+			skinName = string.gsub(skinName, "&", "")
 			warn(skinName)
 
 			local customizationButtonFrame = Assets.GuiObjects.Frames.CustomizationButtonFrame:Clone()
@@ -288,9 +306,10 @@ local function GenerateColorButtons()
 end
 
 function WeaponCustomizationWidget:OpenCustomization(itemID: string, itemModel: Model, category: string, callback)
+	WeaponCustomizationWidget.isActive = true
 	WeaponCustomizationWidget.model = itemModel
 	WeaponCustomizationWidget.itemID = itemID
-	GenerateWeaponPartsFrames()
+	-- GenerateWeaponPartsFrames()
 	WeaponCustomizationWidget.customizationCategory = category
 	backButtonCallback = callback
 	weaponCustomizationGui.Enabled = true

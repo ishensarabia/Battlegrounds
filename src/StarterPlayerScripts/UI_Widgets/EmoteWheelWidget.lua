@@ -17,6 +17,7 @@ local EmoteService
 --Main
 local EmoteWheelWidget = {}
 local Emotes = require(ReplicatedStorage.Source.Assets.Emotes)
+local EmoteIcons = require(ReplicatedStorage.Source.Assets.Icons.EmoteIcons)
 
 local buttonTweenInfo = TweenInfo.new(0.15, Enum.EasingStyle.Linear, Enum.EasingDirection.InOut, 0, false, 0)
 
@@ -25,11 +26,23 @@ local emoteWheelGui
 local wheelFrame
 local closeConfigureButton
 local playerEmotesScrollingFrame
+local emoteAnimationsButton
+local emoteIconsButton
 local emotesFrame
 
 --Variables
 EmoteWheelWidget.isOpen = false
 EmoteWheelWidget.isInitialized = false
+EmoteWheelWidget.currentEmotesDisplaying = "Animations"
+
+local function ClearPlayerEmotes()
+	--Clear player emotes
+	for _, emoteFrame: Frame in pairs(playerEmotesScrollingFrame:GetChildren()) do
+		if emoteFrame:IsA("Frame") then
+			emoteFrame:Destroy()
+		end
+	end
+end
 
 function EmoteWheelWidget:Initialize()
 	--Initialize the knit controllers
@@ -48,12 +61,16 @@ function EmoteWheelWidget:Initialize()
 	emotesFrame = emoteWheelGui.EmotesFrame
 	playerEmotesScrollingFrame = emoteWheelGui.PlayerEmotesScrollingFrame
 	closeConfigureButton = emoteWheelGui.CloseConfigureButton
+	emoteAnimationsButton = emoteWheelGui.EmoteAnimationsButton
+	emoteIconsButton = emoteWheelGui.EmoteIconsButton
 
 	--Disable the gui
 	emoteWheelGui.Enabled = false
 	--Hide the emotes and wheel frame initially by setting their size to 0
 	wheelFrame.Size = UDim2.fromScale(0, 0)
 	emotesFrame.Size = UDim2.fromScale(0, 0)
+	emoteAnimationsButton.Size = UDim2.fromScale(0, 0)
+	emoteIconsButton.Size = UDim2.fromScale(0, 0)
 	playerEmotesScrollingFrame.Size = UDim2.fromScale(0, 0)
 	closeConfigureButton.Size = UDim2.fromScale(0, 0)
 	--Set up the configure emote button
@@ -67,6 +84,7 @@ function EmoteWheelWidget:Initialize()
 	for index, emoteFrame in emotesFrame:GetChildren() do
 		--Set up the emote frame
 		emoteFrame.DiscardButton.Visible = false
+		emoteFrame.EmoteIconFrame.DiscardButton.Visible = false
 		emoteFrame.EmoteIconFrame.Visible = false
 		emoteFrame.EmoteNameTextLabel.Visible = false
 		--Set up the add button
@@ -98,29 +116,69 @@ function EmoteWheelWidget:Initialize()
 				emoteFrame.EmoteNameTextLabel.Visible = true
 				emoteFrame.EmoteNameTextLabel.Text = emoteFrame:GetAttribute("Emote")
 				emoteFrame.AddButton.Visible = false
-				if emoteFrame:GetAttribute("EmoteIcon") then
-					emoteFrame.EmoteIconFrame.Visible = true
-				end
 				EmoteController:DisplayEmotePreview(emoteFrame:GetAttribute("Emote"), emoteFrame.ViewportFrame, true)
 			else
 				emoteFrame.EmoteNameTextLabel.Visible = false
 				emoteFrame.DiscardButton.Visible = false
-				emoteFrame.EmoteIconFrame.Visible = false
+			end
+		end)
+		--Connect the attribute changed to update emote frame icon
+		emoteFrame:GetAttributeChangedSignal("EmoteIcon"):Connect(function()
+			if emoteFrame:GetAttribute("EmoteIcon") then
+				emoteFrame.EmoteIconFrame.Visible = true
+				local emoteName = emoteFrame:GetAttribute("EmoteIcon")
+				--format the emote name to be the same as the emote name in the emotes table
+				emoteName = emoteName:gsub(" ", "_")
+				emoteName = emoteName:gsub("'", "")
+				emoteFrame.EmoteIconFrame.EmoteIcon.Image = EmoteIcons[emoteName].imageID
 			end
 		end)
 		--Connect to play the emote
 		emoteFrame.SelectionHoverImage.Activated:Connect(function()
 			ButtonWidget:OnActivation(emoteFrame.SelectionHoverImage, function()
+				if self.isConfiguringEmotes then
+					self:SelectEmoteToConfigure(emoteFrame)
+					return
+				end
 				--Play the emote
 				--Format the emote name to be the same as the emote name in the emotes table
-				local emoteName = emoteFrame:GetAttribute("Emote")
-				emoteName = emoteName:gsub(" ", "_")
-				EmoteController:PlayEmote(emoteName)
+				local animationEmote = emoteFrame:GetAttribute("Emote")
+				local iconEmote = emoteFrame:GetAttribute("EmoteIcon")
+				if animationEmote then					
+					animationEmote = animationEmote:gsub("'", "")
+					animationEmote = animationEmote:gsub(" ", "_")
+					EmoteController:PlayEmote(animationEmote)
+				else
+					self:ConfigureEmotes(emoteFrame)		
+				end
+				if iconEmote then
+					--TODO: Play emote icon
+					EmoteController:PlayEmoteIcon(iconEmote)
+				else
+					self:ConfigureEmotes(emoteFrame)
+				end	
 			end)
 		end)
 	end
+	--Connect the emote animations button
+	emoteAnimationsButton.Activated:Connect(function()
+		ButtonWidget:OnActivation(emoteAnimationsButton, function()
+			EmoteWheelWidget.currentEmotesDisplaying = "Animations"
+			ClearPlayerEmotes()
+			self:ConfigureEmotes()
+		end)
+	end)
+	--Connect the emote icons button
+	emoteIconsButton.Activated:Connect(function()
+		ButtonWidget:OnActivation(emoteIconsButton, function()
+			EmoteWheelWidget.currentEmotesDisplaying = "Icons"
+			ClearPlayerEmotes()
+			self:ConfigureEmotes()
+		end)
+	end)
 	--Get the player's emotes
 	EmoteController:GetPlayerEmotes():andThen(function(emotes)
+		warn(emotes)
 		if emotes then
 			self:AssignSavedEmotes(emotes.EmotesEquipped)
 		end
@@ -164,6 +222,7 @@ end
 
 --Enter emote configuration mode
 function EmoteWheelWidget:ConfigureEmotes(emoteFrame: Frame)
+	self.isConfiguringEmotes = true
 	for _, emoteFrame: Frame in pairs(emotesFrame:GetChildren()) do
 		if emoteFrame:GetAttribute("Emote") then
 			emoteFrame.EmoteNameTextLabel.Visible = true
@@ -185,13 +244,30 @@ function EmoteWheelWidget:ConfigureEmotes(emoteFrame: Frame)
 					emoteFrame.AddButton.Visible = true
 					emoteFrame.ViewportFrame:ClearAllChildren()
 					--Update the player's emotes
-					EmoteService:RemoveEmote(emoteFrame.Name)
+					EmoteService:RemoveEmote(emoteFrame.Name, "animationEmote")
+					self:SelectEmoteToConfigure(emoteFrame)
+				end)
+			end)
+		end
+
+		if emoteFrame:GetAttribute("EmoteIcon") then
+			--connect discard button
+			emoteFrame.EmoteIconFrame.DiscardButton.Visible = true
+			emoteFrame.EmoteIconFrame.DiscardButton.Activated:Connect(function()
+				ButtonWidget:OnActivation(emoteFrame.EmoteIconFrame.DiscardButton, function()
+					--Remove the emote from the emote frame
+					emoteFrame:SetAttribute("EmoteIcon", nil)
+					--Hide the emote icon frame
+					emoteFrame.EmoteIconFrame.Visible = false
+					--Update the player's emotes
+					EmoteService:RemoveEmote(emoteFrame.Name, "iconEmote")
 					self:SelectEmoteToConfigure(emoteFrame)
 				end)
 			end)
 		end
 	end
-	--Display the player emotes
+
+	--Display the player emotes tweens
 	TweenService:Create(
 		playerEmotesScrollingFrame,
 		buttonTweenInfo,
@@ -200,27 +276,58 @@ function EmoteWheelWidget:ConfigureEmotes(emoteFrame: Frame)
 	TweenService
 		:Create(closeConfigureButton, buttonTweenInfo, { Size = closeConfigureButton:GetAttribute("TargetSize") })
 		:Play()
-	--Get the player's emotes
+	TweenService
+		:Create(emoteAnimationsButton, buttonTweenInfo, { Size = emoteAnimationsButton:GetAttribute("TargetSize") })
+		:Play()
+	TweenService:Create(emoteIconsButton, buttonTweenInfo, { Size = emoteIconsButton:GetAttribute("TargetSize") })
+		:Play()
+	--Tween the
+	--Get the player's emotes according to the current emotes displaying
 	--Check if the player emotes scroll frame has any children (Note that the first child is grid layoutt)
 	if #playerEmotesScrollingFrame:GetChildren() < 2 then
 		EmoteController:GetPlayerEmotes():andThen(function(emotes)
 			local emotesOwned = emotes.EmotesOwned
 			if emotesOwned then
-				for emoteName, emoteAmount in emotesOwned do
+				for emoteName, emoteInfo: table in emotesOwned do
+					-- warn(emoteInfo)
 					--format the emote name to be the same as the emote name in the emotes table
 					emoteName = emoteName:gsub(" ", "_")
-					local emote: table = Emotes[emoteName]
-					local emoteFrame = UIController:CreateEmoteFrame(emote)
-					emoteFrame.Parent = playerEmotesScrollingFrame
+					emoteName = emoteName:gsub("'", "")
+					local emoteFrame
 
-					emoteFrame:FindFirstChildWhichIsA("ImageButton").Activated:Connect(function()
-						ButtonWidget:OnActivation(emoteFrame:FindFirstChildWhichIsA("ImageButton"), function()
-							--Assign the emote to the emote frame slot
-							self:AssignEmote(emote.name)
-							--Close the emote wheel
-							-- self:Close()
-						end)
-					end)
+					if EmoteWheelWidget.currentEmotesDisplaying == "Animations" then
+						if emoteInfo.Type == "Animation" then
+							local emote: table = Emotes[emoteName]
+							emoteFrame = UIController:CreateEmoteFrame(emote)
+							emoteFrame:FindFirstChildWhichIsA("ImageButton").Activated:Connect(function()
+								ButtonWidget:OnActivation(emoteFrame:FindFirstChildWhichIsA("ImageButton"), function()
+									--Assign the emote to the emote frame slot
+									self:AssignEmote(emote.name, "Animation")
+									--Close the emote wheel
+									-- self:Close()
+								end)
+							end)
+						end
+					end
+
+					if EmoteWheelWidget.currentEmotesDisplaying == "Icons" then
+						if emoteInfo.Type == "Icon" then
+							local emoteIcon = EmoteIcons[emoteName]
+							emoteFrame = UIController:CreateEmoteIconFrame(emoteIcon)
+							emoteFrame:FindFirstChildWhichIsA("ImageButton").Activated:Connect(function()
+								ButtonWidget:OnActivation(emoteFrame:FindFirstChildWhichIsA("ImageButton"), function()
+									--Assign the emote to the emote frame slot
+									self:AssignEmote(emoteIcon.name, "Icon")
+									--Close the emote wheel
+									-- self:Close()
+								end)
+							end)
+						end
+					end
+
+					if emoteFrame then
+						emoteFrame.Parent = playerEmotesScrollingFrame
+					end
 				end
 			end
 		end)
@@ -255,13 +362,19 @@ function EmoteWheelWidget:SelectEmoteToConfigure(emoteFrame: Frame)
 end
 
 --Assign emote to the emote frame slot
-function EmoteWheelWidget:AssignEmote(emoteName: string)
+function EmoteWheelWidget:AssignEmote(emoteName: string, emoteType: string)
+	warn(emoteName, emoteType)
 	local emoteFrame = self.currentEmoteEditingFrame
 	--Assign the emote to the emote frame
 	if emoteFrame then
-		emoteFrame:SetAttribute("Emote", emoteName)
+		if emoteType == "Icon" then
+			emoteFrame:SetAttribute("EmoteIcon", emoteName)
+		elseif emoteType == "Animation" then
+			emoteFrame:SetAttribute("Emote", emoteName)
+		end
 		local emoteIndex = emoteFrame.Name
-		Knit.GetService("EmoteService"):SaveEmote(emoteIndex, emoteName)
+
+		Knit.GetService("EmoteService"):SaveEmote(emoteIndex, emoteName, emoteType)
 	end
 end
 
@@ -290,6 +403,7 @@ function EmoteWheelWidget:DeselectEmoteToConfigure(emoteFrame: Frame)
 end
 
 function EmoteWheelWidget:CloseConfiguration()
+	self.isConfiguringEmotes = false
 	--If there's a current emote editing frame, deselect it
 	if self.currentEmoteEditingFrame then
 		self:DeselectEmoteToConfigure(self.currentEmoteEditingFrame)
@@ -297,24 +411,30 @@ function EmoteWheelWidget:CloseConfiguration()
 	--Hide the discard buttons from the emotes frames
 	for _, emoteFrame: Frame in pairs(emotesFrame:GetChildren()) do
 		emoteFrame.DiscardButton.Visible = false
+		emoteFrame.EmoteIconFrame.DiscardButton.Visible = false
 	end
 	--Hide the player emotes
 	TweenService:Create(playerEmotesScrollingFrame, buttonTweenInfo, { Size = UDim2.fromScale(0, 0) }):Play()
 	TweenService:Create(closeConfigureButton, buttonTweenInfo, { Size = UDim2.fromScale(0, 0) }):Play()
-	--Clear player emotes
-	for _, emoteFrame: Frame in pairs(playerEmotesScrollingFrame:GetChildren()) do
-		if emoteFrame:IsA("Frame") then
-			emoteFrame:Destroy()
-		end
-	end
+	TweenService:Create(emoteAnimationsButton, buttonTweenInfo, { Size = UDim2.fromScale(0, 0) }):Play()
+	TweenService:Create(emoteIconsButton, buttonTweenInfo, { Size = UDim2.fromScale(0, 0) }):Play()
+	ClearPlayerEmotes()
 end
 
 function EmoteWheelWidget:AssignSavedEmotes(emotes: table)
 	--Assign the player emotes to the emotes frame
-	for emoteIndex, emoteName in emotes do
-		local emoteFrame = emotesFrame[emoteIndex]
-		local emote = Emotes[emoteName]
-		emoteFrame:SetAttribute("Emote", emote.name)
+	for emoteIndex, emoteInfo: table in emotes do
+		warn(emoteInfo)
+		if emoteInfo.animationEmote then
+			local emote = Emotes[emoteInfo.animationEmote]
+			warn(emote)
+			emotesFrame[emoteIndex]:SetAttribute("Emote", emote.name)
+			warn(emotesFrame[emoteIndex]:GetAttribute("Emote"))
+		end
+		if emoteInfo.iconEmote then
+			local emoteIcon = EmoteIcons[emoteInfo.iconEmote]
+			emotesFrame[emoteIndex]:SetAttribute("EmoteIcon", emoteIcon.name)
+		end
 	end
 end
 

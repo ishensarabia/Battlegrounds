@@ -23,6 +23,8 @@ function WeaponCustomizationController:ApplySkinForPreview(weaponModel, skinID: 
 				local texture = Instance.new("Texture")
 				texture.Name = "Skin"
 				texture.Texture = skinID
+				texture.StudsPerTileU = 0.2
+				texture.StudsPerTileV = 0.3
 				table.insert(textures, texture)
 				texture.Parent = value
 			end

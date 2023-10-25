@@ -2,6 +2,7 @@ local ContextActionService = game:GetService("ContextActionService")
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
+local TweenService = game:GetService("TweenService")
 local Knit = require(ReplicatedStorage.Packages.Knit)
 local player = game.Players.LocalPlayer
 --Modules
@@ -9,6 +10,7 @@ local ViewportModel = require(ReplicatedStorage.Source.Modules.Util.ViewportMode
 --Main
 local EmoteController = Knit.CreateController({ Name = "EmoteController" })
 local Emotes = require(ReplicatedStorage.Source.Assets.Emotes)
+local EmoteIcons = require(ReplicatedStorage.Source.Assets.Icons.EmoteIcons)
 --Widgets
 local EmoteWheelWidget = require(game.StarterPlayer.StarterPlayerScripts.Source.UI_Widgets.EmoteWheelWidget)
 --Variables
@@ -16,7 +18,7 @@ local emoteAnimationTrack
 
 function EmoteController:KnitStart()
 	--Services
-
+	self._emoteService = Knit.GetService("EmoteService")
 	ContextActionService:BindAction("OpenEmoteWheel", function(actionName, inputState, inputObject)
 		if inputState == Enum.UserInputState.Begin then
 			if not EmoteWheelWidget.isOpen then
@@ -28,7 +30,9 @@ function EmoteController:KnitStart()
 				EmoteWheelWidget:Close()
 			end
 		end
-	end, true, Enum.KeyCode.T)
+	end, true, Enum.KeyCode.T, Enum.KeyCode.ButtonY)
+	ContextActionService:SetPosition("OpenEmoteWheel", UDim2.fromScale(0.6, 0.439))
+	ContextActionService:SetTitle("OpenEmoteWheel", "Emotes")
 end
 
 function EmoteController:GetPlayerEmotes()
@@ -48,6 +52,7 @@ function EmoteController:DisplayEmotePreview(emoteName: string, viewportFrame: V
 	--Play emote
 	--format the emote name to be the same as the emote name in the emotes table
 	emoteName = emoteName:gsub(" ", "_")
+	emoteName = emoteName:gsub("'", "")
 	emoteAnimation.AnimationId = Emotes[emoteName].animation
 	emoteAnimation.Name = Emotes[emoteName].name
 	local emoteAnimationTrack = playerCharacter.Humanoid.Animator:LoadAnimation(emoteAnimation)
@@ -65,7 +70,7 @@ function EmoteController:DisplayEmotePreview(emoteName: string, viewportFrame: V
 		viewportCamera.Parent = viewportFrame
 		local emoteViewportModel = ViewportModel.new(viewportFrame, viewportCamera)
 		emoteViewportModel:SetModel(worldModel)
-	
+
 		local orientation = CFrame.fromEulerAnglesYXZ(math.rad(0), 85, 0)
 		local cf, size = worldModel:GetBoundingBox()
 		local distance = emoteViewportModel:GetFitDistance(cf.Position)
@@ -124,6 +129,10 @@ function EmoteController:PlayEmote(emoteName: string)
 			playerPreviewCharacter:SetAttribute("PlayingEmote", nil)
 		end)
 	end
+end
+
+function EmoteController:PlayEmoteIcon(emoteName: string)
+	self._emoteService:PlayEmoteIcon(emoteName)
 end
 
 --Stop emote

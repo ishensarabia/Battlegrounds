@@ -396,10 +396,10 @@ function MovementController:KnitInit()
 				self:Dash(DIRECTIONS.BACKWARDS, -DASH_FORCE)
 			end
 		end
-	end, true, DASH_KEYCODE)
+	end, true, DASH_KEYCODE, Enum.KeyCode.ButtonB)
 
 	--Set the position and description of the dash action
-	ContextActionService:SetPosition(ACTION_DASH, UDim2.new({ 0.916, 0 }, { 0.439, 0 }))
+	ContextActionService:SetPosition(ACTION_DASH, UDim2.new({ 0.936, 0 }, { 0.439, 0 }))
 	ContextActionService:SetDescription(ACTION_DASH, "Dash movement")
 	ContextActionService:SetTitle(ACTION_DASH, ACTION_DASH)
 
@@ -420,8 +420,10 @@ function MovementController:KnitInit()
 		if actionName == ACTION_CROUCH and inputState == Enum.UserInputState.End and self.isSliding then
 			self._AnimationController:StopAnimation("Slide")
 		end
-	end, true, CROUCH_KEYCODE)
+	end, true, CROUCH_KEYCODE, Enum.KeyCode.ButtonR3)
 
+	ContextActionService:SetPosition(ACTION_CROUCH, UDim2.fromScale(0.33,0.439))
+	ContextActionService:SetTitle(ACTION_CROUCH, ACTION_CROUCH)
 	--Hook the user input service to the jump action
 	--pc and console support
 	UserInputService.InputBegan:Connect(function(input, gp)

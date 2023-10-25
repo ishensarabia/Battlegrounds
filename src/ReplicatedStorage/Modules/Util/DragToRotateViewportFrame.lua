@@ -4,7 +4,7 @@ local RunS = game:GetService("RunService")
 
 local CLASS_NAME = "DragToRotateViewportFrame"
 local MAX_ANGLE_STEP = math.rad(10)
-
+local _lastMousePosition
 --------------------------------------------------------------------------------
 --Helper functions
 --------------------------------------------------------------------------------
@@ -299,7 +299,7 @@ function DragToRotateViewportFrame:BeginDragging()
 		if inputObject.UserInputType == Enum.UserInputType.MouseMovement then
 			delta = getMouseMovement(self)
 		end
-		if inputObject.UserInputType == Enum.UserInputType.Touch then
+		if inputObject.UserInputType == Enum.UserInputType.Touch or inputObject.UserInputType == Enum.UserInputType.Gamepad1 then
 			delta = getTouchMovement(inputObject)
 		end
 		--Flip pitch direction

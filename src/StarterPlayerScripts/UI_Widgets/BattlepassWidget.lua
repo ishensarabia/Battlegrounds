@@ -35,6 +35,18 @@ local battlepassLabelFrame
 local viewportFrame
 --Connections
 local viewportConnection
+--Variables
+local seasonData
+local function ScaleToOffset(x, y, parentFrame)
+	if parentFrame then
+		x *= parentFrame.AbsoluteSize.X
+		y *= parentFrame.AbsoluteSize.Y
+		-- else
+		-- 	x *= viewportSize.X
+		-- 	y *= viewportSize.Y
+	end
+	return math.round(x), math.round(y)
+end
 
 function BattlepassWidget:Initialize()
 	--Initialize the screen guis
@@ -84,6 +96,7 @@ function BattlepassWidget:Initialize()
 	BattlepassWidget.MainFrame.Position = UDim2.fromScale(1, 0)
 	--Connect any events
 	BattlepassService.LevelUp:Connect(function(newLevel)
+		player:SetAttribute("CurrentLevel", newLevel)
 		--Make sure the reward frame exists
 		if not rewardsFrame[newLevel] then
 			return
@@ -96,11 +109,11 @@ function BattlepassWidget:Initialize()
 		local shineTween = UIController:AnimateShineForFrame(rewardsFrame[newLevel].FreeClaimFrame, false, true)
 		--Connect the claim button
 		rewardsFrame[newLevel].FreeClaimFrame.ClaimButton.Activated:Connect(function()
+			rewardsFrame[newLevel].FreeClaimFrame.ClaimedText.Visible = true
 			ButtonWidget:OnActivation(rewardsFrame[newLevel].FreeClaimFrame.ClaimButton, function()
 				BattlepassService:ClaimBattlepassReward(newLevel)
 				rewardsFrame[newLevel].FreeClaimFrame.ClaimButton:Destroy()
 				UIController:StopAnimationForTween(shineTween)
-				rewardsFrame[newLevel].FreeClaimFrame.ClaimedText.Visible = true
 			end)
 		end)
 	end)
@@ -108,20 +121,70 @@ function BattlepassWidget:Initialize()
 	BattlepassService.BattlepassExperienceAdded:Connect(function(currentSeasonData)
 		--Update the progress bars
 		BattlepassService:GetExperienceNeededForNextLevel():andThen(function(experienceNeeded)
+			--Fill the progress bar of previous levels
+			for i = 1, currentSeasonData.Level do
+				local progressBar = rewardsFrame[i].ProgressBarFrame.BarFrame.ProgressBar
+				local x, y = ScaleToOffset(1, 0.9, rewardsFrame[i].ProgressBarFrame.BarFrame)
+				progressBar.Size = UDim2.fromOffset(x, y)
+			end
+			local currentLevelExperienceBar =
+				rewardsFrame[currentSeasonData.Level].ProgressBarFrame.BarFrame.ProgressBar
+			local x, y = ScaleToOffset(
+				(currentSeasonData.Experience / experienceNeeded) * 1,
+				currentLevelFrame.BarFrame.LevelBar.Size.Y.Scale,
+				rewardsFrame[currentSeasonData.Level].ProgressBarFrame.BarFrame
+			)
+			currentLevelExperienceBar.Size = UDim2.fromOffset(x, y)
 			currentLevelFrame.BarFrame.LevelBar.Size = UDim2.fromScale(
 				(currentSeasonData.Experience / experienceNeeded) * 1,
 				currentLevelFrame.BarFrame.LevelBar.Size.Y.Scale
 			)
-			----Fill the progress bar of previous levels
-			for i = 1, currentSeasonData.Level do
-				if not currentSeasonData.ClaimedLevels[i] and currentSeasonData.Level >= i then
-					rewardsFrame[i].ProgressBarFrame.BarFrame.ProgressBar.Size = UDim2.fromOffset(100, 20)
-					rewardsFrame[i].FreeClaimFrame.Visible = true
-				end
-			end
 			--Assign the current xp
 			currentLevelFrame.BarFrame.XPText.Text = currentSeasonData.Experience .. "/" .. experienceNeeded
 		end)
+	end)
+
+	BattlepassService.BattlepassObtained:Connect(function()
+		if BattlepassGui.Enabled then
+			task.delay(2, function()
+				for i = 1, player:GetAttribute("CurrentLevel") do
+					local battlepassRewardFrame = rewardsFrame[i]
+					local padlockIcon = battlepassRewardFrame.BattlepassPadlockIcon
+					local padlockRotationTween = TweenService:Create(
+						padlockIcon,
+						TweenInfo.new(1.6, Enum.EasingStyle.Bounce, Enum.EasingDirection.In),
+						{ Rotation = 125 }
+					)
+					padlockRotationTween:Play()
+					padlockRotationTween.Completed:Connect(function()
+						local padlockPositionTween = TweenService:Create(
+							padlockIcon,
+							TweenInfo.new(1),
+							{ Position = UDim2.fromScale(padlockIcon.Position.X.Scale, 0.99), ImageTransparency = 1 }
+						)
+						padlockPositionTween:Play()
+					end)
+					battlepassRewardFrame.BattlepassClaimFrame.Visible = true
+					local shineTween =
+						UIController:AnimateShineForFrame(battlepassRewardFrame.BattlepassClaimFrame, false, true)
+					--Connect the claim button
+					battlepassRewardFrame.BattlepassClaimFrame.ClaimButton.Activated:Connect(function()
+						ButtonWidget:OnActivation(battlepassRewardFrame.BattlepassClaimFrame.ClaimButton, function()
+							BattlepassService:ClaimBattlepassReward(i, "Battlepass")
+							battlepassRewardFrame.BattlepassClaimFrame.ClaimButton:Destroy()
+							UIController:StopAnimationForTween(shineTween)
+							battlepassRewardFrame.BattlepassClaimFrame.ClaimedText.Visible = true
+							--Claiming the battlepass reward will also claim the free reward if the player hasn't claimed it yet
+							if seasonData and not table.find(seasonData.ClaimedLevels.Freepass, i) then
+								battlepassRewardFrame.FreeClaimFrame.ClaimButton:Destroy()
+								battlepassRewardFrame.FreeClaimFrame.Visible = true
+								battlepassRewardFrame.FreeClaimFrame.ClaimedText.Visible = true
+							end
+						end)
+					end)
+				end
+			end)
+		end
 	end)
 
 	buyButtonFrame.button.Activated:Connect(function()
@@ -561,9 +624,11 @@ function BattlepassWidget:GenerateRewards(battlepassData)
 			battlepassRewardFrame.ProgressBarFrame.BarFrame.ProgressBar.Size = UDim2.fromScale(0, 0.9)
 			battlepassRewardFrame.Parent = BattlepassWidget.MainFrame.RewardsFrame
 			--Check if the player has claimed this rank and whether has claimed free or premium rewards
-			local seasonData = battlepassData[battlepassData.currentSeason]
+			seasonData = battlepassData[battlepassData.currentSeason]
+
 			--Free levels
 			if not table.find(seasonData.ClaimedLevels.Freepass, level) and seasonData.Level >= level then
+				warn("Found not claimed levels for" .. level, seasonData.ClaimedLevels.Freepass)
 				battlepassRewardFrame.FreePadlockIcon.Visible = false
 				battlepassRewardFrame.FreeClaimFrame.Visible = true
 				local shineTween = UIController:AnimateShineForFrame(battlepassRewardFrame.FreeClaimFrame, false, true)
@@ -629,31 +694,22 @@ function BattlepassWidget:GenerateRewards(battlepassData)
 			for _, rewardInfo in rankRewardsTable.freepass do
 				CreateItemRewardFrame(_battlepassConfig, rewardInfo, battlepassRewardFrame.FreeRewardsFrame, level)
 			end
+
 			--Assign the correct UIGridLayout cell size for the premium rewards according to the amount of rewards
-			if #battlepassRewardFrame.PremiumRewardsFrame:GetChildren() <= 6 then
+			if #battlepassRewardFrame.PremiumRewardsFrame:GetChildren() <= 7 then
 				battlepassRewardFrame.PremiumRewardsFrame.UIGridLayout.CellSize = UDim2.fromScale(0.49, 1)
 			end
 
-			if #battlepassRewardFrame.PremiumRewardsFrame:GetChildren() > 6 then
+			if #battlepassRewardFrame.PremiumRewardsFrame:GetChildren() > 7 then
 				battlepassRewardFrame.PremiumRewardsFrame.UIGridLayout.CellSize = UDim2.fromScale(0.24, 1)
 			end
 		end
 	end)
 end
 
-local function ScaleToOffset(x, y, parentFrame)
-	if parentFrame then
-		x *= parentFrame.AbsoluteSize.X
-		y *= parentFrame.AbsoluteSize.Y
-		-- else
-		-- 	x *= viewportSize.X
-		-- 	y *= viewportSize.Y
-	end
-	return math.round(x), math.round(y)
-end
-
 ---@diagnostic disable-next-line: undefined-type
 function BattlepassWidget:OpenBattlepass(callback: Function)
+	warn("Opening battlepass")
 	BattlepassGui.Enabled = true
 	--Set the callback
 	BattlepassWidget.callback = callback
@@ -687,7 +743,14 @@ function BattlepassWidget:OpenBattlepass(callback: Function)
 		--Generate the rewards frame if they don't exist
 		if #BattlepassWidget.MainFrame.RewardsFrame:GetChildren() <= 1 then
 			BattlepassWidget:GenerateRewards(battlepassData)
+			--Fill the progress bar of previous levels
+			for i = 1, currentSeasonData.Level do
+				local progressBar = rewardsFrame:WaitForChild(i).ProgressBarFrame.BarFrame.ProgressBar
+				local x, y = ScaleToOffset(1, 0.9, rewardsFrame[i].ProgressBarFrame.BarFrame)
+				progressBar.Size = UDim2.fromOffset(x, y)
+			end
 		end
+
 		--Update the progress bars
 		BattlepassService:GetExperienceNeededForNextLevel():andThen(function(experienceNeeded)
 			currentLevelFrame.BarFrame.LevelBar.Size = UDim2.fromScale(
@@ -696,18 +759,17 @@ function BattlepassWidget:OpenBattlepass(callback: Function)
 			)
 			--Assign the current xp
 			currentLevelFrame.BarFrame.XPText.Text = currentSeasonData.Experience .. "/" .. experienceNeeded
-			--Fill the progress bar of previous levels
-			for i = 1, currentSeasonData.Level do
-				local progressBar = rewardsFrame[i].ProgressBarFrame.BarFrame.ProgressBar
-				local x, y = ScaleToOffset(1, 0.9, rewardsFrame[i].ProgressBarFrame.BarFrame)
-				progressBar.Size = UDim2.fromOffset(x, y)
-			end
+
 			--Get the current level to update the progress bar of the item reward rank
 			local currentRank = currentSeasonData.Level
-			rewardsFrame[currentRank].ProgressBarFrame.BarFrame.ProgressBar.Size = UDim2.fromScale(
+			local x, y = ScaleToOffset(
 				(currentSeasonData.Experience / experienceNeeded) * 1,
-				rewardsFrame[currentRank].ProgressBarFrame.BarFrame.ProgressBar.Size.Y.Scale
+				0.9,
+				rewardsFrame[currentRank].ProgressBarFrame.BarFrame
 			)
+			rewardsFrame[currentRank].ProgressBarFrame.BarFrame.ProgressBar.Size = UDim2.fromOffset(x,y)
+
+			warn("Adjusting bar from reward frame")
 		end)
 	end)
 end

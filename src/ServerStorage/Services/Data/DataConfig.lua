@@ -41,7 +41,7 @@ DataConfig.profileTemplate = {
 			Prestige = "Beginner",
 			Customization = {},
 		},
-		["AA-12"] =  {
+		["AA-12"] = {
 			Owned = true,
 			Rank = 0,
 			Prestige = "Beginner",
@@ -53,7 +53,7 @@ DataConfig.profileTemplate = {
 			Prestige = "Beginner",
 			Customization = {},
 		},
-		["BFG-50"] =  {
+		["BFG-50"] = {
 			Owned = true,
 			Rank = 0,
 			Prestige = "Beginner",
@@ -65,13 +65,13 @@ DataConfig.profileTemplate = {
 			Prestige = "Beginner",
 			Customization = {},
 		},
-		["AK-47"] =  {
+		["AK-47"] = {
 			Owned = true,
 			Rank = 0,
 			Prestige = "Beginner",
 			Customization = {},
 		},
-		["D-Eagle"] =  {
+		["D-Eagle"] = {
 			Owned = true,
 			Rank = 0,
 			Prestige = "Beginner",
@@ -83,7 +83,7 @@ DataConfig.profileTemplate = {
 			Prestige = "Beginner",
 			Customization = {},
 		},
-		MK14 =  {
+		MK14 = {
 			Owned = true,
 			Rank = 0,
 			Prestige = "Beginner",
@@ -123,6 +123,15 @@ DataConfig.profileTemplate = {
 			ClaimedLevels = {
 				Freepass = {},
 				Battlepass = {},
+			},
+			Season_2 = {
+				Level = 1,
+				Experience = 0,
+				Owned = false,
+				ClaimedLevels = {
+					Freepass = {},
+					Battlepass = {},
+				},
 			},
 		},
 	},

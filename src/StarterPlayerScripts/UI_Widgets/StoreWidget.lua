@@ -11,6 +11,8 @@ local ViewportModel = require(ReplicatedStorage.Source.Modules.Util.ViewportMode
 local FormatText = require(ReplicatedStorage.Source.Modules.Util.FormatText)
 --Services
 local StoreService = Knit.GetService("StoreService")
+local BattlepassWidget = require(game.StarterPlayer.StarterPlayerScripts.Source.UI_Widgets.BattlepassWidget)
+
 --Widgets
 local HoverWidget = require(game.StarterPlayer.StarterPlayerScripts.Source.UI_Widgets.HoverWidget)
 local ButtonWidget = require(game.StarterPlayer.StarterPlayerScripts.Source.UI_Widgets.ButtonWidget)

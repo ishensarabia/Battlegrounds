@@ -7,11 +7,13 @@ local Knit = require(ReplicatedStorage.Packages.Knit)
 local Skins = require(ReplicatedStorage.Source.Assets.Skins)
 local Emotes = require(ReplicatedStorage.Source.Assets.Emotes)
 
+
 local StoreService = Knit.CreateService({
 	Name = "StoreService",
 	Client = {
 		CrateAddedSignal = Knit.CreateSignal(),
 		OpenCrateSignal = Knit.CreateSignal(),
+		BattlepassBoughtSignal = Knit.CreateSignal()
 	},
 })
 
@@ -258,6 +260,11 @@ StoreService.crates = {
 				Rarity = Skins.Dragonfruits.rarity,
 				Skin = Skins.Dragonfruits.skinID,
 			},
+			[31] = {
+				Name = Skins.SpiderSense.name,
+				Rarity = Skins.SpiderSense.rarity,
+				Skin = Skins.SpiderSense.skinID,
+			},
 		},
 		RaritiesPercentages = {
 			Common = 70,
@@ -353,6 +360,7 @@ function StoreService:KnitStart()
 	--Services
 	self._currencyService = Knit.GetService("CurrencyService")
 	self._dataService = Knit.GetService("DataService")
+	self._battlepassService = Knit.GetService("BattlepassService")
 	--Developer products
 	local productFunctions = {}
 	--BattleCoins
@@ -418,7 +426,8 @@ function StoreService:KnitStart()
 		local battlepassData = self._dataService:GetKeyValue(player, "Battlepass")
 		battlepassData.Season_1.Owned = true
 		self._dataService:SetKeyValue(player, "Battlepass", battlepassData)
-		warn(battlepassData)
+		self._battlepassService.Client.BattlepassObtained:Fire(player)
+		self.Client.BattlepassBoughtSignal:Fire(player)
 		return true
 	end
 
@@ -476,8 +485,10 @@ function StoreService:BuyBundle(player, bundleCategory: string, bundleName: stri
 
 	if not success then
 		warn("PolicyService error: " .. result)
+		return
 	elseif result.ArePaidRandomItemsRestricted then
 		warn("Player cannot interact with paid random item generators")
+		return
 	end
 	if bundle and success then
 		MarketplaceService:PromptProductPurchase(player, bundle.ProductID)
@@ -561,7 +572,7 @@ function StoreService:OpenCrate(player, crateName: string, crateType: string)
 			end
 
 			if crateType == "Emote" then
-				self._dataService:AddEmote(player, contentData.Name)
+				self._dataService:AddEmote(player, contentData.Name, "Animation")
 			end
 			break
 		end

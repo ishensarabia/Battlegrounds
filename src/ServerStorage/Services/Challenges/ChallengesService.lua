@@ -69,7 +69,7 @@ function ChallengesService:InitializePlayer(player)
 		(#challengesData.Daily == 0 and not challengesData.DailyGeneratedAt)
 		or (
 			#challengesData.Daily < ChallengesConfig.MaxChallengesPerType.Daily
-			and (os.time() - challengesData.DailyGeneratedAt) / 3600 >= 24
+			and (os.time() - challengesData.DailyGeneratedAt or 0) / 3600 >= 24
 		)
 	then
 		challengesData.Daily =
@@ -98,6 +98,7 @@ end
 function ChallengesService:UpdateChallengeProgression(player: Player, typeOfProgression: string, amount: number)
 	--Make sure the player has a challenge that requires destroying objects
 	local challengesData = self._dataService:GetKeyValue(player, "Challenges")
+	warn(player, typeOfProgression, amount)
 	local function UpdateChallengeProgression(challenge, typeOfChallenge: string)
 		if challenge.typeOfProgression == typeOfProgression then
 			--Check if the challenge has progress if not, set it to 0
@@ -114,7 +115,6 @@ function ChallengesService:UpdateChallengeProgression(player: Player, typeOfProg
 			if challenge.progression >= challenge.goal then
 				challenge.isCompleted = true
 				--Fire the signal to the client
-				warn("Challenge completed")
 				self.Client.ChallengeCompleted:Fire(player, challenge, typeOfChallenge)
 			end
 			--Fire the signal to the client

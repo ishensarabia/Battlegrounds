@@ -36,12 +36,15 @@ function CameraController:TransitionBetweenPoints(points: Folder)
 					self.activeTween = cameraTweenPromise
 					cameraTweenPromise:Play()
 					cameraTweenPromise.Completed:Wait()
-					camera.CFrame = points[i].CFrame
+					warn(workspace.Map.Cutscene:GetChildren())
+					camera.CFrame = workspace.Map:WaitForChild("Cutscene")[i].CFrame
 				else
 					camera.CameraType = Enum.CameraType.Custom
 					self:CancelActiveTween()
 					break	
 				end
+			else
+				warn("No point found")	
 			end
 		end
 	end

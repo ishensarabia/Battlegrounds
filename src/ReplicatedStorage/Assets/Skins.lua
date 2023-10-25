@@ -168,7 +168,18 @@ local skins = {
         skinID = "rbxassetid://13874336571",
         rarity = "Legendary",
         name = "Spider Spirit",
+    },
+    SkullRoses = {
+        skinID = "rbxassetid://15021618982",
+        rarity = "Epic",
+        name = "Skull & Roses"
+    },
+    Tech = {
+        skinID = "rbxassetid://15021666612",
+        rarity = "Rare",
+        name = "Tech"
     }
+    
 }
 
 

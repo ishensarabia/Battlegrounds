@@ -75,19 +75,9 @@ end
 
 local function SetupWeaponPreviewButtons()
 	--Customization buttons
-	itemPreviewFrame.ItemButtons.SkinsButton.Frame.BackgroundButton.Activated:Connect(function()
-		ButtonWidget:OnActivation(itemPreviewFrame.ItemButtons.SkinsButton.Frame, function()
-			OpenCustomizationWidget("Skins")
-		end)
-	end)
 	itemPreviewFrame.ItemButtons.SkinsButton.Frame.IconButton.Activated:Connect(function()
 		ButtonWidget:OnActivation(itemPreviewFrame.ItemButtons.SkinsButton.Frame, function()
 			OpenCustomizationWidget("Skins")
-		end)
-	end)
-	itemPreviewFrame.ItemButtons.ColorButton.Frame.BackgroundButton.Activated:Connect(function()
-		ButtonWidget:OnActivation(itemPreviewFrame.ItemButtons.ColorButton.Frame, function()
-			OpenCustomizationWidget("Color")
 		end)
 	end)
 	itemPreviewFrame.ItemButtons.ColorButton.Frame.IconButton.Activated:Connect(function()
@@ -96,13 +86,37 @@ local function SetupWeaponPreviewButtons()
 		end)
 	end)
 	--Preview equip buttons
+	--Equip button loadout functionality
 	equipButtonFrame.BackgroundButton.Activated:Connect(function()
 		ButtonWidget:OnActivation(equipButtonFrame, function()
-			Knit.GetService("DataService"):SetWeaponEquipped(WeaponPreviewWidget.weaponID)
+			warn(WeaponPreviewWidget.weaponID, WeaponPreviewWidget.loadoutSlot)
+			Knit.GetService("DataService"):SetWeaponEquipped(WeaponPreviewWidget.weaponID, WeaponPreviewWidget.loadoutSlot)
 			local PlayerPreviewController = Knit.GetController("PlayerPreviewController")
 			PlayerPreviewController:SpawnWeaponInCharacterMenu()
 		end, "equip")
 	end)
+end
+
+local function setTransparencyForWeaponParts(model, weaponPart: string, value: number)
+	for index, child in model:GetChildren() do
+		if child.Name ~= weaponPart then
+			if child:FindFirstChildWhichIsA("Texture") then
+				for index, child in child:GetChildren() do
+					if child:IsA("Texture") then
+						child.Transparency = value
+					end
+				end
+			end
+			child.Transparency = value
+		else
+			for index, child in child:GetChildren() do
+				if child:IsA("Texture") then
+					child.Transparency = 0
+				end
+			end
+			child.Transparency = 0
+		end
+	end
 end
 
 function WeaponPreviewWidget:Initialize()
@@ -128,40 +142,32 @@ function WeaponPreviewWidget:ClosePreview()
 		TweenService:Create(itemInfoFrame, TweenInfo.new(0.363), { Position = UDim2.fromScale(-1, 0.112) })
 	closeItemInfoTween:Play()
 	closePreviewTween:Play()
+	if WeaponCustomWidget.isActive then
+		WeaponCustomWidget:CloseCustomization("Skins")
+		WeaponCustomWidget:CloseCustomization("Color")
+	end
 	closePreviewTween.Completed:Connect(function()
 		itemViewportModel = nil
 		viewportFrame:ClearAllChildren()
 		viewportConnection:Disconnect()
 		weaponPreviewGui.Enabled = false
-		WeaponCustomWidget:CloseCustomization("Skins")
-		WeaponCustomWidget:CloseCustomization("Color")
 	end)
-end
-
-local function visualizeRay(pos, vector)
-	local distance = vector.Magnitude
-	local p = Instance.new("Part")
-	p.Anchored = true
-	p.CanCollide = false
-	p.Size = Vector3.new(0.5, 0.5, distance)
-	p.BrickColor = BrickColor.Random()
-	p.CanQuery = false
-	p.CFrame = CFrame.lookAt(pos, pos+vector)*CFrame.new(0, 0, -distance/2-5)
-	game.Debris:AddItem(p,1)
-	return p
 end
 
 local function RaycastInViewportFrame(viewportFrame, raycastDistance, raycastParams)
 	raycastDistance = raycastDistance or 1000
 	local camera = viewportFrame.CurrentCamera
 	local worldModel = viewportFrame:FindFirstChildWhichIsA("WorldModel")
-	local mousePosition = UserInputService:GetMouseLocation() - GuiService:GetGuiInset() - viewportFrame.AbsolutePosition -- account for viewportframe offset
-	local relativePosition = ((mousePosition - (viewportFrame.AbsoluteSize/2)) * Vector2.new(1, -1))/(viewportFrame.AbsoluteSize/2) -- get the relative position of the click with center of viewportFrame as origin: -1 is left/bottom and 1 is right/top for X and Y respectively
-	local projectedY = math.tan(math.rad(camera.FieldOfView)/2)*raycastDistance -- the projected height of a 2D frame raycastDistance studs from the camera with same aspect ratio
-	local projectedX = projectedY * (viewportFrame.AbsoluteSize.X/viewportFrame.AbsoluteSize.Y) -- projected width from aspect ratio
+	local mousePosition = UserInputService:GetMouseLocation()
+		- GuiService:GetGuiInset()
+		- viewportFrame.AbsolutePosition -- account for viewportframe offset
+	local relativePosition = ((mousePosition - (viewportFrame.AbsoluteSize / 2)) * Vector2.new(1, -1))
+		/ (viewportFrame.AbsoluteSize / 2) -- get the relative position of the click with center of viewportFrame as origin: -1 is left/bottom and 1 is right/top for X and Y respectively
+	local projectedY = math.tan(math.rad(camera.FieldOfView) / 2) * raycastDistance -- the projected height of a 2D frame raycastDistance studs from the camera with same aspect ratio
+	local projectedX = projectedY * (viewportFrame.AbsoluteSize.X / viewportFrame.AbsoluteSize.Y) -- projected width from aspect ratio
 	local projectedPosition = Vector2.new(projectedX, projectedY) * relativePosition -- the projected position of the input on the similar frame
 	local worldPosition = (camera.CFrame * CFrame.new(projectedPosition.X, projectedPosition.Y, -raycastDistance)).Position -- the 3d position of said projected position
-	
+
 	-- local part = visualizeRay(camera.CFrame.Position, (worldPosition - camera.CFrame.Position).Unit * raycastDistance)
 	-- part.Parent = workspace
 	-- local part = visualizeRay(camera.CFrame.Position, (worldPosition - camera.CFrame.Position).Unit * raycastDistance)
@@ -169,10 +175,17 @@ local function RaycastInViewportFrame(viewportFrame, raycastDistance, raycastPar
 	-- local part = visualizeRay(camera.CFrame.Position, (worldPosition - camera.CFrame.Position).Unit * raycastDistance)
 	-- part.Parent = viewportFrame
 
-	return worldModel:Raycast(camera.CFrame.Position, (worldPosition - camera.CFrame.Position).Unit * raycastDistance, raycastParams)
+	return worldModel:Raycast(
+		camera.CFrame.Position,
+		(worldPosition - camera.CFrame.Position).Unit * raycastDistance,
+		raycastParams
+	)
 end
 
-function WeaponPreviewWidget:OpenPreview(weaponID: string, callback)
+function WeaponPreviewWidget:OpenPreview(weaponID: string, loadoutSlot)
+	--set the loadout slot
+	WeaponPreviewWidget.loadoutSlot = loadoutSlot
+	--Enable the gui
 	weaponPreviewGui.Enabled = true
 	local camera = Instance.new("Camera")
 	camera.Parent = weaponPreviewGui
@@ -209,14 +222,31 @@ function WeaponPreviewWidget:OpenPreview(weaponID: string, callback)
 		if
 			inputObject.UserInputType == Enum.UserInputType.MouseButton1
 			or inputObject.UserInputType == Enum.UserInputType.Touch
-			
-		then			
+		then
 			-- perform raycast
-			local result = RaycastInViewportFrame(viewportFrame, 100)
-			if result then
-				print("Clicked part:", result.Instance.Name)
+			if WeaponCustomWidget.isActive then
+				local result = RaycastInViewportFrame(viewportFrame, 100)
+				if result then
+					print("Clicked part:", result.Instance.Name)
+					print(result.Instance:GetAttribute("CustomPart"))
+					if result.Instance:GetAttribute("CustomPart") then
+						WeaponCustomWidget:SelectWeaponPart(result.Instance:GetAttribute("CustomPart"))
+					end
+					-- result.Instance.Transparency = 0.66
+					local vCamera = viewportFrame.CurrentCamera
+					local Pos = vCamera:WorldToViewportPoint(result.Instance.Position)
+					Pos = UDim2.new(
+						0,
+						Pos.X * viewportFrame.Parent.AbsoluteSize.X,
+						0,
+						Pos.Y * viewportFrame.Parent.AbsoluteSize.Y
+					)
+					setTransparencyForWeaponParts(weaponModel, result.Instance.Name, 0.93)
+					-- itemPreviewFrame.ImageLabel.Visible = true
+					-- itemPreviewFrame.ImageLabel.Position = Pos
+				end
 			end
-			
+
 			dtrViewportFrame:BeginDragging()
 
 			inputObject.Changed:Connect(function()

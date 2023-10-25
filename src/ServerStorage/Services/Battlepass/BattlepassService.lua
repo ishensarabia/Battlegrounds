@@ -13,6 +13,7 @@ local BattlepassService = Knit.CreateService({
 	Client = {
 		LevelUp = Knit.CreateSignal(),
 		BattlepassExperienceAdded = Knit.CreateSignal(),
+		BattlepassObtained = Knit.CreateSignal(),
 	},
 })
 
@@ -61,11 +62,7 @@ function BattlepassService:ClaimBattlepassReward(player, rewardLevel: number, re
 	local levelRewards: table = seasonRewards[rewardLevel]
 	--Check if the player owns the battlepass season
 	--Check if the player hasn't already claimed the reward
-	warn(
-		seasonData.ClaimedLevels,
-		rewardLevel,
-		rewardType
-	)
+	warn(seasonData.ClaimedLevels, rewardLevel, rewardType)
 	--if it's premium reward check if the player has the battlepass
 	if rewardType == "Battlepass" then
 		if not seasonData.ClaimedLevels.Battlepass[rewardLevel] then
@@ -98,7 +95,10 @@ function BattlepassService:ClaimBattlepassReward(player, rewardLevel: number, re
 						)
 					end
 					if rewardData.rewardType == BattlepassConfig.RewardTypes.Emote then
-						self._dataService:AddEmote(player, rewardData.rewardEmote.name)
+						self._dataService:AddEmote(player, rewardData.rewardEmote.name, "Animation")
+					end
+					if rewardData.rewardType == BattlepassConfig.RewardTypes.Emote_Icon then
+						self._dataService:AddEmote(player, rewardData.rewardEmoteIcon.name, "Icon")
 					end
 				end
 				--If it hasn't been claimed the free reward claim it as well
@@ -126,7 +126,10 @@ function BattlepassService:ClaimBattlepassReward(player, rewardLevel: number, re
 							)
 						end
 						if rewardData.rewardType == BattlepassConfig.RewardTypes.Emote then
-							self._dataService:AddEmote(player, rewardData.rewardEmote.name)
+							self._dataService:AddEmote(player, rewardData.rewardEmote.name, "Animation")
+						end
+						if rewardData.rewardType == BattlepassConfig.RewardTypes.Emote_Icon then
+							self._dataService:AddEmote(player, rewardData.rewardEmoteIcon.name, "Icon")
 						end
 					end
 				end
@@ -134,7 +137,9 @@ function BattlepassService:ClaimBattlepassReward(player, rewardLevel: number, re
 				table.insert(seasonData.ClaimedLevels.Freepass, rewardLevel)
 			else
 				warn("Doesn't own the battlepass")
-				player:Kick("You tried to claim a battlepass reward without owning the battlepass, this results in exploiting, you've been banned from the experience")
+				player:Kick(
+					"You tried to claim a battlepass reward without owning the battlepass, this results in exploiting, you've been banned from the experience"
+				)
 			end
 		end
 	end
@@ -166,7 +171,10 @@ function BattlepassService:ClaimBattlepassReward(player, rewardLevel: number, re
 						)
 					end
 					if rewardData.rewardType == BattlepassConfig.RewardTypes.Emote then
-						self._dataService:AddEmote(player, rewardData.rewardEmote.name)
+						self._dataService:AddEmote(player, rewardData.rewardEmote.name, "Animation")
+					end
+					if rewardData.rewardType == BattlepassConfig.RewardTypes.Emote_Icon then
+						self._dataService:AddEmote(player, rewardData.rewardEmoteIcon.name, "Icon")
 					end
 				end
 				table.insert(seasonData.ClaimedLevels.Freepass, rewardLevel)
@@ -178,7 +186,7 @@ function BattlepassService:ClaimBattlepassReward(player, rewardLevel: number, re
 end
 
 --client claim reward function
-function BattlepassService.Client:ClaimBattlepassReward(player: Player, rewardLevel: number, rewardType : string)
+function BattlepassService.Client:ClaimBattlepassReward(player: Player, rewardLevel: number, rewardType: string)
 	warn(player, rewardLevel, rewardType)
 	self.Server:ClaimBattlepassReward(player, rewardLevel, rewardType)
 end
@@ -225,8 +233,6 @@ end
 function BattlepassService.Client:GetExperienceNeededForNextLevel(player: Player)
 	return self.Server:GetExperienceNeededForNextLevel(player)
 end
-
-function BattlepassService:BuyBattlepass() end
 
 function BattlepassService.Client:BuyBattlepass(player: Player)
 	local battlepassData = self.Server:GetBattlepassData(player)

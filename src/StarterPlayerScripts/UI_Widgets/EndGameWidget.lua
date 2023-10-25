@@ -10,7 +10,7 @@ local Knit = require(ReplicatedStorage.Packages.Knit)
 local FormatText = require(ReplicatedStorage.Source.Modules.Util.FormatText)
 local DragToRotateViewportFrame = require(ReplicatedStorage.Source.Modules.Util.DragToRotateViewportFrame)
 --Widgets
-local InventoryWidget = require(game.StarterPlayer.StarterPlayerScripts.Source.UI_Widgets.InventoryWidget)
+local LoadoutWidget = require(game.StarterPlayer.StarterPlayerScripts.Source.UI_Widgets.LoadoutWidget)
 local BattlepassWidget = require(game.StarterPlayer.StarterPlayerScripts.Source.UI_Widgets.BattlepassWidget)
 local ChallengesWidget = require(game.StarterPlayer.StarterPlayerScripts.Source.UI_Widgets.ChallengesWidget)
 local ButtonWidget = require(game.StarterPlayer.StarterPlayerScripts.Source.UI_Widgets.ButtonWidget)

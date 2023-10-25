@@ -2,10 +2,12 @@
 -- File: Animations.lua
 --
 -- Purpose: Stores all animations IDs.
+-- Note how to add emotes: add them to the emotes table and animation table
 --
 -- Written By: Ishen
 --
 --****************************************************
+local emotes = require(game.ReplicatedStorage.Source.Assets.Emotes)
 return {
 	Building = {
 		Build = "rbxassetid://14399306154"
@@ -33,5 +35,9 @@ return {
 		Hype = "rbxassetid://14032019287",
 		Fresh = "rbxassetid://14034445225",
 		Take_The_L = "rbxassetid://14044815170",
+		The_Robot = "rbxassetid://14834257724",
+		Ballin = "rbxassetid://15105435828",
+		Slitherin = emotes.Slitherin.animation,
+		Rider = emotes.Rider.animation,
 	}
 }

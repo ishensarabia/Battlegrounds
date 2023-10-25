@@ -10,11 +10,12 @@ local Weapons = ReplicatedStorage.Weapons
 local ButtonWidget = require(game.StarterPlayer.StarterPlayerScripts.Source.UI_Widgets.ButtonWidget)
 local WeaponPreviewWidget = require(game.StarterPlayer.StarterPlayerScripts.Source.UI_Widgets.WeaponPreviewWidget)
 --Main
-local InventoryWidget = {}
-local inventoryGui
+local LoadoutWidget = {}
+local loadoutGui
 local inventoryMainFrame
 --Variables
 local categoryButtonsFrame
+local loadoutButtonsFrame
 local backButtonFrame
 local showMainMenuCallback
 local itemsFrame
@@ -22,7 +23,7 @@ local inventoryTitle
 
 local inventoryTweenInfo = TweenInfo.new(0.15, Enum.EasingStyle.Linear, Enum.EasingDirection.InOut, 0, false, 0)
 
-InventoryWidget.state = "Items"
+LoadoutWidget.slot = "Primary"
 
 local function ClearItemsFrame()
 	for index, value in itemsFrame:GetChildren() do
@@ -34,13 +35,9 @@ end
 
 local function SetupCategoryButtons()
 	local function openCategory(categoryButtonFrame)
-		InventoryWidget:SetInventoryItemsVis(false)
+		LoadoutWidget:SetInventoryItemsVis(false)
 		ClearItemsFrame()
-		InventoryWidget:OpenInventory(
-			InventoryWidget.inventoryType,
-			showMainMenuCallback,
-			categoryButtonFrame:GetAttribute("Category")
-		)
+		LoadoutWidget:OpenLoadout(showMainMenuCallback)
 	end
 	for index, categoryButtonFrame in categoryButtonsFrame:GetChildren() do
 		if categoryButtonFrame:IsA("Frame") then
@@ -58,20 +55,45 @@ local function SetupCategoryButtons()
 	end
 end
 
-function InventoryWidget:CloseInventory()
+local function SelectLoadoutSlot(frame)
+	for index, child in loadoutButtonsFrame:GetChildren() do
+		if child:IsA("Frame") then
+			child.SelectionFrame.Visible = true
+			TweenService:Create(child.SelectionFrame, TweenInfo.new(0.3), { BackgroundTransparency = 1 }):Play()
+		end
+	end
+	TweenService:Create(frame.SelectionFrame, TweenInfo.new(0.3), { BackgroundTransparency = 0 }):Play()
+	LoadoutWidget.slot = frame:GetAttribute("LoadoutSlot")
+	-- LoadoutWidget:OpenLoadout(showMainMenuCallback)
+end
+
+local function SetupLoadoutButtons()
+	for index, child in loadoutButtonsFrame:GetChildren() do
+		if child:IsA("Frame") then
+			child.Frame.BackgroundButton.Activated:Connect(function()
+				ButtonWidget:OnActivation(child.Frame, function()
+					SelectLoadoutSlot(child)
+					LoadoutWidget:OpenLoadout(showMainMenuCallback)
+				end)
+			end)
+		end
+	end
+end
+
+function LoadoutWidget:CloseInventory()
 	local inventoryMainFrameTween =
 		TweenService:Create(inventoryMainFrame, inventoryTweenInfo, { Position = UDim2.fromScale(-1, 0) })
 	local backButtonFrameTween = TweenService:Create(
 		backButtonFrame,
 		inventoryTweenInfo,
-		{ Position = UDim2.fromScale(-1, backButtonFrame.Position.Y.Scale) }
+		{ Position = UDim2.fromScale(-1, backButtonFrame.Position.Y.Scale), Transparency = 1 }
 	)
 	ClearItemsFrame()
 	inventoryMainFrameTween:Play()
 	backButtonFrameTween:Play()
 end
 
-function InventoryWidget:SetInventoryItemsVis(condition)
+function LoadoutWidget:SetInventoryItemsVis(condition)
 	if condition then
 		TweenService:Create(inventoryMainFrame, TweenInfo.new(0.33), { Position = UDim2.fromScale(0.027, 0) }):Play()
 	else
@@ -81,45 +103,59 @@ end
 
 local function SetupInventoryButtons()
 	backButtonFrame.Button.Activated:Connect(function()
-		if InventoryWidget.state == "Items" then
+		if LoadoutWidget.state == "Items" then
 			local tween = ButtonWidget:OnActivation(backButtonFrame, function()
-				InventoryWidget:CloseInventory()
+				LoadoutWidget:CloseInventory()
 			end)
 			--Return to main menu
 			tween.Completed:Connect(showMainMenuCallback)
-		elseif InventoryWidget.state == "WeaponPreview" then
+		elseif LoadoutWidget.state == "WeaponPreview" then
 			ButtonWidget:OnActivation(backButtonFrame, function()
 				WeaponPreviewWidget:ClosePreview()
-				InventoryWidget:SetInventoryItemsVis(true)
-				InventoryWidget.state = "Items"
+				LoadoutWidget:SetInventoryItemsVis(true)
+				LoadoutWidget.state = "Items"
 			end)
 		end
 	end)
 end
 
-function InventoryWidget:Initialize()
+function LoadoutWidget:Initialize()
 	--Mount inventory widget
 	local player = game.Players.LocalPlayer
-	inventoryGui = Assets.GuiObjects.ScreenGuis.InventoryGui
-	inventoryMainFrame = inventoryGui.MainFrame
+	loadoutGui = Assets.GuiObjects.ScreenGuis.LoadoutGui
+	inventoryMainFrame = loadoutGui.MainFrame
 	categoryButtonsFrame = inventoryMainFrame.CategoryButtonsFrame
-	backButtonFrame = inventoryGui.BackButtonFrame
+	loadoutButtonsFrame = inventoryMainFrame.LoadoutButtons
+	backButtonFrame = loadoutGui.BackButtonFrame
 	itemsFrame = inventoryMainFrame.ItemsFrame
 	inventoryTitle = inventoryMainFrame.Title
 	inventoryMainFrame.Position = UDim2.fromScale(-1, 0)
 	backButtonFrame.Position = UDim2.fromScale(1, backButtonFrame.Position.Y.Scale)
-	inventoryGui.Enabled = false
-	inventoryGui.Parent = player.PlayerGui
+	loadoutGui.Enabled = false
+	loadoutGui.Parent = player.PlayerGui
 	SetupInventoryButtons()
 	SetupCategoryButtons()
+	SetupLoadoutButtons()
 
-	return InventoryWidget
+	return LoadoutWidget
 end
 
-function InventoryWidget:OpenInventory(inventoryType: string, callback, category: string)
-	inventoryGui.Enabled = true
-	inventoryTitle.Text = string.upper(inventoryType)
-	local openInventoryTween =
+function LoadoutWidget:OpenLoadout(callback)
+	if not self.active then
+		SelectLoadoutSlot(loadoutButtonsFrame.PrimaryFrame)
+	end
+	LoadoutWidget.active = true
+	LoadoutWidget.state = "Items"
+	warn(callback)
+	--Clean
+	for index, child in itemsFrame:GetChildren() do
+		if child:IsA("Frame") then
+			child:Destroy()
+		end
+	end
+	loadoutGui.Enabled = true
+	inventoryTitle.Text = string.upper("Loadout")
+	local OpenLoadoutTween =
 		TweenService:Create(inventoryMainFrame, inventoryTweenInfo, { Position = UDim2.fromScale(0, 0) })
 	local backButtonFrameTween = TweenService:Create(
 		backButtonFrame,
@@ -127,20 +163,17 @@ function InventoryWidget:OpenInventory(inventoryType: string, callback, category
 		{ Position = backButtonFrame:GetAttribute("TargetPosition") }
 	)
 	backButtonFrameTween:Play()
-	openInventoryTween:Play()
+	OpenLoadoutTween:Play()
 
-	--Register category selected
-	InventoryWidget.inventoryType = inventoryType
-	InventoryWidget.category = category
 	showMainMenuCallback = callback
 	--Generate items frame
-
-	Knit.GetService("DataService"):GetKeyValue(InventoryWidget.inventoryType):andThen(function(inventoryItems: table)
-		for itemID, itemTable in inventoryItems do
+	Knit.GetService("DataService"):GetKeyValue("Weapons"):andThen(function(loadoutItems: table)
+		warn(self.slot)
+		for itemID, itemTable in loadoutItems do
 			--Filter the category
 			--Get the tool to identify if it has texture
-			local weapon : Tool = Weapons[itemID]
-			if weapon.TextureId then
+			local weapon: Tool = Weapons[itemID]
+			if weapon.TextureId and weapon:GetAttribute("Slot") == self.slot then
 				local itemFrame = Assets.GuiObjects.Frames.ItemFrame:Clone()
 				itemFrame.Parent = itemsFrame
 				local formattedItemName = string.gsub(itemID, "_", " ")
@@ -148,9 +181,9 @@ function InventoryWidget:OpenInventory(inventoryType: string, callback, category
 				itemFrame.Frame:WaitForChild("ItemIcon").Image = weapon.TextureId
 				itemFrame.Frame.ItemIcon.Activated:Connect(function()
 					ButtonWidget:OnActivation(itemFrame.Frame, function()
-						InventoryWidget.state = "WeaponPreview"
-						InventoryWidget:SetInventoryItemsVis(false)
-						WeaponPreviewWidget:OpenPreview(itemID)
+						LoadoutWidget.state = "WeaponPreview"
+						LoadoutWidget:SetInventoryItemsVis(false)
+						WeaponPreviewWidget:OpenPreview(itemID, self.slot)
 					end)
 				end)
 			end
@@ -158,4 +191,4 @@ function InventoryWidget:OpenInventory(inventoryType: string, callback, category
 	end)
 end
 
-return InventoryWidget:Initialize()
+return LoadoutWidget:Initialize()

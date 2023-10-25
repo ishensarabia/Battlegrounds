@@ -79,6 +79,30 @@ local emotes = {
 		defaultTempo = 1,
 		rarity = "Epic",
 	},
+	Did_it = {
+		name = "Did it" ,
+		animation = "rbxassetid://15037294572",
+		defaultTempo = 1,
+		rarity = "Mythic"
+	},
+	Rider = {
+		name = "Rider",
+		animation = "rbxassetid://15038512335",
+		defaultTempo = 1,
+		rarity = "Rare"
+	},
+	Slitherin = {
+		name = "Slitherin",
+		animation = "rbxassetid://15096873233",
+		defaultTempo = 1,
+		rarity = "Epic"
+	},
+	Ballin = {
+		name = "Ballin",
+		animation = "rbxassetid://15105435828",
+		defaultTempo = 1,
+		rarity = "Rare"
+	}
 }
 
 return emotes

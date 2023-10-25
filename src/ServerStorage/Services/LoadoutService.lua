@@ -32,19 +32,38 @@ end
 function LoadoutService:SpawnLoadout(player)
 	local DataService = Knit.GetService("DataService")
 	local loadout = DataService:GetLoadout(player)
-	if loadout.WeaponEquipped then
-		local weaponEquipped: Tool = ReplicatedStorage.Weapons[loadout.WeaponEquipped]:Clone()
-		weaponEquipped.Parent = player.Backpack
-		--Check for customization
-		local weaponCustomization: table = DataService:GetWeaponCustomization(player, loadout.WeaponEquipped)
-		--If there's a customization generate the weapon parts
-		if weaponCustomization then
-			warn("[LoadoutService] Weapon customization detected ", weaponCustomization)
-			local customParts = self:GenerateWeaponParts(weaponEquipped:FindFirstChildOfClass("Model"))
-			for partName, customizationValueTable in weaponCustomization do
+
+	if loadout.Primary then
+		local primaryWeapon = ReplicatedStorage.Weapons[loadout.Primary]:Clone()
+		primaryWeapon.Parent = player.Backpack
+
+		-- Load customization for primary and secondary weapons
+		self:LoadWeaponCustomization(player, loadout.Primary)
+	end
+
+	if loadout.Secondary then
+		local secondaryWeapon = ReplicatedStorage.Weapons[loadout.Secondary]:Clone()
+		secondaryWeapon.Parent = player.Backpack
+		self:LoadWeaponCustomization(player, loadout.Secondary)
+	end
+end
+
+function LoadoutService:LoadWeaponCustomization(player, weaponName)
+	local DataService = Knit.GetService("DataService")
+	local weapon = player.Backpack:FindFirstChild(weaponName)
+
+	if weapon then
+		local customization = DataService:GetWeaponCustomization(player, weaponName)
+
+		if customization then
+			warn("[LoadoutService] Weapon customization detected for " .. weaponName, customization)
+			local customParts = self:GenerateWeaponParts(weapon:FindFirstChildOfClass("Model"))
+
+			for partName, customizationValueTable in pairs(customization) do
 				if customizationValueTable.Color then
 					self:ApplyCustomizationValue(customizationValueTable.Color, partName, customParts)
 				end
+
 				if customizationValueTable.Skin then
 					warn("Applying skin", customizationValueTable.Skin)
 					self:ApplyCustomizationValue(customizationValueTable.Skin, partName, customParts)
@@ -70,6 +89,8 @@ function LoadoutService:ApplyCustomizationValue(customizationValue, customPartNa
 		--It's a texture
 		for i = 1, 6, 1 do
 			local texture = Instance.new("Texture")
+			texture.StudsPerTileU = 0.2
+			texture.StudsPerTileV = 0.3
 			texture.Name = "Skin"
 			texture.Texture = customizationValue
 			table.insert(textures, texture)
@@ -85,7 +106,7 @@ function LoadoutService:ApplyCustomizationValue(customizationValue, customPartNa
 end
 
 function LoadoutService.Client:ApplyCustomization(player, customizationValue, params: table)
-	local customPart 
+	local customPart
 	if params.part then
 		customPart = params.part
 	end
