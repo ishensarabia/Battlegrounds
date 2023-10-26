@@ -37,6 +37,8 @@ local viewportFrame
 local viewportConnection
 --Variables
 local seasonData
+local battlepassTweenInfo = TweenInfo.new(0.69, Enum.EasingStyle.Exponential, Enum.EasingDirection.Out)
+
 local function ScaleToOffset(x, y, parentFrame)
 	if parentFrame then
 		x *= parentFrame.AbsoluteSize.X
@@ -92,8 +94,8 @@ function BattlepassWidget:Initialize()
 		BattlepassWidget:CloseBattlepass()
 	end)
 	BattlepassWidget.MainFrame = game.Players.LocalPlayer.PlayerGui.BattlepassGui.MainFrame
-	--Hide the main frame with position
-	BattlepassWidget.MainFrame.Position = UDim2.fromScale(1, 0)
+	--Hide the main frame with group transparency
+	BattlepassWidget.MainFrame.GroupTransparency = 1
 	--Connect any events
 	BattlepassService.LevelUp:Connect(function(newLevel)
 		player:SetAttribute("CurrentLevel", newLevel)
@@ -715,12 +717,12 @@ function BattlepassWidget:OpenBattlepass(callback: Function)
 	BattlepassWidget.callback = callback
 	--Tween the main frame position
 	local mainFrameTween =
-		TweenService:Create(BattlepassWidget.MainFrame, TweenInfo.new(0.325), { Position = UDim2.fromScale(0, 0) })
+		TweenService:Create(BattlepassWidget.MainFrame, battlepassTweenInfo, { GroupTransparency = 0 })
 	mainFrameTween:Play()
 	--Tween battlepass preview gui position
 	local previewGuiTween = TweenService:Create(
 		BattlepassPreviewGui.MainFrame,
-		TweenInfo.new(0.325),
+		battlepassTweenInfo,
 		{ Position = BattlepassPreviewGui.MainFrame:GetAttribute("TargetPosition") }
 	)
 	previewGuiTween:Play()
@@ -777,12 +779,12 @@ end
 function BattlepassWidget:CloseBattlepass()
 	--Tween the main frame position
 	local mainFrameTween =
-		TweenService:Create(BattlepassWidget.MainFrame, TweenInfo.new(0.325), { Position = UDim2.fromScale(1, 0) })
+		TweenService:Create(BattlepassWidget.MainFrame, battlepassTweenInfo, { GroupTransparency = 1  })
 	mainFrameTween:Play()
 	--Tween battlepass preview gui position
 	local previewGuiTween = TweenService:Create(
 		BattlepassPreviewGui.MainFrame,
-		TweenInfo.new(0.325),
+		battlepassTweenInfo,
 		{ Position = UDim2.fromScale(1, BattlepassPreviewGui.MainFrame.Position.Y.Scale) }
 	)
 	--Destroy the rewards frames

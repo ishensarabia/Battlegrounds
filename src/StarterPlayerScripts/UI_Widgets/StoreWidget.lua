@@ -56,13 +56,22 @@ local buttonTweenInfo = TweenInfo.new(0.15, Enum.EasingStyle.Linear, Enum.Easing
 
 local function HideStoreContents(shouldTween: boolean)
 	for index, child in StoreGui:GetChildren() do
-		if child:IsA("GuiObject") then
+		if child:IsA("GuiObject") and child:GetAttribute("TargetSize") then
 			if shouldTween then
 				local tween = TweenService:Create(child, TweenInfo.new(0.09), { Size = UDim2.new(0, 0, 0, 0) })
 				tween:Play()
 				tween.Completed:Wait()
 			else
 				child.Size = UDim2.new(0, 0, 0, 0)
+			end
+		end
+		if child:IsA("GuiObject") and child:GetAttribute("TargetTransparency") then
+			if shouldTween then
+				local tween = TweenService:Create(child, TweenInfo.new(0.09), { ImageTransparency = 1 })
+				tween:Play()
+				tween.Completed:Wait()
+			else
+				child.ImageTransparency = 1
 			end
 		end
 	end
@@ -133,7 +142,7 @@ function StoreWidget:Initialize()
 	--Connect store signals
 	StoreService.CrateAddedSignal:Connect(function(crateName: string, totalAmountOfCrates: number)
 		--if the frame exists, update the open button text
-		if ItemsScrollingFrame:FindFirstChild(crateName) then			
+		if ItemsScrollingFrame:FindFirstChild(crateName) then
 			ItemsScrollingFrame[crateName].OpenButton.Visible = true
 			--Add the crate amount to the open button text
 			ItemsScrollingFrame[crateName].OpenButton.Text.Text = "Open (" .. tostring(totalAmountOfCrates) .. ")"
@@ -155,8 +164,17 @@ local function playOpenStoreAnimation(category: string)
 	if not StoreGui.Enabled then
 		StoreGui.Enabled = true
 		for index, child in StoreGui:GetChildren() do
-			if child:IsA("GuiObject") then
+			if child:IsA("GuiObject") and child:GetAttribute("TargetSize") then
 				TweenService:Create(child, TweenInfo.new(0.39), { Size = child:GetAttribute("TargetSize") }):Play()
+			end
+			if child:IsA("GuiObject") and child:GetAttribute("TargetTransparency") then
+				TweenService
+					:Create(
+						child,
+						TweenInfo.new(0.69),
+						{ ImageTransparency = child:GetAttribute("TargetTransparency") }
+					)
+					:Play()
 			end
 		end
 	end
@@ -326,9 +344,9 @@ function StoreWidget:GenerateCratesFrames(crates: table)
 		--Connect the open event
 		crateFrame.OpenButton.Activated:Connect(function()
 			if not isOpeningCrate then
-				isOpeningCrate = true	
+				isOpeningCrate = true
 				ButtonWidget:OnActivation(crateFrame.OpenButton, function()
-					StoreService:OpenCrate(crateName, crateData.Type):andThen(function(unboxTime)						
+					StoreService:OpenCrate(crateName, crateData.Type):andThen(function(unboxTime)
 						task.delay(unboxTime, function()
 							isOpeningCrate = false
 						end)

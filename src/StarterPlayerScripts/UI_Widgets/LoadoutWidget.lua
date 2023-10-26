@@ -20,6 +20,7 @@ local backButtonFrame
 local showMainMenuCallback
 local itemsFrame
 local inventoryTitle
+local backgroundImage
 
 local inventoryTweenInfo = TweenInfo.new(0.15, Enum.EasingStyle.Linear, Enum.EasingDirection.InOut, 0, false, 0)
 
@@ -88,9 +89,11 @@ function LoadoutWidget:CloseInventory()
 		inventoryTweenInfo,
 		{ Position = UDim2.fromScale(-1, backButtonFrame.Position.Y.Scale), Transparency = 1 }
 	)
+	local backgroundImageTween = TweenService:Create(backgroundImage, inventoryTweenInfo, { ImageTransparency = 1 })
 	ClearItemsFrame()
 	inventoryMainFrameTween:Play()
 	backButtonFrameTween:Play()
+	backgroundImageTween:Play()
 end
 
 function LoadoutWidget:SetInventoryItemsVis(condition)
@@ -129,6 +132,8 @@ function LoadoutWidget:Initialize()
 	backButtonFrame = loadoutGui.BackButtonFrame
 	itemsFrame = inventoryMainFrame.ItemsFrame
 	inventoryTitle = inventoryMainFrame.Title
+	backgroundImage = loadoutGui.BackgroundImage
+	backgroundImage.ImageTransparency = 1
 	inventoryMainFrame.Position = UDim2.fromScale(-1, 0)
 	backButtonFrame.Position = UDim2.fromScale(1, backButtonFrame.Position.Y.Scale)
 	loadoutGui.Enabled = false
@@ -162,6 +167,8 @@ function LoadoutWidget:OpenLoadout(callback)
 		inventoryTweenInfo,
 		{ Position = backButtonFrame:GetAttribute("TargetPosition") }
 	)
+	local backgroundImageTween = TweenService:Create(backgroundImage, inventoryTweenInfo, { ImageTransparency = 0 })
+	backgroundImageTween:Play()
 	backButtonFrameTween:Play()
 	OpenLoadoutTween:Play()
 

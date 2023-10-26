@@ -25,6 +25,7 @@ function EmoteController:KnitStart()
 				if not EmoteWheelWidget.isInitialized then
 					EmoteWheelWidget:Initialize()
 				end
+				-- warn("Opening emote wheel")
 				EmoteWheelWidget:Open()
 			else
 				EmoteWheelWidget:Close()
