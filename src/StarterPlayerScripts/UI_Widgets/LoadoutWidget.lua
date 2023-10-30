@@ -3,6 +3,9 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local TweenService = game:GetService("TweenService")
 local Packages = game.ReplicatedStorage.Packages
 local Knit = require(ReplicatedStorage.Packages.Knit)
+--Utils
+local FormatText = require(ReplicatedStorage.Source.Modules.Util.FormatText)
+
 --Assets
 local Assets = ReplicatedStorage.Assets
 local Weapons = ReplicatedStorage.Weapons
@@ -21,6 +24,7 @@ local showMainMenuCallback
 local itemsFrame
 local inventoryTitle
 local backgroundImage
+local player = Players.LocalPlayer
 
 local inventoryTweenInfo = TweenInfo.new(0.15, Enum.EasingStyle.Linear, Enum.EasingDirection.InOut, 0, false, 0)
 
@@ -171,12 +175,12 @@ function LoadoutWidget:OpenLoadout(callback)
 	backgroundImageTween:Play()
 	backButtonFrameTween:Play()
 	OpenLoadoutTween:Play()
-
+	
 	showMainMenuCallback = callback
 	--Generate items frame
 	Knit.GetService("DataService"):GetKeyValue("Weapons"):andThen(function(loadoutItems: table)
-		warn(self.slot)
 		for itemID, itemTable in loadoutItems do
+			warn(itemTable)
 			--Filter the category
 			--Get the tool to identify if it has texture
 			local weapon: Tool = Weapons[itemID]
@@ -186,6 +190,25 @@ function LoadoutWidget:OpenLoadout(callback)
 				local formattedItemName = string.gsub(itemID, "_", " ")
 				itemFrame.Frame:WaitForChild("ItemName").Text = formattedItemName
 				itemFrame.Frame:WaitForChild("ItemIcon").Image = weapon.TextureId
+				if not  itemTable.Owned then
+					itemFrame.Frame.LockIcon.Visible = true
+					itemFrame.Frame.RequiredLevelText.Visible = true
+					itemFrame.Frame.RequiredLevelText.Text = "Level " .. weapon:GetAttribute("RequiredLevel") .. " required"
+					itemFrame.Frame.BuyEarlyButton.PriceText.Text = FormatText.To_comma_value(weapon:GetAttribute("EarlyPrice")) or 0
+					if  player.leaderstats.Level.Value >= weapon:GetAttribute("RequiredLevel") then
+						itemFrame.Frame.BuyButton.Visible = true
+						itemFrame.Frame.BuyEarlyButton.Visible = false
+					else
+						itemFrame.Frame.BuyEarlyButton.Visible = true
+						itemFrame.Frame.BuyButton.Visible = false
+					end
+					itemFrame.Frame.BuyButton.PriceText.Text = FormatText.To_comma_value(weapon:GetAttribute("Price"))
+				else
+					itemFrame.Frame.BuyEarlyButton.Visible = false
+					itemFrame.Frame.BuyButton.Visible = false
+					itemFrame.Frame.LockIcon.Visible = false
+					itemFrame.Frame.RequiredLevelText.Visible = false
+				end
 				itemFrame.Frame.ItemIcon.Activated:Connect(function()
 					ButtonWidget:OnActivation(itemFrame.Frame, function()
 						LoadoutWidget.state = "WeaponPreview"

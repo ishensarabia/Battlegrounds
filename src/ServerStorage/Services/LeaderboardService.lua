@@ -13,9 +13,11 @@ function LeaderboardService:KnitStart()
 		leaderboard.Name = "leaderstats"
 		leaderboard.Parent = player
 
-		local rank = Instance.new("IntValue")
-		rank.Name = "Rank"
-		rank.Parent = leaderboard
+		local level = Instance.new("IntValue")
+		level.Name = "Level"
+		level.Value = Knit.GetService("DataService"):GetKeyValue(player, "Level")
+		level.Parent = leaderboard
+
 
 		local score = Instance.new("IntValue")
 		score.Name = "Score"

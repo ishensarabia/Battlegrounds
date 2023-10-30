@@ -36,7 +36,6 @@ function MainMenuWidget:HideMenu()
 	local inventoryButtonsFrameTween =
 		TweenService:Create(inventoryButtonsFrame, TweenInfo.new(0.325), { Position = UDim2.fromScale(2, 0.3) })
 
-
 	local playerPreviewTween =
 		TweenService:Create(playerPreviewViewportFrame, TweenInfo.new(0.325), { Position = UDim2.fromScale(2, 0) })
 
@@ -62,7 +61,6 @@ function MainMenuWidget:CloseMenu()
 
 	local inventoryButtonsFrameTween =
 		TweenService:Create(inventoryButtonsFrame, TweenInfo.new(0.325), { Position = UDim2.fromScale(1, 0.3) })
-
 
 	local playerPreviewTween =
 		TweenService:Create(playerPreviewViewportFrame, TweenInfo.new(0.325), { Position = UDim2.fromScale(1, 0) })
@@ -94,16 +92,19 @@ function MainMenuWidget:HidePlayButton()
 	--Change the play the button group transparency
 	local playButtonTween =
 		--Get the parent as it is the canvas group
-		TweenService:Create(playButton.Parent, TweenInfo.new(0.325), { GroupTransparency = 1})	playButtonTween:Play()
+		TweenService:Create(playButton.Parent, TweenInfo.new(0.325), { GroupTransparency = 1 })
+	playButtonTween:Play()
+	playButton.Active = false
 end
 
 function MainMenuWidget:ShowPlayButton()
-	if self.active then		
+	if self.active then
 		warn("Showing play button")
 		local playButtonTween =
-		--Get the parent as it is the canvas group
-			TweenService:Create(playButton.Parent, TweenInfo.new(0.325), { GroupTransparency = 0})
+			--Get the parent as it is the canvas group
+			TweenService:Create(playButton.Parent, TweenInfo.new(0.325), { GroupTransparency = 0 })
 		playButtonTween:Play()
+		playButton.Active = true
 	end
 end
 
@@ -114,15 +115,17 @@ local function ShowMenu()
 	local inventoryButtonsFrameTween =
 		TweenService:Create(inventoryButtonsFrame, TweenInfo.new(0.325), { Position = UDim2.fromScale(0.87, 0.3) })
 
-
 	local playerPreviewTween =
 		TweenService:Create(playerPreviewViewportFrame, TweenInfo.new(0.325), { Position = UDim2.fromScale(0.026, 0) })
 
 	local mainFrameTween = TweenService:Create(mainFrame, TweenInfo.new(0.325), { Position = UDim2.fromScale(0, 0) })
 
 	mainFrameTween:Play()
-	local battlepassButtonTween =
-		TweenService:Create(battlepassButtonFrame, TweenInfo.new(0.325), { Position = battlepassButtonFrame:GetAttribute("TargetPosition") })
+	local battlepassButtonTween = TweenService:Create(
+		battlepassButtonFrame,
+		TweenInfo.new(0.325),
+		{ Position = battlepassButtonFrame:GetAttribute("TargetPosition") }
+	)
 
 	local challengesButtonTween = TweenService:Create(
 		challengesButtonFrame,
@@ -316,7 +319,7 @@ function MainMenuWidget:Initialize()
 	end)
 
 	setupMainMenuButtons()
-	if  not Knit.GetController("GameModeController")._canRespawn then		
+	if not Knit.GetController("GameModeController")._canRespawn then
 		self:HidePlayButton()
 	end
 	--Connect to death event
