@@ -1,2 +1,1 @@
-# knit-game
- Knit demo game
+Main repository for Battlegrounds (Roblox Game)
