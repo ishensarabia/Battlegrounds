@@ -142,7 +142,7 @@ function GameModeService:EndGameMode()
 	--Display the top players 
 	self.Client.EndGameSignal:FireAll(topPlayers)
 	for index, playerScoreData in topPlayers do
-		warn(playerScoreData)
+		-- warn(playerScoreData)
 		self._challengesService:UpdateChallengeProgression(playerScoreData.player, "TopPlayers", 1)
 	end
 	self._leaderboardService:ResetLeaderboard()

@@ -96,7 +96,6 @@ function NotificationWidget:DisplayNotification(notificationType: string, params
 	end
 
 	if notificationType == NotificationWidget.NotificationController.Notifications.Wipeout_Streak then
-		warn("wipeout streak")
 		local wipeoutFeedFrame = NotificationWidget.NotificationGui.WipeoutFeedFrame
 		local wipeoutStreakFeedCanvas = Assets.GuiObjects.Frames.WipeoutStreakFeedCanvas:Clone()
 		wipeoutStreakFeedCanvas.Parent = wipeoutFeedFrame
@@ -338,7 +337,6 @@ function NotificationWidget:DisplayNotification(notificationType: string, params
 	end
 
 	if notificationType == NotificationWidget.NotificationController.Notifications.Assist then
-		warn("Assist notification fired")
 		-- get the frame
 		local assistNoticationFrame = NotificationWidget.NotificationGui.AssistNotificationFrame
 		-- Get the assist frame

@@ -20,11 +20,13 @@ local StoreWidget = require(game.StarterPlayer.StarterPlayerScripts.Source.UI_Wi
 local MainMenuWidget = {}
 local MainMenuGui
 --Variables
+local characterCanvas
 local playerPreviewViewportFrame
 local inventoryButtonsFrame
 local battlepassButtonFrame
 local challengesButtonFrame
 local storeButtonFrame
+local levelText
 local mainFrame
 local playButton
 local cameraTransitionConn
@@ -37,7 +39,7 @@ function MainMenuWidget:HideMenu()
 		TweenService:Create(inventoryButtonsFrame, TweenInfo.new(0.325), { Position = UDim2.fromScale(2, 0.3) })
 
 	local playerPreviewTween =
-		TweenService:Create(playerPreviewViewportFrame, TweenInfo.new(0.325), { Position = UDim2.fromScale(2, 0) })
+		TweenService:Create(characterCanvas, TweenInfo.new(0.325), { Position = UDim2.fromScale(2, 0.071) })
 
 	local battlepassButtonTween =
 		TweenService:Create(battlepassButtonFrame, TweenInfo.new(0.325), { Position = UDim2.fromScale(2, 0.64) })
@@ -63,7 +65,7 @@ function MainMenuWidget:CloseMenu()
 		TweenService:Create(inventoryButtonsFrame, TweenInfo.new(0.325), { Position = UDim2.fromScale(1, 0.3) })
 
 	local playerPreviewTween =
-		TweenService:Create(playerPreviewViewportFrame, TweenInfo.new(0.325), { Position = UDim2.fromScale(1, 0) })
+		TweenService:Create(characterCanvas, TweenInfo.new(0.325), { Position = UDim2.fromScale(1, 0) })
 
 	local mainFrameTween = TweenService:Create(mainFrame, TweenInfo.new(0.325), { Position = UDim2.fromScale(1, 0) })
 
@@ -99,7 +101,6 @@ end
 
 function MainMenuWidget:ShowPlayButton()
 	if self.active then
-		warn("Showing play button")
 		local playButtonTween =
 			--Get the parent as it is the canvas group
 			TweenService:Create(playButton.Parent, TweenInfo.new(0.325), { GroupTransparency = 0 })
@@ -116,7 +117,7 @@ local function ShowMenu()
 		TweenService:Create(inventoryButtonsFrame, TweenInfo.new(0.325), { Position = UDim2.fromScale(0.87, 0.3) })
 
 	local playerPreviewTween =
-		TweenService:Create(playerPreviewViewportFrame, TweenInfo.new(0.325), { Position = UDim2.fromScale(0.026, 0) })
+		TweenService:Create(characterCanvas, TweenInfo.new(0.325), { Position = UDim2.fromScale(0.175, 0.071) })
 
 	local mainFrameTween = TweenService:Create(mainFrame, TweenInfo.new(0.325), { Position = UDim2.fromScale(0, 0) })
 
@@ -143,7 +144,6 @@ local function ShowMenu()
 	challengesButtonTween:Play()
 	inventoryButtonsFrameTween:Play()
 	if Knit.GetController("GameModeController")._canRespawn then
-		warn("can respawn showing play button")
 		MainMenuWidget:ShowPlayButton()
 	else
 		MainMenuWidget:HidePlayButton()
@@ -166,13 +166,15 @@ local function setupMainMenuButtons()
 	playButton = MainMenuGui.PlayButtonCanvas.PlayButton
 	battlepassButtonFrame = MainMenuGui.BattlepassButtonFrame
 	challengesButtonFrame = MainMenuGui.ChallengesButtonFrame
+	levelText = MainMenuGui.CharacterCanvas.LevelFrame.LevelIcon:FindFirstChildWhichIsA("TextLabel")
+	levelText.Text = game.Players.LocalPlayer:GetAttribute("Level")
 	storeButtonFrame = MainMenuGui.StoreButtonFrame
+	characterCanvas = MainMenuGui.CharacterCanvas
 
 	weaponsInventoryButtonFrame.button.Activated:Connect(function()
 		local function callback()
 			MainMenuWidget:HideMenu()
 			LoadoutWidget:OpenLoadout(function()
-				warn("Shoiwign menu is enabled")
 				MainMenuWidget:ShowMenu()
 			end)
 		end
@@ -228,7 +230,6 @@ local function setupMainMenuButtons()
 end
 
 function MainMenuWidget:InitializeCameraTransition()
-	warn("Initialize camera transition")
 	local CameraController = Knit.GetController("CameraController")
 	CameraController.isInMenu = true
 	--Set up main menu cutscene
@@ -332,5 +333,7 @@ function MainMenuWidget:Initialize()
 	end)
 	return self
 end
+
+
 
 return MainMenuWidget:Initialize()

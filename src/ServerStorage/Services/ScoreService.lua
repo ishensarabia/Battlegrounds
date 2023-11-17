@@ -65,6 +65,34 @@ local function damageToBattleCoins(damage: number)
 	return convertedNumber
 end
 
+--damage to experience
+local function damageToExperience(damage: number)
+	local convertedNumber = damage * 0.25
+	return convertedNumber
+end
+
+--Add experience to the player
+function ScoreService:AddExperience(player: Player, amount: number)
+	warn(player, amount)
+	local dataService = Knit.GetService("DataService")
+	dataService:incrementIntValue(player, "Experience", amount)
+	self:CheckLevelUp(player)
+end
+
+--Check if the player has enough experience to level up
+function ScoreService:CheckLevelUp(player: Player)
+	local dataService = Knit.GetService("DataService")
+	local experience =  dataService:GetKeyValue(player, "Experience")
+	local level = dataService:GetKeyValue(player, "Level")
+	local experienceToLevelUp = 100 + (level * 50)
+	if experience >= experienceToLevelUp then
+		dataService:incrementIntValue(player, "Level")
+		dataService:incrementIntValue(player, "Experience", -experienceToLevelUp)
+		self:CheckLevelUp(player)
+	end
+end
+
+
 function ScoreService:RewardHitSession(taker: Player)
 	local dataService = Knit.GetService("DataService")
 	if self.HitSessions[taker.UserId] then
@@ -76,6 +104,8 @@ function ScoreService:RewardHitSession(taker: Player)
 					self._leaderboardService:UpdatePlayerScore(rewardPlayer, amount)
 					local damageDealerDataProfile = dataService:GetProfileData(rewardPlayer)
 					damageDealerDataProfile.BattleCoins += damageToBattleCoins(amount)
+					--Reward experience
+					self:AddExperience(rewardPlayer, damageToExperience(amount))
 					self._challengesService:UpdateChallengeProgression(
 						rewardPlayer,
 						"BattleCoins",

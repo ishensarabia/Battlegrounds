@@ -100,6 +100,7 @@ DataConfig.profileTemplate = {
 	Skins = {},
 	Colors = {},
 	Level = 0,
+	Experience = 0,
 	Abilities = {},
 	Knockouts = 0,
 	Defeats = 0,
@@ -112,7 +113,7 @@ DataConfig.profileTemplate = {
 	},
 	DevProducts = {},
 	Loadout = {
-		WeaponEquipped = "Pistol",
+		WeanEquipped = "Pistol",
 	},
 	Battlepass = {
 		currentSeason = "Season_1",

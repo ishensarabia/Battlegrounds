@@ -82,38 +82,23 @@ local function setTransparencyForWeaponParts(model, value: number)
 	end
 end
 
-local function SelectWeaponPart(weaponPartName: string, customPartFrame)
-	WeaponCustomizationWidget.weaponPartName = weaponPartName
-	if WeaponCustomizationWidget.currentEditingPart then
-		--Toggle other parts
-		for index, partFrame in WeaponCustomizationWidget.weaponPartsFrames do
-			TweenService:Create(partFrame.Frame.SelectionBackground, TweenInfo.new(0.339), { ImageTransparency = 1 })
-				:Play()
-		end
-		--Toggle the new part
-		WeaponCustomizationWidget.currentEditingPart = WeaponCustomizationWidget.customParts[weaponPartName]
-		TweenService:Create(customPartFrame.Frame.SelectionBackground, TweenInfo.new(0.339), { ImageTransparency = 0 })
-			:Play()
-	else
-		WeaponCustomizationWidget.currentEditingPart = WeaponCustomizationWidget.customParts[weaponPartName]
-		TweenService:Create(customPartFrame.Frame.SelectionBackground, TweenInfo.new(0.339), { ImageTransparency = 0 })
-			:Play()
-	end
+-- local function SelectWeaponPart(weaponPartName: string, customPartFrame)
+-- 	WeaponCustomizationWidget.weaponPartName = weaponPartName
 
-	--Check if the part has a texture to show the remove skin button
-	if WeaponCustomizationWidget.currentEditingPart:FindFirstChild("Skin") then
-		weaponCustomizationGui.RemoveSkinButtonFrame.Visible = true
-		--Connect the remove skin button
-		weaponCustomizationGui.RemoveSkinButtonFrame.BackgroundButton.Activated:Connect(function()
-			ButtonWidget:OnActivation(weaponCustomizationGui.RemoveSkinButtonFrame, function()
-				WeaponCustomizationWidget:RemoveSkin(weaponPartName)
-				weaponCustomizationGui.RemoveSkinButtonFrame.Visible = false
-			end)
-		end)
-	else
-		weaponCustomizationGui.RemoveSkinButtonFrame.Visible = false
-	end
-end
+-- 	--Check if the part has a texture to show the remove skin button
+-- 	if WeaponCustomizationWidget.currentEditingPart:FindFirstChild("Skin") then
+-- 		weaponCustomizationGui.RemoveSkinButtonFrame.Visible = true
+-- 		--Connect the remove skin button
+-- 		weaponCustomizationGui.RemoveSkinButtonFrame.BackgroundButton.Activated:Connect(function()
+-- 			ButtonWidget:OnActivation(weaponCustomizationGui.RemoveSkinButtonFrame, function()
+-- 				WeaponCustomizationWidget:RemoveSkin(weaponPartName)
+-- 				weaponCustomizationGui.RemoveSkinButtonFrame.Visible = false
+-- 			end)
+-- 		end)
+-- 	else
+-- 		weaponCustomizationGui.RemoveSkinButtonFrame.Visible = false
+-- 	end
+-- end
 
 function WeaponCustomizationWidget:SelectWeaponPart(weaponPartName: string)
 	WeaponCustomizationWidget.weaponPartName = weaponPartName
@@ -135,28 +120,6 @@ local function splitTitleCaps(str)
 	return str:gsub("^%s", "")
 end
 
-local function GenerateWeaponPartsFrames()
-	local customPartNumber = 1
-	for index, child in WeaponCustomizationWidget.model:GetDescendants() do
-		if child:GetAttribute("CustomPart") then
-			--Store the custom part
-			WeaponCustomizationWidget.customParts[child:GetAttribute("CustomPart")] = child
-			local customPartFrame = Assets.GuiObjects.Frames.PartTemplateFrame:Clone()
-			customPartFrame.Parent = partsFrame
-			customPartFrame.LayoutOrder = index
-			customPartFrame.Frame.Number.Text = customPartNumber
-			customPartFrame.Frame.Word.Text = splitTitleCaps(child:GetAttribute("CustomPart"))
-			WeaponCustomizationWidget.weaponPartsFrames[child:GetAttribute("CustomPart")] = customPartFrame
-			customPartNumber = customPartNumber + 1
-			customPartFrame.Frame.BackgroundButton.Activated:Connect(function()
-				ButtonWidget:OnActivation(customPartFrame.Frame, function()
-					SelectWeaponPart(child:GetAttribute("CustomPart"), customPartFrame)
-				end)
-			end)
-		end
-	end
-end
-
 function WeaponCustomizationWidget:Initialize()
 	weaponCustomizationGui = Assets.GuiObjects.ScreenGuis.WeaponCustomizationGui
 	customizationItemsFrame = weaponCustomizationGui:WaitForChild("CustomizationItemsFrame")
@@ -167,7 +130,6 @@ function WeaponCustomizationWidget:Initialize()
 	weaponCustomizationGui.Parent = game.Players.LocalPlayer.PlayerGui
 	weaponCustomizationGui.Enabled = false
 
-	SetupCustomizationButtons()
 	return WeaponCustomizationWidget
 end
 
@@ -305,11 +267,49 @@ local function GenerateColorButtons()
 	local colors = DataService:GetKeyValue(game.Players.LocalPlayer, "Colors")
 end
 
-function WeaponCustomizationWidget:OpenCustomization(itemID: string, itemModel: Model, category: string, callback)
+local partNumberDictionary = {
+	[1] = "Primary Part",
+	[2] = "Secondary Part",
+	[3] = "Tertiary Part",
+	[4] = "Quaternary Part",
+}
+
+local function GenerateWeaponPartsFrames()
+	for index, child in WeaponCustomizationWidget.model:GetDescendants() do
+		if child:GetAttribute("CustomPart") then
+			--Store the custom part
+			WeaponCustomizationWidget.customParts[child:GetAttribute("CustomPart")] = child
+			local customPartFrame = Assets.GuiObjects.Frames.PartTemplateFrame:Clone()
+			customPartFrame.Parent = partsFrame
+			customPartFrame.LayoutOrder = child:GetAttribute("CustomPart")
+			customPartFrame.Frame.Number.Text = index
+			customPartFrame.Frame.Word.Text = child:GetAttribute("CustomPart")
+			WeaponCustomizationWidget.weaponPartsFrames[child:GetAttribute("CustomPart")] = customPartFrame
+			customPartFrame.LayoutOrder = index
+			customPartFrame.Frame.Number.Text = index
+			customPartFrame.Frame.Word.Text = child:GetAttribute("CustomPart")
+			WeaponCustomizationWidget.weaponPartsFrames[child:GetAttribute("CustomPart")] = customPartFrame
+			customPartFrame.Frame.BackgroundButton.Activated:Connect(function()
+				ButtonWidget:OnActivation(customPartFrame.Frame, function()
+					WeaponCustomizationWidget:SelectWeaponPart(child:GetAttribute("CustomPart"))
+				end)
+			end)
+		end
+	end
+end
+
+function WeaponCustomizationWidget:OpenCustomization(
+	itemID: string,
+	itemModel: Model,
+	category: string,
+	isWeaponOwned: boolean,
+	callback: any
+)
 	WeaponCustomizationWidget.isActive = true
 	WeaponCustomizationWidget.model = itemModel
+	WeaponCustomizationWidget.isWeaponOwned = isWeaponOwned
 	WeaponCustomizationWidget.itemID = itemID
-	-- GenerateWeaponPartsFrames()
+	GenerateWeaponPartsFrames()
 	WeaponCustomizationWidget.customizationCategory = category
 	backButtonCallback = callback
 	weaponCustomizationGui.Enabled = true
@@ -330,6 +330,7 @@ function WeaponCustomizationWidget:OpenCustomization(itemID: string, itemModel: 
 		TweenInfo.new(0.363),
 		{ Position = customizationItemsFrame:GetAttribute("TargetPosition") }
 	)
+	SetupCustomizationButtons()
 	openCustomizationTween:Play()
 end
 

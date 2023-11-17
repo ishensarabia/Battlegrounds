@@ -308,7 +308,7 @@ function DragToRotateViewportFrame:BeginDragging()
 		end
 
 		if inputObject.UserInputType == Enum.UserInputType.MouseWheel then
-			self.Camera.FieldOfView = self.Camera.FieldOfView - inputObject.Position.Z
+			self.Camera.FieldOfView = self.Camera.FieldOfView - inputObject.Position.Z * 10
 			return
 		end
 		self:Rotate(-delta.Y / 100, -delta.X / 100)

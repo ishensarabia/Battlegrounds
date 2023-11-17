@@ -1,11 +1,8 @@
 --Services
 local GuiService = game:GetService("GuiService")
-local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local RunService = game:GetService("RunService")
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
-local Packages = game.ReplicatedStorage.Packages
 local Assets = ReplicatedStorage.Assets
 local Knit = require(ReplicatedStorage.Packages.Knit)
 --Modules
@@ -23,7 +20,6 @@ local customizationButtonsFrame
 local itemInfoFrame
 local equipButtonFrame
 local viewportFrame
-local itemViewportModel
 local dtrViewportFrame
 --Connections
 local viewportConnection
@@ -89,8 +85,9 @@ local function SetupWeaponPreviewButtons()
 	--Equip button loadout functionality
 	equipButtonFrame.BackgroundButton.Activated:Connect(function()
 		ButtonWidget:OnActivation(equipButtonFrame, function()
+			local DataService = Knit.GetService("DataService")
 			warn(WeaponPreviewWidget.weaponID, WeaponPreviewWidget.loadoutSlot)
-			Knit.GetService("DataService"):SetWeaponEquipped(WeaponPreviewWidget.weaponID, WeaponPreviewWidget.loadoutSlot)
+			DataService:SetWeaponEquipped(WeaponPreviewWidget.weaponID, WeaponPreviewWidget.loadoutSlot)
 			local PlayerPreviewController = Knit.GetController("PlayerPreviewController")
 			PlayerPreviewController:SpawnWeaponInCharacterMenu()
 		end, "equip")
@@ -147,7 +144,6 @@ function WeaponPreviewWidget:ClosePreview()
 		WeaponCustomWidget:CloseCustomization("Color")
 	end
 	closePreviewTween.Completed:Connect(function()
-		itemViewportModel = nil
 		viewportFrame:ClearAllChildren()
 		viewportConnection:Disconnect()
 		weaponPreviewGui.Enabled = false
@@ -187,6 +183,27 @@ function WeaponPreviewWidget:OpenPreview(weaponID: string, loadoutSlot)
 	WeaponPreviewWidget.loadoutSlot = loadoutSlot
 	--Enable the gui
 	weaponPreviewGui.Enabled = true
+	
+	local DataService = Knit.GetService("DataService")
+    DataService:IsWeaponOwned(weaponID):andThen(function(isWeaponOwned)
+		if isWeaponOwned then
+			--Show equip button
+			TweenService
+				:Create(
+					equipButtonFrame,
+					TweenInfo.new(0.363),
+					{ Position = equipButtonFrame:GetAttribute("TargetPosition") }
+				)
+				:Play()
+		else
+			--Hide equip button
+			TweenService:Create(
+				equipButtonFrame,
+				TweenInfo.new(0.363),
+				{ Position = UDim2.fromScale(1, equipButtonFrame:GetAttribute("TargetPosition").Height.Scale) }
+			):Play()
+		end
+	end)
 	local camera = Instance.new("Camera")
 	camera.Parent = weaponPreviewGui
 	dtrViewportFrame = DragToRotateViewportFrame.New(viewportFrame, camera)
@@ -232,7 +249,6 @@ function WeaponPreviewWidget:OpenPreview(weaponID: string, loadoutSlot)
 					if result.Instance:GetAttribute("CustomPart") then
 						WeaponCustomWidget:SelectWeaponPart(result.Instance:GetAttribute("CustomPart"))
 					end
-					-- result.Instance.Transparency = 0.66
 					local vCamera = viewportFrame.CurrentCamera
 					local Pos = vCamera:WorldToViewportPoint(result.Instance.Position)
 					Pos = UDim2.new(
@@ -241,7 +257,7 @@ function WeaponPreviewWidget:OpenPreview(weaponID: string, loadoutSlot)
 						0,
 						Pos.Y * viewportFrame.Parent.AbsoluteSize.Y
 					)
-					setTransparencyForWeaponParts(weaponModel, result.Instance.Name, 0.93)
+					setTransparencyForWeaponParts(weaponModel, result.Instance.Name, 0.66)
 					-- itemPreviewFrame.ImageLabel.Visible = true
 					-- itemPreviewFrame.ImageLabel.Position = Pos
 				end

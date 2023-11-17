@@ -145,8 +145,34 @@ function LoadoutWidget:Initialize()
 	SetupInventoryButtons()
 	SetupCategoryButtons()
 	SetupLoadoutButtons()
+	--Connect buy weapon
+	local LoadoutService = Knit.GetService("LoadoutService")
+	warn(LoadoutService)
+	LoadoutService.WeaponBoughtSignal:Connect(function(weaponName)
+		self:UpdateLoadoutItems(weaponName)
+	end)
 
 	return LoadoutWidget
+end
+
+function LoadoutWidget:UpdateLoadoutItems(weaponName)
+	for _, itemFrame in (itemsFrame:GetChildren()) do
+		warn(weaponName, itemFrame:GetAttribute("Weapon"))
+		if itemFrame:GetAttribute("Weapon") == weaponName then
+			itemFrame.Frame.LockIcon.Visible = false
+			itemFrame.Frame.RequiredLevelText.Visible = false
+			itemFrame.Frame.BuyButton.Visible = false
+			itemFrame.Frame.BuyEarlyButton.Visible = false
+			itemFrame.Frame.ItemIcon.Activated:Connect(function()
+				ButtonWidget:OnActivation(itemFrame.Frame, function()
+					LoadoutWidget.state = "WeaponPreview"
+					LoadoutWidget:SetInventoryItemsVis(false)
+					WeaponPreviewWidget:OpenPreview( itemFrame:GetAttribute("Weapon"), self.slot, true)
+				end)
+			end)
+			break
+		end
+	end
 end
 
 function LoadoutWidget:OpenLoadout(callback)
@@ -175,27 +201,33 @@ function LoadoutWidget:OpenLoadout(callback)
 	backgroundImageTween:Play()
 	backButtonFrameTween:Play()
 	OpenLoadoutTween:Play()
-	
+
 	showMainMenuCallback = callback
 	--Generate items frame
 	Knit.GetService("DataService"):GetKeyValue("Weapons"):andThen(function(loadoutItems: table)
-		for itemID, itemTable in loadoutItems do
-			warn(itemTable)
+		for itemID, itemData: table in loadoutItems do
 			--Filter the category
 			--Get the tool to identify if it has texture
 			local weapon: Tool = Weapons[itemID]
 			if weapon.TextureId and weapon:GetAttribute("Slot") == self.slot then
 				local itemFrame = Assets.GuiObjects.Frames.ItemFrame:Clone()
+				--Assign the weaon attribute
+				itemFrame:SetAttribute("Weapon", itemID)
 				itemFrame.Parent = itemsFrame
 				local formattedItemName = string.gsub(itemID, "_", " ")
 				itemFrame.Frame:WaitForChild("ItemName").Text = formattedItemName
 				itemFrame.Frame:WaitForChild("ItemIcon").Image = weapon.TextureId
-				if not  itemTable.Owned then
+				if not itemData.Owned then
 					itemFrame.Frame.LockIcon.Visible = true
 					itemFrame.Frame.RequiredLevelText.Visible = true
-					itemFrame.Frame.RequiredLevelText.Text = "Level " .. weapon:GetAttribute("RequiredLevel") .. " required"
-					itemFrame.Frame.BuyEarlyButton.PriceText.Text = FormatText.To_comma_value(weapon:GetAttribute("EarlyPrice")) or 0
-					if  player.leaderstats.Level.Value >= weapon:GetAttribute("RequiredLevel") then
+					itemFrame.Frame.RequiredLevelText.Text = string.format(
+						"Level <font color='rgb(255,125,0)'><b>%s</b></font> required",
+						weapon:GetAttribute("RequiredLevel")
+					)
+					itemFrame.Frame.BuyEarlyButton.PriceText.Text = FormatText.To_comma_value(
+						weapon:GetAttribute("EarlyPrice")
+					) or 0
+					if player.leaderstats.Level.Value >= weapon:GetAttribute("RequiredLevel") then
 						itemFrame.Frame.BuyButton.Visible = true
 						itemFrame.Frame.BuyEarlyButton.Visible = false
 					else
@@ -203,6 +235,12 @@ function LoadoutWidget:OpenLoadout(callback)
 						itemFrame.Frame.BuyButton.Visible = false
 					end
 					itemFrame.Frame.BuyButton.PriceText.Text = FormatText.To_comma_value(weapon:GetAttribute("Price"))
+					--Connect early buy button
+					itemFrame.Frame.BuyEarlyButton.Activated:Connect(function()
+						ButtonWidget:OnActivation(itemFrame.Frame.BuyEarlyButton, function()
+							Knit.GetService("LoadoutService"):BuyWeapon(itemID, true)
+						end)
+					end)
 				else
 					itemFrame.Frame.BuyEarlyButton.Visible = false
 					itemFrame.Frame.BuyButton.Visible = false

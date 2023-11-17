@@ -4,7 +4,9 @@ local Assets = ReplicatedStorage.Assets
 
 local LoadoutService = Knit.CreateService({
 	Name = "LoadoutService",
-	Client = {},
+	Client = {
+		WeaponBoughtSignal = Knit.CreateSignal(),
+	},
 })
 
 function LoadoutService:KnitStart() end
@@ -46,6 +48,44 @@ function LoadoutService:SpawnLoadout(player)
 		secondaryWeapon.Parent = player.Backpack
 		self:LoadWeaponCustomization(player, loadout.Secondary)
 	end
+end
+
+function LoadoutService:BuyWeapon(player, weaponName)
+	warn(player, weaponName)
+    local CurrencyService = Knit.GetService("CurrencyService")
+    local playerCurrency = CurrencyService:GetCurrencyValue(player, "BattleCoins")
+    local playerLevel = player.leaderstats.Level.Value -- replace with your implementation
+
+    local weapon = ReplicatedStorage.Weapons[weaponName]
+    if not weapon then
+        return false, "Weapon does not exist"
+    end
+
+    local originalPrice = weapon:GetAttribute("OriginalPrice")
+    local earlyPrice = weapon:GetAttribute("EarlyPrice")
+    local requiredLevel = weapon:GetAttribute("RequiredLevel")
+	local isEarlyBuy
+
+    local weaponPrice
+    if playerLevel >= requiredLevel then
+        weaponPrice = originalPrice
+		isEarlyBuy = false
+    else
+        weaponPrice = earlyPrice
+		isEarlyBuy = true
+    end
+
+    if playerCurrency >= weaponPrice then
+        self.Client.WeaponBoughtSignal:Fire(player, weaponName)
+        return CurrencyService:BuyWeapon(player, weaponName, isEarlyBuy)
+    else
+        return false, "Not enough currency to purchase weapon"
+    end
+end
+
+--Client function
+function LoadoutService.Client:BuyWeapon(player, weaponName)
+	return self.Server:BuyWeapon(player, weaponName)
 end
 
 function LoadoutService:LoadWeaponCustomization(player, weaponName)

@@ -19,7 +19,6 @@ function TimerWidget:Initialize()
 	TimerGui.Enabled = false
 
 	Knit.GetService("GameModeService").InitializeGameModeSignal:Connect(function(timeToVote)
-		warn("Initialize round timer with timer" .. timeToVote)
 		self:StartTimer(timeToVote)
 	end)
 	return TimerWidget

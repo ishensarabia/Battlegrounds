@@ -65,7 +65,6 @@ end
 function GameModeElectionWidget:MinimizeElectionFrame()
 	self:HideElectionFrame()
 	TweenService:Create(gameModeElectionGui.MinimizedFrame, TweenInfo.new(0.69), { GroupTransparency = 0 }):Play()
-	warn("Minimized Election")
 end
 
 function GameModeElectionWidget:OpenElectionFrame(timeToVote)

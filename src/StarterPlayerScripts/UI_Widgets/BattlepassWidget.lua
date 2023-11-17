@@ -630,7 +630,6 @@ function BattlepassWidget:GenerateRewards(battlepassData)
 
 			--Free levels
 			if not table.find(seasonData.ClaimedLevels.Freepass, level) and seasonData.Level >= level then
-				warn("Found not claimed levels for" .. level, seasonData.ClaimedLevels.Freepass)
 				battlepassRewardFrame.FreePadlockIcon.Visible = false
 				battlepassRewardFrame.FreeClaimFrame.Visible = true
 				local shineTween = UIController:AnimateShineForFrame(battlepassRewardFrame.FreeClaimFrame, false, true)
@@ -711,7 +710,6 @@ end
 
 ---@diagnostic disable-next-line: undefined-type
 function BattlepassWidget:OpenBattlepass(callback: Function)
-	warn("Opening battlepass")
 	BattlepassGui.Enabled = true
 	--Set the callback
 	BattlepassWidget.callback = callback
@@ -771,7 +769,6 @@ function BattlepassWidget:OpenBattlepass(callback: Function)
 			)
 			rewardsFrame[currentRank].ProgressBarFrame.BarFrame.ProgressBar.Size = UDim2.fromOffset(x,y)
 
-			warn("Adjusting bar from reward frame")
 		end)
 	end)
 end

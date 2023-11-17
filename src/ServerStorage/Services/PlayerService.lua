@@ -38,6 +38,7 @@ function PlayerService:KnitInit()
 	end)
 end
 
+
 function PlayerService:RegisterDead(player: Player)
 	local dataService = Knit.GetService("DataService")
 	dataService:incrementIntValue(player, "Defeats")

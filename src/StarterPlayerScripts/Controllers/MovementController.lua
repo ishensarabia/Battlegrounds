@@ -257,7 +257,6 @@ function MovementController:OnJumpRequest()
 			ledgePart:Destroy()
 		end
 		canVault = false
-		warn("Attaching")
 		-- 	--Unequip the tools from the humanoid
 		player.Character.Humanoid:UnequipTools()
 		isHolding = true
@@ -347,7 +346,6 @@ function MovementController:OnJumpRequest()
 			end
 		end
 	elseif not canVault then
-		warn("Climbing")
 		canVault = true
 		Climb()
 		if vaultConnection then

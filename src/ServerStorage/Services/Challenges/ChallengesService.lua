@@ -47,8 +47,6 @@ function ChallengesService:InitializePlayer(player)
 	local dailyChallengesGeneratedAt = os.date(dailyStringToFormat, challengesData.DailyGeneratedAt)
 	local weeklyChallengesGeneratedAt = os.date(weeklyStringToFormat, challengesData.WeeklyGeneratedAt)
 
-	warn(weeklyChallengesGeneratedAt)
-	warn(dailyChallengesGeneratedAt)
 	--If there's no weekly or daily challenges, generate them
 	if
 		(#challengesData.Weekly == 0 and not challengesData.WeeklyGeneratedAt)
@@ -98,7 +96,6 @@ end
 function ChallengesService:UpdateChallengeProgression(player: Player, typeOfProgression: string, amount: number)
 	--Make sure the player has a challenge that requires destroying objects
 	local challengesData = self._dataService:GetKeyValue(player, "Challenges")
-	warn(player, typeOfProgression, amount)
 	local function UpdateChallengeProgression(challenge, typeOfChallenge: string)
 		if challenge.typeOfProgression == typeOfProgression then
 			--Check if the challenge has progress if not, set it to 0
@@ -150,6 +147,9 @@ function ChallengesService:ClaimChallenge(player, challenge: table, challengeTyp
 					end
 					if reward.rewardType == "BattlepassExp" then
 						self._battlepassService:AddBattlepassExperience(player, reward.rewardAmount)
+					end
+					if reward.rewardType == "Exp" then
+						self._dataService:AddExperience(player, reward.rewardAmount)
 					end
 				end
 				table.remove(challengesData[challengeType], index)

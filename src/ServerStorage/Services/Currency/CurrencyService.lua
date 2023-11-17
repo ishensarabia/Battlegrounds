@@ -4,6 +4,7 @@ local Players = game:GetService("Players")
 local Knit = require(ReplicatedStorage.Packages.Knit)
 --Config
 local MoneyConfig = require(script.Parent.MoneyConfig)
+local Weapons = ReplicatedStorage.Weapons
 
 local CurrencyService = Knit.CreateService({
 	Name = "CurrencyService",
@@ -20,7 +21,6 @@ function CurrencyService:GetCurrencyValue(player: Player, currency: string): num
 end
 
 function CurrencyService:AddCurrency(player: Player, currencyType: string, amount: number)
-    warn(player, currencyType, amount)
 	local currentCurrency = self._dataService:GetKeyValue(player, currencyType)
 	if amount > 0 then
 		currentCurrency += amount
@@ -40,10 +40,47 @@ function CurrencyService:RemoveCurrency(player: Player, currencyType: string, am
 		return true
 	end
 end
+--BuyWeapon 
+function CurrencyService:BuyWeapon(player: Player, weaponName: string, isEarlyBuy: boolean)
+    local weaponInstance = Weapons[weaponName]
+	
+    local price = weaponInstance:GetAttribute("Price")
+    local earlyPrice = weaponInstance:GetAttribute("EarlyPrice")
+
+	warn(isEarlyBuy)
+
+    if weaponInstance then
+        local playerCurrency = self:GetCurrency(player, "BattleCoins")
+		if isEarlyBuy then
+			if playerCurrency >= price then
+				self:RemoveCurrency(player, "BattleCoins", earlyPrice)
+				self._dataService:UnlockWeapon(player, weaponName)
+				return true, "Weapon purchased successfully"
+			else
+				return false, "Not enough Battlecoins to purchase this weapon"
+			end
+		else
+			if playerCurrency >= earlyPrice then
+				self:RemoveCurrency(player, "BattleCoins", price)
+				self._dataService:GiveWeapon(player, weaponName)
+				return true, "Weapon purchased successfully"
+			else
+				return false, "Not enough Battlecoins to purchase this weapon"
+			end	
+		end
+    else
+        return false, "Weapon does not exist"
+    end
+end
+--BuyWeapon Client
+function CurrencyService.Client:BuyWeapon(player: Player, weaponName: string)
+	return self.Server:BuyWeapon(player, weaponName)
+end
 
 --Get currency
 function CurrencyService:GetCurrency(player: Player, currencyType: string)
 	local currentCurrency = self._dataService:GetKeyValue(player, currencyType)
+	warn(currentCurrency)
 	return currentCurrency
 end
 
