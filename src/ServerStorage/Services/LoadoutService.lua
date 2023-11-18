@@ -54,7 +54,7 @@ function LoadoutService:BuyWeapon(player, weaponName)
 	warn(player, weaponName)
     local CurrencyService = Knit.GetService("CurrencyService")
     local playerCurrency = CurrencyService:GetCurrencyValue(player, "BattleCoins")
-    local playerLevel = player.leaderstats.Level.Value -- replace with your implementation
+    local playerLevel = player:GetAttribute("Level")
 
     local weapon = ReplicatedStorage.Weapons[weaponName]
     if not weapon then

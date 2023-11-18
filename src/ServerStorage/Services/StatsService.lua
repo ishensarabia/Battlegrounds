@@ -45,10 +45,8 @@ end
 function StatsService:KnitInit() end
 
 function StatsService:GetStatValue(player: Player, stat: string)
-	-- warn("[Server] Getting stat value for player: " .. player.Name .. " stat: " .. stat)
 	local dataService = Knit.GetService("DataService")
 	local retrievedStatValue = dataService:GetKeyValue(player, stat)
-	-- warn("[Server] Retrieved stat value: " .. retrievedStatValue)
 	return retrievedStatValue
 end
 
@@ -104,16 +102,6 @@ end
 function StatsService.Client:ExecuteAction(player, actionName: string)
 	self.Server:ExecuteAction(player, actionName)
 end
-
--- function StatsService:GetDefaultValue(stat: string)
--- 	if stat == "Stamina" then
--- 		return MAX_STAMINA
--- 	end
--- end
-
--- function StatsService.Client:GetDefaultValue(player, stat: string)
--- 	return self.Server:GetDefaultValue(stat)
--- end
 
 function StatsService:AddStat(player: Player, stat: string, amount: number)
 	if amount > 0 then

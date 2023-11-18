@@ -53,7 +53,7 @@ end
 function DataService:KnitStart()
 	-- Initialize profiles table0 to store
 	self.profiles = {}
-	self.profileStore = ProfileService.GetProfileStore("Development_Alpha_0.09", DataConfig.profileTemplate)
+	self.profileStore = ProfileService.GetProfileStore("Development_Alpha_0.1010", DataConfig.profileTemplate)
 	Players.PlayerRemoving:Connect(function(player)
 		self:onPlayerRemoving(player)
 	end)
@@ -216,8 +216,7 @@ end
 
 function DataService:SetWeaponEquipped(player, weapon: string, loadoutSlot: string)
 	local profile = self.profiles[player]
-	warn(profile.Data.Loadout, loadoutSlot)
-	if profile and profile.Data.Weapons[weapon] then
+	if profile and profile.Data.Weapons[weapon] and profile.Data.Weapons[weapon].Owned then
 		profile.Data.Loadout.WeaponEquipped = weapon
 		profile.Data.Loadout[loadoutSlot] = weapon
 	end
@@ -238,6 +237,8 @@ end
 function DataService.Client:GetWeaponEquipped(player)
 	return self.Server:GetWeaponEquipped(player)
 end
+
+
 
 function DataService:onPlayerAdded(player)
 	local profile = self.profileStore:LoadProfileAsync("Player_" .. player.UserId, "ForceLoad")
@@ -278,14 +279,9 @@ function DataService:SetKeyValue(player, key: string, newValue: any)
 			profile.Data[key] = newValue
 		end
 	end
+	warn(profile.Data)
 end
 
-function DataService:AddBattlecoins(player, amount: number)
-	local profile = self.profiles[player]
-	if profile then
-		profile.Data.Battlecoins += amount
-	end
-end
 
 function DataService:GetEmotes(player)
 	local profile = self.profiles[player]
@@ -308,6 +304,33 @@ function DataService:HasCrate(player, crateName: string)
 			return false
 		end
 	end
+end
+
+function DataService:IsWeaponOwned(player, weaponName)
+	local profile = self.profiles[player]
+    if profile then
+        if profile.Data.Weapons[weaponName] then
+            return profile.Data.Weapons[weaponName].Owned
+		end
+    end
+end
+
+--Client 
+function DataService.Client:IsWeaponOwned(player, weaponName)
+	return self.Server:IsWeaponOwned(player, weaponName)
+end
+
+
+
+function DataService:AddWeapon(player, weaponName: string)
+    local profile = self.profiles[player]
+    if profile then
+        if profile.Data.Weapons[weaponName] then
+            profile.Data.Weapons[weaponName].Owned = true
+        else
+            profile.Data.Weapons[weaponName] = {Owned = true, Customization = {}}
+        end
+    end
 end
 
 function DataService:AddCrate(player, crateName: string, needsValue: boolean?)
@@ -349,6 +372,23 @@ function DataService:AddEmote(player, emoteName: string, emoteType: string)
 		end
 	end
 	-- warn(profile.Data.Emotes.EmotesOwned)
+end
+
+function DataService:UnlockWeapon(player, weaponName)
+    local profile = self.profiles[player]
+    if profile then
+        -- Check if the weapon is already unlocked
+        if profile.Data.Weapons[weaponName].Owned then
+            return false, "Weapon is already unlocked"
+        end
+
+        -- Unlock the weapon
+        profile.Data.Weapons[weaponName].Owned = true
+
+        return true, "Weapon unlocked successfully"
+    else
+        return false, "Player profile does not exist"
+    end
 end
 
 --Function to save emotes (animation and icon) and other emote data and so
@@ -393,6 +433,26 @@ function DataService:RemoveCrate(player, crateName: string, needsValue: boolean?
 
 	if needsValue then
 		return profile.Data.Crates[crateName]
+	end
+end
+
+--Add experience to the player
+function DataService:AddExperience(player: Player, amount: number)
+	local dataService = Knit.GetService("DataService")
+	dataService:incrementIntValue(player, "Experience", amount)
+	self:CheckLevelUp(player)
+end
+
+--Check if the player has enough experience to level up
+function DataService:CheckLevelUp(player: Player)
+	local dataService = Knit.GetService("DataService")
+	local experience =  dataService:GetKeyValue(player, "Experience")
+	local level = dataService:GetKeyValue(player, "Level")
+	local experienceToLevelUp = 100 + (level * 50)
+	if experience >= experienceToLevelUp then
+		dataService:incrementIntValue(player, "Level")
+		dataService:incrementIntValue(player, "Experience", -experienceToLevelUp)
+		self:CheckLevelUp(player)
 	end
 end
 

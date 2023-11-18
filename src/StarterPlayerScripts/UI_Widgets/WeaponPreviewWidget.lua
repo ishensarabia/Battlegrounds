@@ -133,21 +133,24 @@ function WeaponPreviewWidget:Initialize()
 end
 
 function WeaponPreviewWidget:ClosePreview()
-	local closePreviewTween =
-		TweenService:Create(itemPreviewFrame, TweenInfo.new(0.363), { Position = UDim2.fromScale(1, 0) })
-	local closeItemInfoTween =
-		TweenService:Create(itemInfoFrame, TweenInfo.new(0.363), { Position = UDim2.fromScale(-1, 0.112) })
-	closeItemInfoTween:Play()
-	closePreviewTween:Play()
-	if WeaponCustomWidget.isActive then
-		WeaponCustomWidget:CloseCustomization("Skins")
-		WeaponCustomWidget:CloseCustomization("Color")
-	end
-	closePreviewTween.Completed:Connect(function()
-		viewportFrame:ClearAllChildren()
-		viewportConnection:Disconnect()
-		weaponPreviewGui.Enabled = false
-	end)
+    if viewportConnection then
+        viewportConnection:Disconnect()
+    end
+
+    local closePreviewTween =
+        TweenService:Create(itemPreviewFrame, TweenInfo.new(0.363), { Position = UDim2.fromScale(1, 0) })
+    local closeItemInfoTween =
+        TweenService:Create(itemInfoFrame, TweenInfo.new(0.363), { Position = UDim2.fromScale(-1, 0.112) })
+    closeItemInfoTween:Play()
+    closePreviewTween:Play()
+    if WeaponCustomWidget.isActive then
+        WeaponCustomWidget:CloseCustomization("Skins")
+        WeaponCustomWidget:CloseCustomization("Color")
+    end
+    closePreviewTween.Completed:Connect(function()
+        viewportFrame:ClearAllChildren()
+        weaponPreviewGui.Enabled = false
+    end)
 end
 
 local function RaycastInViewportFrame(viewportFrame, raycastDistance, raycastParams)

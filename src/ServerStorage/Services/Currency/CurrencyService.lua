@@ -62,7 +62,7 @@ function CurrencyService:BuyWeapon(player: Player, weaponName: string, isEarlyBu
 		else
 			if playerCurrency >= earlyPrice then
 				self:RemoveCurrency(player, "BattleCoins", price)
-				self._dataService:GiveWeapon(player, weaponName)
+				self._dataService:UnlockWeapon(player, weaponName)
 				return true, "Weapon purchased successfully"
 			else
 				return false, "Not enough Battlecoins to purchase this weapon"

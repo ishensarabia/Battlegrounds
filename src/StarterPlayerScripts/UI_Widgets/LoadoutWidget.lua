@@ -149,13 +149,27 @@ function LoadoutWidget:Initialize()
 	local LoadoutService = Knit.GetService("LoadoutService")
 	warn(LoadoutService)
 	LoadoutService.WeaponBoughtSignal:Connect(function(weaponName)
-		self:UpdateLoadoutItems(weaponName)
+		self:UnlockLoadoutItem(weaponName)
 	end)
+
+	player.AttributeChanged:Connect(function(attributeName)
+        if attributeName == "Level" and self._isOpen then
+            self:UpdateLoadout()
+        end
+    end)
 
 	return LoadoutWidget
 end
 
-function LoadoutWidget:UpdateLoadoutItems(weaponName)
+function LoadoutWidget:UpdateLoadout()
+    -- Clear the items frame
+    ClearItemsFrame()
+
+    -- Open the loadout
+    self:OpenLoadout(showMainMenuCallback)
+end
+
+function LoadoutWidget:UnlockLoadoutItem(weaponName)
 	for _, itemFrame in (itemsFrame:GetChildren()) do
 		warn(weaponName, itemFrame:GetAttribute("Weapon"))
 		if itemFrame:GetAttribute("Weapon") == weaponName then
@@ -167,7 +181,6 @@ function LoadoutWidget:UpdateLoadoutItems(weaponName)
 				ButtonWidget:OnActivation(itemFrame.Frame, function()
 					LoadoutWidget.state = "WeaponPreview"
 					LoadoutWidget:SetInventoryItemsVis(false)
-					WeaponPreviewWidget:OpenPreview( itemFrame:GetAttribute("Weapon"), self.slot, true)
 				end)
 			end)
 			break
@@ -176,10 +189,10 @@ function LoadoutWidget:UpdateLoadoutItems(weaponName)
 end
 
 function LoadoutWidget:OpenLoadout(callback)
-	if not self.active then
+	if not self._isOpen then
 		SelectLoadoutSlot(loadoutButtonsFrame.PrimaryFrame)
 	end
-	LoadoutWidget.active = true
+	LoadoutWidget._isOpen = true
 	LoadoutWidget.state = "Items"
 	warn(callback)
 	--Clean
@@ -227,7 +240,7 @@ function LoadoutWidget:OpenLoadout(callback)
 					itemFrame.Frame.BuyEarlyButton.PriceText.Text = FormatText.To_comma_value(
 						weapon:GetAttribute("EarlyPrice")
 					) or 0
-					if player.leaderstats.Level.Value >= weapon:GetAttribute("RequiredLevel") then
+					if player:GetAttribute("Level") >= weapon:GetAttribute("RequiredLevel") then
 						itemFrame.Frame.BuyButton.Visible = true
 						itemFrame.Frame.BuyEarlyButton.Visible = false
 					else

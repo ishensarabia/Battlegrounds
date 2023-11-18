@@ -643,6 +643,9 @@ function ShoulderCamera:onCurrentCharacterChanged(character)
 
 		self.eventConnections.humanoidDied = self.currentHumanoid.Died:Connect(function()
 			self.zoomedFromInput = false
+			self.isCrouching = false
+			self.isSliding = false
+			self.isDashing = false
 			self:updateZoomState()
 		end)
 		self.eventConnections.characterChildAdded = character.ChildAdded:Connect(function(child)

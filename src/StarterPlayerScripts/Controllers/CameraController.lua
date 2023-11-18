@@ -28,7 +28,6 @@ function CameraController:TransitionBetweenPoints(points: Folder)
 		if points:FindFirstChild(i) then			
 			if points[i]:IsA("BasePart") then
 				if self.isInMenu then
-					warn("transitioning between points")
 					task.wait()
 					camera.CameraType = Enum.CameraType.Scriptable
 					-- TweenObject:TweenCamera(TweenInfo.new(33),{CFrame = points[i].CFrame})
@@ -36,7 +35,6 @@ function CameraController:TransitionBetweenPoints(points: Folder)
 					self.activeTween = cameraTweenPromise
 					cameraTweenPromise:Play()
 					cameraTweenPromise.Completed:Wait()
-					warn(workspace.Map.Cutscene:GetChildren())
 					camera.CFrame = workspace.Map:WaitForChild("Cutscene")[i].CFrame
 				else
 					camera.CameraType = Enum.CameraType.Custom

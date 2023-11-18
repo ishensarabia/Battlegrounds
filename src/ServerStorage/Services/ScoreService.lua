@@ -79,6 +79,16 @@ function ScoreService:AddExperience(player: Player, amount: number)
 	self:CheckLevelUp(player)
 end
 
+function ScoreService:GetLevel(player: Player)
+    local dataService = Knit.GetService("DataService")
+    local level = dataService:GetKeyValue(player, "Level")
+    return level
+end
+
+function ScoreService.Client:GetLevel(player: Player)
+	return self.Server:GetLevel(player)	
+end
+
 --Check if the player has enough experience to level up
 function ScoreService:CheckLevelUp(player: Player)
 	local dataService = Knit.GetService("DataService")
