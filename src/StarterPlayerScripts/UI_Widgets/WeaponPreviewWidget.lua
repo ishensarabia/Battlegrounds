@@ -40,7 +40,7 @@ local function HideCustomizationAndEquipButtons()
 		{ Position = UDim2.fromScale(1, equipButtonFrame:GetAttribute("TargetPosition").Height.Scale) }
 	):Play()
 	--Hide item info
-	TweenService:Create(itemInfoFrame, TweenInfo.new(0.363), { Position = UDim2.fromScale(-1, 0.112) }):Play()
+	TweenService:Create(itemInfoFrame, TweenInfo.new(0.363), { Position = UDim2.fromScale(-2, 0.112) }):Play()
 end
 
 local function ShowCustomizationAndEquipButtons()
@@ -203,7 +203,7 @@ function WeaponPreviewWidget:OpenPreview(weaponID: string, loadoutSlot)
 			TweenService:Create(
 				equipButtonFrame,
 				TweenInfo.new(0.363),
-				{ Position = UDim2.fromScale(1, equipButtonFrame:GetAttribute("TargetPosition").Height.Scale) }
+				{ Position = UDim2.fromScale(2, equipButtonFrame:GetAttribute("TargetPosition").Height.Scale) }
 			):Play()
 		end
 	end)

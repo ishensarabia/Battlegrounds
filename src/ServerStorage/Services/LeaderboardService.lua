@@ -17,6 +17,10 @@ function LeaderboardService:KnitStart()
 		level.Name = "Level"
 		level.Value = Knit.GetService("DataService"):GetKeyValue(player, "Level")
 		player:SetAttribute("Level", level.Value)
+		--Listen to the level attribute
+		player:GetAttributeChangedSignal("Level"):Connect(function()
+			level.Value = player:GetAttribute("Level")
+		end)
 		level.Parent = leaderboard
 
 

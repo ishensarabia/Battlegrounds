@@ -113,7 +113,7 @@ DataConfig.profileTemplate = {
 	},
 	DevProducts = {},
 	Loadout = {
-		WeanEquipped = "Pistol",
+		WeaponEquipped = "Pistol",
 	},
 	Battlepass = {
 		currentSeason = "Season_1",

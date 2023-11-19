@@ -147,34 +147,49 @@ function LoadoutWidget:Initialize()
 	SetupLoadoutButtons()
 	--Connect buy weapon
 	local LoadoutService = Knit.GetService("LoadoutService")
-	warn(LoadoutService)
 	LoadoutService.WeaponBoughtSignal:Connect(function(weaponName)
+		warn(weaponName)
 		self:UnlockLoadoutItem(weaponName)
 	end)
 
 	player.AttributeChanged:Connect(function(attributeName)
-        if attributeName == "Level" and self._isOpen then
-            self:UpdateLoadout()
-        end
-    end)
+		if attributeName == "Level" and self._isOpen then
+			self:UpdateLoadout()
+		end
+	end)
 
 	return LoadoutWidget
 end
 
 function LoadoutWidget:UpdateLoadout()
-    -- Clear the items frame
-    ClearItemsFrame()
+	-- Clear the items frame
+	ClearItemsFrame()
 
-    -- Open the loadout
-    self:OpenLoadout(showMainMenuCallback)
+	-- Open the loadout
+	self:OpenLoadout(showMainMenuCallback)
 end
 
 function LoadoutWidget:UnlockLoadoutItem(weaponName)
 	for _, itemFrame in (itemsFrame:GetChildren()) do
-		warn(weaponName, itemFrame:GetAttribute("Weapon"))
 		if itemFrame:GetAttribute("Weapon") == weaponName then
-			itemFrame.Frame.LockIcon.Visible = false
-			itemFrame.Frame.RequiredLevelText.Visible = false
+			local padlockIcon = itemFrame.Frame.LockIcon
+			local padlockRotationTween = TweenService:Create(
+				padlockIcon,
+				TweenInfo.new(1.6, Enum.EasingStyle.Bounce, Enum.EasingDirection.In),
+				{ Rotation = 125 }
+			)
+			padlockRotationTween:Play()
+			padlockRotationTween.Completed:Connect(function()
+				local padlockPositionTween = TweenService:Create(
+					padlockIcon,
+					TweenInfo.new(1),
+					{ Position = UDim2.fromScale(padlockIcon.Position.X.Scale, 0.99), ImageTransparency = 1 }
+				)
+				padlockPositionTween:Play()
+				padlockPositionTween.Completed:Connect(function()
+					padlockIcon.Visible = false
+				end)
+			end)
 			itemFrame.Frame.BuyButton.Visible = false
 			itemFrame.Frame.BuyEarlyButton.Visible = false
 			itemFrame.Frame.ItemIcon.Activated:Connect(function()
@@ -194,7 +209,6 @@ function LoadoutWidget:OpenLoadout(callback)
 	end
 	LoadoutWidget._isOpen = true
 	LoadoutWidget.state = "Items"
-	warn(callback)
 	--Clean
 	for index, child in itemsFrame:GetChildren() do
 		if child:IsA("Frame") then
@@ -230,13 +244,19 @@ function LoadoutWidget:OpenLoadout(callback)
 				local formattedItemName = string.gsub(itemID, "_", " ")
 				itemFrame.Frame:WaitForChild("ItemName").Text = formattedItemName
 				itemFrame.Frame:WaitForChild("ItemIcon").Image = weapon.TextureId
-				if not itemData.Owned then
-					itemFrame.Frame.LockIcon.Visible = true
-					itemFrame.Frame.RequiredLevelText.Visible = true
+				if player:GetAttribute("Level") >= weapon:GetAttribute("RequiredLevel") then
 					itemFrame.Frame.RequiredLevelText.Text = string.format(
-						"Level <font color='rgb(255,125,0)'><b>%s</b></font> required",
+						"Level <font color='rgb(74, 188, 127)'><b>%s</b></font> required",
 						weapon:GetAttribute("RequiredLevel")
 					)
+				else
+					itemFrame.Frame.RequiredLevelText.Text = string.format(
+						"Level <font color='rgb(255, 125, 0)'><b>%s</b></font> required",
+						weapon:GetAttribute("RequiredLevel")
+					)
+				end
+				if not itemData.Owned then
+					itemFrame.Frame.LockIcon.Visible = true
 					itemFrame.Frame.BuyEarlyButton.PriceText.Text = FormatText.To_comma_value(
 						weapon:GetAttribute("EarlyPrice")
 					) or 0
@@ -254,11 +274,16 @@ function LoadoutWidget:OpenLoadout(callback)
 							Knit.GetService("LoadoutService"):BuyWeapon(itemID, true)
 						end)
 					end)
+					--Connect buy button
+					itemFrame.Frame.BuyButton.Activated:Connect(function()
+						ButtonWidget:OnActivation(itemFrame.Frame.BuyButton, function()
+							Knit.GetService("LoadoutService"):BuyWeapon(itemID, false)
+						end)
+					end)
 				else
 					itemFrame.Frame.BuyEarlyButton.Visible = false
 					itemFrame.Frame.BuyButton.Visible = false
 					itemFrame.Frame.LockIcon.Visible = false
-					itemFrame.Frame.RequiredLevelText.Visible = false
 				end
 				itemFrame.Frame.ItemIcon.Activated:Connect(function()
 					ButtonWidget:OnActivation(itemFrame.Frame, function()

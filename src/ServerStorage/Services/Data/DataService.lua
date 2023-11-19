@@ -53,7 +53,7 @@ end
 function DataService:KnitStart()
 	-- Initialize profiles table0 to store
 	self.profiles = {}
-	self.profileStore = ProfileService.GetProfileStore("Development_Alpha_0.1010", DataConfig.profileTemplate)
+	self.profileStore = ProfileService.GetProfileStore("Development_Alpha_0.1014", DataConfig.profileTemplate)
 	Players.PlayerRemoving:Connect(function(player)
 		self:onPlayerRemoving(player)
 	end)

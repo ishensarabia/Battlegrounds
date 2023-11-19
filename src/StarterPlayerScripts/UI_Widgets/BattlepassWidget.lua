@@ -431,7 +431,6 @@ function BattlepassWidget:DisplayPreview(rewardInfo: table, level)
 			end
 		end)
 	elseif rewardInfo.rewardType == battlepassConfig.RewardTypes.Emote_Icon then
-		warn(rewardInfo)
 		BattlepassPreviewGui.MainFrame.RewardImage.Visible = true
 		BattlepassPreviewGui.MainFrame.PreviewViewportFrame.Visible = false
 
@@ -530,6 +529,7 @@ local function CreateItemRewardFrame(battlepassConfig: table, rewardInfo: table,
 	elseif rewardInfo.rewardType == rewardTypes.Skin then
 		--Create the skin frame
 		local skinData = rewardInfo.rewardSkin
+		warn(skinData.skinID, skinData.name, skinData.rarity)
 		UIController:CreateSkinFrame(skinData.skinID, skinData.name, skinData.rarity):andThen(function(skinFrame)
 			skinFrame.Parent = rewardTypeFrame
 

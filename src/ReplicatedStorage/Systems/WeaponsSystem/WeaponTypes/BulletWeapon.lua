@@ -861,7 +861,8 @@ function BulletWeapon:onHit(hitInfo)
 					local hitPlayer = Players:GetPlayerFromCharacter(humanoid.Parent)
 					if hitPlayer and hitPlayer.Character then
 						local direction = (hitPlayer.Character.HumanoidRootPart.Position - explosion.Position).Unit
-						hitPlayer.Character.HumanoidRootPart:ApplyImpulse(direction * 360)
+						local force = (hitPlayer.Character.HumanoidRootPart.Position - explosion.Position).Unit * 1000  -- Adjust the force value as needed
+						hitPlayer.Character.HumanoidRootPart.Velocity = force
 						Knit.GetService("RagdollService")
 							:RagdollPlayer(hitPlayer.Character, ragdollTime, { explosionDirection = direction })
 					end

@@ -7,7 +7,7 @@ Knit.ComponentsLoaded = false
 Knit.AddServicesDeep(ServerStorage.Source.Services)
 --Initialize
 Knit.Start():andThen(function()
-    for key, child in pairs(ServerStorage.Source.Components:GetDescendants()) do
+    for key, child in (ServerStorage.Source.Components:GetDescendants()) do
         if (child:IsA('ModuleScript')) then
             require(ServerStorage.Source.Components[child.Name])
         end

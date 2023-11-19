@@ -167,7 +167,7 @@ local function setupMainMenuButtons()
 	battlepassButtonFrame = MainMenuGui.BattlepassButtonFrame
 	challengesButtonFrame = MainMenuGui.ChallengesButtonFrame
 	levelText = MainMenuGui.CharacterCanvas.LevelFrame.LevelIcon:FindFirstChildWhichIsA("TextLabel")
-	levelText.Text = game.Players.LocalPlayer:GetAttribute("Level")
+	levelText.Text = game.Players.LocalPlayer:GetAttribute("Level") or 0
 	storeButtonFrame = MainMenuGui.StoreButtonFrame
 	characterCanvas = MainMenuGui.CharacterCanvas
 

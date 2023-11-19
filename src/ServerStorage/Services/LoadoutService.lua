@@ -61,7 +61,7 @@ function LoadoutService:BuyWeapon(player, weaponName)
         return false, "Weapon does not exist"
     end
 
-    local originalPrice = weapon:GetAttribute("OriginalPrice")
+    local originalPrice = weapon:GetAttribute("Price")
     local earlyPrice = weapon:GetAttribute("EarlyPrice")
     local requiredLevel = weapon:GetAttribute("RequiredLevel")
 	local isEarlyBuy

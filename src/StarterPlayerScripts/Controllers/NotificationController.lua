@@ -22,7 +22,6 @@ function NotificationController:KnitInit()
 	local ScoreService = Knit.GetService("ScoreService")
 	--Connect to notification signals
 	ScoreService.Wipeout_Notification:Connect(function(damageDealt: number, playerWipedOut: Player, weaponName : string, wiperName)
-		warn(damageDealt, playerWipedOut, weaponName, wiperName)
 		local params = {
 			damageDealt = damageDealt,
 			playerWipedOut = playerWipedOut,
@@ -35,11 +34,13 @@ function NotificationController:KnitInit()
 		NotificationWidget:DisplayNotification(self.Notifications.Feed, params)
 	end)
 	ScoreService.Wipeout_Streak_Notification:Connect(function(playerName : string, streakName : string)
-		local params = {
-			playerName = playerName,
-			streakName = streakName
-		}
-		NotificationWidget:DisplayNotification(self.Notifications.Wipeout_Streak, params)
+		if playerName and streakName then			
+			local params = {
+				playerName = playerName,
+				streakName = streakName
+			}
+			NotificationWidget:DisplayNotification(self.Notifications.Wipeout_Streak, params)
+		end
 	end)
 	ScoreService.Death_Notification:Connect(function(killer: Player)
 		local params = {

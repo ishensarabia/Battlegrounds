@@ -18,11 +18,11 @@ local GameModeService = Knit.CreateService({
 --Constants
 local GAMEMODES = {
 	FreeForAll = {
-		Time = 60,
+		Time = 600,
 		Description = "Kill everyone and be the last one standing!",
 	},
 	TeamDeathmatch = {
-		Time = 60,
+		Time = 600,
 		Description = "Kill everyone and be the last one standing!",
 	},
 }

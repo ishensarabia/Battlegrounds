@@ -18,15 +18,14 @@ local ScoreService = Knit.CreateService({
 		Death_Notification = Knit.CreateSignal(),
 	},
 	Wipeout_Streaks = {
-		[5] = "is on a <font color = 'rgb(26, 115, 216)'>RAMPAGE STREAK </font>";
-		[10] = "is on a <font color = 'rgb(4, 204, 144)'>DOMINANCE STREAK</font>";
-		[15] = "is on an  <font color = 'rgb(255, 32, 20)'>ANNIHILATION STREAK</font>";
-		[20] = "is the <font color = 'rgb(72, 55, 104)'>NIGHTMARE</font>";
-		[25] = "is the <font color = 'rgb(155, 0, 0)'>CARNAGE</font>";
-		[30] = "is the <font color = 'rgb(255, 99, 8)'>CHAOS</font>";
-	}
+		[5] = "is on a <font color = 'rgb(26, 115, 216)'>RAMPAGE STREAK </font>",
+		[10] = "is on a <font color = 'rgb(4, 204, 144)'>DOMINANCE STREAK</font>",
+		[15] = "is on an  <font color = 'rgb(255, 32, 20)'>ANNIHILATION STREAK</font>",
+		[20] = "is the <font color = 'rgb(72, 55, 104)'>NIGHTMARE</font>",
+		[25] = "is the <font color = 'rgb(155, 0, 0)'>CARNAGE</font>",
+		[30] = "is the <font color = 'rgb(255, 99, 8)'>CHAOS</font>",
+	},
 })
-
 
 function ScoreService:KnitStart()
 	self.HitSessions = {}
@@ -67,41 +66,32 @@ end
 
 --damage to experience
 local function damageToExperience(damage: number)
-	local convertedNumber = damage * 0.25
+	local convertedNumber = damage * .75
 	return convertedNumber
 end
 
---Add experience to the player
+-- Add experience to the player
 function ScoreService:AddExperience(player: Player, amount: number)
-	warn(player, amount)
-	local dataService = Knit.GetService("DataService")
-	dataService:incrementIntValue(player, "Experience", amount)
-	self:CheckLevelUp(player)
+	local LevelService = Knit.GetService("LevelService")
+	LevelService:AddExperience(player, amount)
 end
 
+-- Get the player's level
 function ScoreService:GetLevel(player: Player)
-    local dataService = Knit.GetService("DataService")
-    local level = dataService:GetKeyValue(player, "Level")
-    return level
+	local LevelService = Knit.GetService("LevelService")
+	return LevelService:GetLevel(player)
 end
 
+-- Client function to get the player's level
 function ScoreService.Client:GetLevel(player: Player)
-	return self.Server:GetLevel(player)	
+	return self.Server:GetLevel(player)
 end
 
---Check if the player has enough experience to level up
+-- Check if the player has enough experience to level up
 function ScoreService:CheckLevelUp(player: Player)
-	local dataService = Knit.GetService("DataService")
-	local experience =  dataService:GetKeyValue(player, "Experience")
-	local level = dataService:GetKeyValue(player, "Level")
-	local experienceToLevelUp = 100 + (level * 50)
-	if experience >= experienceToLevelUp then
-		dataService:incrementIntValue(player, "Level")
-		dataService:incrementIntValue(player, "Experience", -experienceToLevelUp)
-		self:CheckLevelUp(player)
-	end
+	local LevelService = Knit.GetService("LevelService")
+	LevelService:CheckLevelUp(player)
 end
-
 
 function ScoreService:RewardHitSession(taker: Player)
 	local dataService = Knit.GetService("DataService")
@@ -115,6 +105,7 @@ function ScoreService:RewardHitSession(taker: Player)
 					local damageDealerDataProfile = dataService:GetProfileData(rewardPlayer)
 					damageDealerDataProfile.BattleCoins += damageToBattleCoins(amount)
 					--Reward experience
+					-- Reward experience
 					self:AddExperience(rewardPlayer, damageToExperience(amount))
 					self._challengesService:UpdateChallengeProgression(
 						rewardPlayer,
@@ -142,14 +133,17 @@ function ScoreService:RewardHitSession(taker: Player)
 						self.HitSessions[taker.UserId].weaponDealtName,
 						self.HitSessions[taker.UserId].lastDamageDealer.Name
 					)
-					warn(self.WipeoutStreaks[rewardPlayer] % 5 )
-					
-					if self.WipeoutStreaks[rewardPlayer] % 5 == 0  then
+					warn(self.WipeoutStreaks[rewardPlayer] % 5)
+
+					if self.WipeoutStreaks[rewardPlayer] % 5 == 0 then
 						-- Reward the player for the wipeout streak
 						local rewardAmount = self.WipeoutStreaks[rewardPlayer] * 10 -- Adjust the reward as needed
 						self._leaderboardService:UpdatePlayerScore(rewardPlayer, rewardAmount)
 						self._challengesService:UpdateChallengeProgression(rewardPlayer, "WipeoutStreak", 1)
-						self.Client.Wipeout_Streak_Notification:FireAll(rewardPlayer.Name, self.Wipeout_Streaks[self.WipeoutStreaks[rewardPlayer]])
+						self.Client.Wipeout_Streak_Notification:FireAll(
+							rewardPlayer.Name,
+							self.Wipeout_Streaks[self.WipeoutStreaks[rewardPlayer]]
+						)
 					end
 				end
 			end
