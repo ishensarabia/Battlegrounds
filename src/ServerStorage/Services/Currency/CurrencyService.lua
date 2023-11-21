@@ -47,12 +47,11 @@ function CurrencyService:BuyWeapon(player: Player, weaponName: string, isEarlyBu
     local price = weaponInstance:GetAttribute("Price")
     local earlyPrice = weaponInstance:GetAttribute("EarlyPrice")
 
-	warn(isEarlyBuy)
 
     if weaponInstance then
         local playerCurrency = self:GetCurrency(player, "BattleCoins")
 		if isEarlyBuy then
-			if playerCurrency >= price then
+			if playerCurrency >= earlyPrice then
 				self:RemoveCurrency(player, "BattleCoins", earlyPrice)
 				self._dataService:UnlockWeapon(player, weaponName)
 				return true, "Weapon purchased successfully"
@@ -60,7 +59,7 @@ function CurrencyService:BuyWeapon(player: Player, weaponName: string, isEarlyBu
 				return false, "Not enough Battlecoins to purchase this weapon"
 			end
 		else
-			if playerCurrency >= earlyPrice then
+			if playerCurrency >= price then
 				self:RemoveCurrency(player, "BattleCoins", price)
 				self._dataService:UnlockWeapon(player, weaponName)
 				return true, "Weapon purchased successfully"

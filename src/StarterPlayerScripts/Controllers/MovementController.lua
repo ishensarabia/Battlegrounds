@@ -429,6 +429,17 @@ function MovementController:KnitInit()
 			self:OnJumpRequest()
 		end
 	end)
+	--Detect speed changes in humanoid walk speed and play the appropriate animation
+	Players.LocalPlayer.CharacterAdded:Connect(function(character)
+		character.Humanoid.WalkSpeedChanged:Connect(function(speed)
+			if speed >= normalWalkSpeed then
+				warn("Playing sprinting animation")
+				self._AnimationController:PlayAnimation("Sprinting")
+			else
+				self._AnimationController:StopAnimation("Sprinting")
+			end
+		end)
+	end)
 
 	--mobile support
 	if

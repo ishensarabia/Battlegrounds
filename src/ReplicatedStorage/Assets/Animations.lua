@@ -20,7 +20,8 @@ return {
 		Climb = "rbxassetid://13084101795",
 		Climb_Up = "rbxassetid://13086372330",
 		Slide = "rbxassetid://13884788134",
-		Crouch = "rbxassetid://14449504194"
+		Crouch = "rbxassetid://14449504194",
+		Sprinting = "rbxassetid://15407280617",
 	},
 	Emotes = {
 		Sleep = "rbxassetid://5375125612",

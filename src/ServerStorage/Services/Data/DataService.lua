@@ -53,7 +53,7 @@ end
 function DataService:KnitStart()
 	-- Initialize profiles table0 to store
 	self.profiles = {}
-	self.profileStore = ProfileService.GetProfileStore("Development_Alpha_0.1014", DataConfig.profileTemplate)
+	self.profileStore = ProfileService.GetProfileStore("Development_Alpha_0.1017", DataConfig.profileTemplate)
 	Players.PlayerRemoving:Connect(function(player)
 		self:onPlayerRemoving(player)
 	end)
@@ -216,14 +216,11 @@ end
 
 function DataService:SetWeaponEquipped(player, weapon: string, loadoutSlot: string)
 	local profile = self.profiles[player]
+	warn(profile.Data.Weapons[weapon] )
 	if profile and profile.Data.Weapons[weapon] and profile.Data.Weapons[weapon].Owned then
 		profile.Data.Loadout.WeaponEquipped = weapon
 		profile.Data.Loadout[loadoutSlot] = weapon
 	end
-end
-
-function DataService.Client:SetWeaponEquipped(player, weapon: string, loadoutSlot: string)
-	self.Server:SetWeaponEquipped(player, weapon, loadoutSlot)
 end
 
 --Get weapon equipped function
@@ -378,7 +375,7 @@ function DataService:UnlockWeapon(player, weaponName)
     local profile = self.profiles[player]
     if profile then
         -- Check if the weapon is already unlocked
-        if profile.Data.Weapons[weaponName].Owned then
+        if profile.Data.Weapons[weaponName].Owned == true then
             return false, "Weapon is already unlocked"
         end
 

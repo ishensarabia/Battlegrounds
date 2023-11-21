@@ -27,6 +27,7 @@ local battlepassButtonFrame
 local challengesButtonFrame
 local storeButtonFrame
 local levelText
+local levelProgressBar
 local mainFrame
 local playButton
 local cameraTransitionConn
@@ -168,6 +169,26 @@ local function setupMainMenuButtons()
 	challengesButtonFrame = MainMenuGui.ChallengesButtonFrame
 	levelText = MainMenuGui.CharacterCanvas.LevelFrame.LevelIcon:FindFirstChildWhichIsA("TextLabel")
 	levelText.Text = game.Players.LocalPlayer:GetAttribute("Level") or 0
+	--Adjust progress bar
+	levelProgressBar = MainMenuGui.CharacterCanvas.LevelFrame.ProgressBarFrame.BarFrame.ProgressBar
+	local LevelService = Knit.GetService("LevelService")
+	LevelService:GetExperienceForNextLevel():andThen(function(experienceForNextLevel)
+		local currentExperience = game.Players.LocalPlayer:GetAttribute("Experience") or 0
+		local levelProgressPercent = currentExperience / experienceForNextLevel
+		levelProgressPercent = math.clamp(levelProgressPercent, 0, 1)
+		levelProgressBar.Size = UDim2.fromScale(levelProgressPercent, 1)
+	end)
+	--Listen to LevelService Experience Added Signal
+	LevelService.ExperienceAddedSignal:Connect(function(newExperience)
+		local currentExperience = game.Players.LocalPlayer:GetAttribute("Experience") or 0
+		local levelProgressPercent = currentExperience / newExperience
+		levelProgressPercent = math.clamp(levelProgressPercent, 0, 1)
+		levelProgressBar.Size = UDim2.fromScale(levelProgressPercent, 1)
+	end)
+	--Listen to level attribute
+	game.Players.LocalPlayer:GetAttributeChangedSignal("Level"):Connect(function()
+		levelText.Text = game.Players.LocalPlayer:GetAttribute("Level") or 0
+	end)
 	storeButtonFrame = MainMenuGui.StoreButtonFrame
 	characterCanvas = MainMenuGui.CharacterCanvas
 

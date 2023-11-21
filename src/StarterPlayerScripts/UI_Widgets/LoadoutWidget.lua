@@ -40,6 +40,7 @@ end
 
 local function SetupCategoryButtons()
 	local function openCategory(categoryButtonFrame)
+		LoadoutWidget.category = categoryButtonFrame:GetAttribute("Category")
 		LoadoutWidget:SetInventoryItemsVis(false)
 		ClearItemsFrame()
 		LoadoutWidget:OpenLoadout(showMainMenuCallback)
@@ -98,6 +99,7 @@ function LoadoutWidget:CloseInventory()
 	inventoryMainFrameTween:Play()
 	backButtonFrameTween:Play()
 	backgroundImageTween:Play()
+	self._isOpen = false
 end
 
 function LoadoutWidget:SetInventoryItemsVis(condition)
@@ -146,8 +148,8 @@ function LoadoutWidget:Initialize()
 	SetupCategoryButtons()
 	SetupLoadoutButtons()
 	--Connect buy weapon
-	local LoadoutService = Knit.GetService("LoadoutService")
-	LoadoutService.WeaponBoughtSignal:Connect(function(weaponName)
+	self._loadoutService = Knit.GetService("LoadoutService")
+	self._loadoutService.WeaponBoughtSignal:Connect(function(weaponName)
 		warn(weaponName)
 		self:UnlockLoadoutItem(weaponName)
 	end)
@@ -188,10 +190,19 @@ function LoadoutWidget:UnlockLoadoutItem(weaponName)
 				padlockPositionTween:Play()
 				padlockPositionTween.Completed:Connect(function()
 					padlockIcon.Visible = false
+					itemFrame.Frame.EquipButton.Visible = true
+					--Connect equip button
+					itemFrame.Frame.EquipButton.Activated:Connect(function()
+						ButtonWidget:OnActivation(itemFrame.Frame.EquipButton, function()
+							self._loadoutService:SetWeaponEquipped(weaponName, self.slot)
+							Knit.GetController("PlayerPreviewController"):SpawnWeaponInCharacterMenu()
+						end)
+					end)
 				end)
 			end)
 			itemFrame.Frame.BuyButton.Visible = false
 			itemFrame.Frame.BuyEarlyButton.Visible = false
+
 			itemFrame.Frame.ItemIcon.Activated:Connect(function()
 				ButtonWidget:OnActivation(itemFrame.Frame, function()
 					LoadoutWidget.state = "WeaponPreview"
@@ -282,6 +293,13 @@ function LoadoutWidget:OpenLoadout(callback)
 					end)
 				else
 					itemFrame.Frame.BuyEarlyButton.Visible = false
+					itemFrame.Frame.EquipButton.Visible = true
+					itemFrame.Frame.EquipButton.Activated:Connect(function()
+						ButtonWidget:OnActivation(itemFrame.Frame.EquipButton, function()
+							self._loadoutService:SetWeaponEquipped(itemID, self.slot)
+							Knit.GetController("PlayerPreviewController"):SpawnWeaponInCharacterMenu()
+						end)
+					end)
 					itemFrame.Frame.BuyButton.Visible = false
 					itemFrame.Frame.LockIcon.Visible = false
 				end

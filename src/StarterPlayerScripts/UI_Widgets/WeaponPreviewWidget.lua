@@ -60,6 +60,7 @@ local function ShowCustomizationAndEquipButtons()
 end
 
 local function OpenCustomizationWidget(category: string)
+	warn(WeaponPreviewWidget.weaponID, WeaponPreviewWidget.itemModel, category, ShowCustomizationAndEquipButtons)
 	HideCustomizationAndEquipButtons()
 	WeaponCustomWidget:OpenCustomization(
 		WeaponPreviewWidget.weaponID,
@@ -85,9 +86,8 @@ local function SetupWeaponPreviewButtons()
 	--Equip button loadout functionality
 	equipButtonFrame.BackgroundButton.Activated:Connect(function()
 		ButtonWidget:OnActivation(equipButtonFrame, function()
-			local DataService = Knit.GetService("DataService")
-			warn(WeaponPreviewWidget.weaponID, WeaponPreviewWidget.loadoutSlot)
-			DataService:SetWeaponEquipped(WeaponPreviewWidget.weaponID, WeaponPreviewWidget.loadoutSlot)
+			Knit.GetService("LoadoutService")
+				:SetWeaponEquipped(WeaponPreviewWidget.weaponID, WeaponPreviewWidget.loadoutSlot)
 			local PlayerPreviewController = Knit.GetController("PlayerPreviewController")
 			PlayerPreviewController:SpawnWeaponInCharacterMenu()
 		end, "equip")
@@ -133,24 +133,24 @@ function WeaponPreviewWidget:Initialize()
 end
 
 function WeaponPreviewWidget:ClosePreview()
-    if viewportConnection then
-        viewportConnection:Disconnect()
-    end
+	if viewportConnection then
+		viewportConnection:Disconnect()
+	end
 
-    local closePreviewTween =
-        TweenService:Create(itemPreviewFrame, TweenInfo.new(0.363), { Position = UDim2.fromScale(1, 0) })
-    local closeItemInfoTween =
-        TweenService:Create(itemInfoFrame, TweenInfo.new(0.363), { Position = UDim2.fromScale(-1, 0.112) })
-    closeItemInfoTween:Play()
-    closePreviewTween:Play()
-    if WeaponCustomWidget.isActive then
-        WeaponCustomWidget:CloseCustomization("Skins")
-        WeaponCustomWidget:CloseCustomization("Color")
-    end
-    closePreviewTween.Completed:Connect(function()
-        viewportFrame:ClearAllChildren()
-        weaponPreviewGui.Enabled = false
-    end)
+	local closePreviewTween =
+		TweenService:Create(itemPreviewFrame, TweenInfo.new(0.363), { Position = UDim2.fromScale(1, 0) })
+	local closeItemInfoTween =
+		TweenService:Create(itemInfoFrame, TweenInfo.new(0.363), { Position = UDim2.fromScale(-1, 0.112) })
+	closeItemInfoTween:Play()
+	closePreviewTween:Play()
+	if WeaponCustomWidget.isActive then
+		WeaponCustomWidget:CloseCustomization("Skins")
+		WeaponCustomWidget:CloseCustomization("Color")
+	end
+	closePreviewTween.Completed:Connect(function()
+		viewportFrame:ClearAllChildren()
+		weaponPreviewGui.Enabled = false
+	end)
 end
 
 local function RaycastInViewportFrame(viewportFrame, raycastDistance, raycastParams)
@@ -186,18 +186,16 @@ function WeaponPreviewWidget:OpenPreview(weaponID: string, loadoutSlot)
 	WeaponPreviewWidget.loadoutSlot = loadoutSlot
 	--Enable the gui
 	weaponPreviewGui.Enabled = true
-	
+
 	local DataService = Knit.GetService("DataService")
-    DataService:IsWeaponOwned(weaponID):andThen(function(isWeaponOwned)
+	DataService:IsWeaponOwned(weaponID):andThen(function(isWeaponOwned)
 		if isWeaponOwned then
 			--Show equip button
-			TweenService
-				:Create(
-					equipButtonFrame,
-					TweenInfo.new(0.363),
-					{ Position = equipButtonFrame:GetAttribute("TargetPosition") }
-				)
-				:Play()
+			TweenService:Create(
+				equipButtonFrame,
+				TweenInfo.new(0.363),
+				{ Position = equipButtonFrame:GetAttribute("TargetPosition") }
+			):Play()
 		else
 			--Hide equip button
 			TweenService:Create(

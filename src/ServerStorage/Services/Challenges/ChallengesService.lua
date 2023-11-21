@@ -19,6 +19,7 @@ function ChallengesService:KnitStart()
 	--services
 	self._dataService = Knit.GetService("DataService")
 	self._currencyService = Knit.GetService("CurrencyService")
+	self._levelService = Knit.GetService("LevelService")
 	self._battlepassService = Knit.GetService("BattlepassService")
 
 	Players.PlayerAdded:Connect(function(player)
@@ -149,7 +150,7 @@ function ChallengesService:ClaimChallenge(player, challenge: table, challengeTyp
 						self._battlepassService:AddBattlepassExperience(player, reward.rewardAmount)
 					end
 					if reward.rewardType == "Exp" then
-						self._dataService:AddExperience(player, reward.rewardAmount)
+						self._levelService:AddExperience(player, reward.rewardAmount)
 					end
 				end
 				table.remove(challengesData[challengeType], index)

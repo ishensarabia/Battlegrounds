@@ -9,7 +9,9 @@ local LoadoutService = Knit.CreateService({
 	},
 })
 
-function LoadoutService:KnitStart() end
+function LoadoutService:KnitStart()
+	self._dataService = Knit.GetService("DataService")
+end
 
 function LoadoutService:GenerateWeaponParts(weaponModel: Model)
 	local customParts = {}
@@ -50,37 +52,45 @@ function LoadoutService:SpawnLoadout(player)
 	end
 end
 
+function LoadoutService:SetWeaponEquipped(player, weaponName, loadoutSlot)
+	self._dataService:SetWeaponEquipped(player, weaponName, loadoutSlot)
+end
+
+function LoadoutService.Client:SetWeaponEquipped(player, weaponName, loadoutSlot)
+	return self.Server:SetWeaponEquipped(player, weaponName, loadoutSlot)
+end
+
 function LoadoutService:BuyWeapon(player, weaponName)
 	warn(player, weaponName)
-    local CurrencyService = Knit.GetService("CurrencyService")
-    local playerCurrency = CurrencyService:GetCurrencyValue(player, "BattleCoins")
-    local playerLevel = player:GetAttribute("Level")
+	local CurrencyService = Knit.GetService("CurrencyService")
+	local playerCurrency = CurrencyService:GetCurrencyValue(player, "BattleCoins")
+	local playerLevel = player:GetAttribute("Level")
 
-    local weapon = ReplicatedStorage.Weapons[weaponName]
-    if not weapon then
-        return false, "Weapon does not exist"
-    end
+	local weapon = ReplicatedStorage.Weapons[weaponName]
+	if not weapon then
+		return false, "Weapon does not exist"
+	end
 
-    local originalPrice = weapon:GetAttribute("Price")
-    local earlyPrice = weapon:GetAttribute("EarlyPrice")
-    local requiredLevel = weapon:GetAttribute("RequiredLevel")
+	local originalPrice = weapon:GetAttribute("Price")
+	local earlyPrice = weapon:GetAttribute("EarlyPrice")
+	local requiredLevel = weapon:GetAttribute("RequiredLevel")
 	local isEarlyBuy
 
-    local weaponPrice
-    if playerLevel >= requiredLevel then
-        weaponPrice = originalPrice
+	local weaponPrice
+	if playerLevel >= requiredLevel then
+		weaponPrice = originalPrice
 		isEarlyBuy = false
-    else
-        weaponPrice = earlyPrice
+	else
+		weaponPrice = earlyPrice
 		isEarlyBuy = true
-    end
+	end
 
-    if playerCurrency >= weaponPrice then
-        self.Client.WeaponBoughtSignal:Fire(player, weaponName)
-        return CurrencyService:BuyWeapon(player, weaponName, isEarlyBuy)
-    else
-        return false, "Not enough currency to purchase weapon"
-    end
+	if playerCurrency >= weaponPrice then
+		self.Client.WeaponBoughtSignal:Fire(player, weaponName)
+		return CurrencyService:BuyWeapon(player, weaponName, isEarlyBuy)
+	else
+		return false, "Not enough currency to purchase weapon"
+	end
 end
 
 --Client function

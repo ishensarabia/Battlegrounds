@@ -33,37 +33,6 @@ local RARITIES_COLORS = {
 WeaponCustomizationWidget.weaponPartsFrames = {}
 WeaponCustomizationWidget.customParts = {}
 
-local function SetupCustomizationButtons()
-	weaponCustomizationGui.BackButtonFrame.Button.Activated:Connect(function()
-		ButtonWidget:OnActivation(weaponCustomizationGui.BackButtonFrame, backButtonCallback)
-		WeaponCustomizationWidget:CloseCustomization(WeaponCustomizationWidget.customizationCategory)
-	end)
-	weaponCustomizationGui.ConfirmButtonFrame.IconButton.Activated:Connect(function()
-		ButtonWidget:OnActivation(weaponCustomizationGui.ConfirmButtonFrame, function()
-			backButtonCallback()
-			WeaponCustomizationWidget:CloseCustomization(WeaponCustomizationWidget.customizationCategory)
-			--Save the customization
-			for index, customPart in WeaponCustomizationWidget.customParts do
-				warn(customPart:GetAttribute("CustomizationValue"))
-				DataService:SaveWeaponCustomization(
-					WeaponCustomizationWidget.itemID,
-					customPart:GetAttribute("CustomPart"),
-					customPart:GetAttribute("CustomizationValue"),
-					WeaponCustomizationWidget.customizationCategory
-				)
-			end
-			--Reload character
-			local PlayerPreviewController = Knit.GetController("PlayerPreviewController")
-			PlayerPreviewController:SpawnWeaponInCharacterMenu()
-		end)
-	end)
-	weaponCustomizationGui.CancelButtonFrame.IconButton.Activated:Connect(function()
-		ButtonWidget:OnActivation(weaponCustomizationGui.CancelButtonFrame, function()
-			backButtonCallback()
-			WeaponCustomizationWidget:CloseCustomization(WeaponCustomizationWidget.customizationCategory)
-		end)
-	end)
-end
 local function ClearPartsFrame()
 	for index, value in WeaponCustomizationWidget.weaponPartsFrames do
 		value:Destroy()
@@ -95,7 +64,7 @@ end
 -- 				weaponCustomizationGui.RemoveSkinButtonFrame.Visible = false
 -- 			end)
 -- 		end)
--- 	else
+-- 	else\
 -- 		weaponCustomizationGui.RemoveSkinButtonFrame.Visible = false
 -- 	end
 -- end
@@ -302,12 +271,16 @@ function WeaponCustomizationWidget:OpenCustomization(
 	itemID: string,
 	itemModel: Model,
 	category: string,
-	isWeaponOwned: boolean,
 	callback: any
 )
+	warn(itemID, itemModel, category, callback)
+	assert(itemID, "itemID is nil")
+	assert(itemModel, "itemModel is nil")
+	assert(category, "category is nil")
+	assert(callback, "callback is nil")
+
 	WeaponCustomizationWidget.isActive = true
 	WeaponCustomizationWidget.model = itemModel
-	WeaponCustomizationWidget.isWeaponOwned = isWeaponOwned
 	WeaponCustomizationWidget.itemID = itemID
 	GenerateWeaponPartsFrames()
 	WeaponCustomizationWidget.customizationCategory = category
@@ -330,7 +303,36 @@ function WeaponCustomizationWidget:OpenCustomization(
 		TweenInfo.new(0.363),
 		{ Position = customizationItemsFrame:GetAttribute("TargetPosition") }
 	)
-	SetupCustomizationButtons()
+	--Set up customization buttons
+	weaponCustomizationGui.BackButtonFrame.Button.Activated:Connect(function()
+		ButtonWidget:OnActivation(weaponCustomizationGui.BackButtonFrame, backButtonCallback)
+		WeaponCustomizationWidget:CloseCustomization(WeaponCustomizationWidget.customizationCategory)
+	end)
+	weaponCustomizationGui.ConfirmButtonFrame.IconButton.Activated:Connect(function()
+		ButtonWidget:OnActivation(weaponCustomizationGui.ConfirmButtonFrame, function()
+			backButtonCallback()
+			WeaponCustomizationWidget:CloseCustomization(WeaponCustomizationWidget.customizationCategory)
+			--Save the customization
+			for index, customPart in WeaponCustomizationWidget.customParts do
+				warn(customPart:GetAttribute("CustomizationValue"))
+				DataService:SaveWeaponCustomization(
+					WeaponCustomizationWidget.itemID,
+					customPart:GetAttribute("CustomPart"),
+					customPart:GetAttribute("CustomizationValue"),
+					WeaponCustomizationWidget.customizationCategory
+				)
+			end
+			--Reload character
+			local PlayerPreviewController = Knit.GetController("PlayerPreviewController")
+			PlayerPreviewController:SpawnWeaponInCharacterMenu()
+		end)
+	end)
+	weaponCustomizationGui.CancelButtonFrame.IconButton.Activated:Connect(function()
+		ButtonWidget:OnActivation(weaponCustomizationGui.CancelButtonFrame, function()
+			backButtonCallback()
+			WeaponCustomizationWidget:CloseCustomization(WeaponCustomizationWidget.customizationCategory)
+		end)
+	end)
 	openCustomizationTween:Play()
 end
 

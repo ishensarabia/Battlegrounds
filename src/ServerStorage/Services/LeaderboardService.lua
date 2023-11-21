@@ -21,8 +21,11 @@ function LeaderboardService:KnitStart()
 		player:GetAttributeChangedSignal("Level"):Connect(function()
 			level.Value = player:GetAttribute("Level")
 		end)
-		level.Parent = leaderboard
+		--Listen to the Experience attribute
+		local experience = Knit.GetService("DataService"):GetKeyValue(player, "Experience")
+		player:SetAttribute("Experience", experience)
 
+		level.Parent = leaderboard
 
 		local score = Instance.new("IntValue")
 		score.Name = "Score"

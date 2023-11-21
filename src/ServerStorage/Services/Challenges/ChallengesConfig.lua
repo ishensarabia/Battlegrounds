@@ -110,7 +110,7 @@ ChallengesConfig.challenges = {
 				},
 				{
 					rewardType = "Exp",
-					rewardAmount = 360,
+					rewardAmount = 3360,
 				}
 			},
 		},
