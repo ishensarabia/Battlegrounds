@@ -133,30 +133,32 @@ function EmoteWheelWidget:Initialize()
 				emoteFrame.EmoteIconFrame.EmoteIcon.Image = EmoteIcons[emoteName].imageID
 			end
 		end)
-		--Connect to play the emote
+		-- Connect to play the emote
 		emoteFrame.SelectionHoverImage.Activated:Connect(function()
 			ButtonWidget:OnActivation(emoteFrame.SelectionHoverImage, function()
 				if self.isConfiguringEmotes then
 					self:SelectEmoteToConfigure(emoteFrame)
 					return
 				end
-				--Play the emote
-				--Format the emote name to be the same as the emote name in the emotes table
+
+				-- Play the emote
+				-- Format the emote name to be the same as the emote name in the emotes table
 				local animationEmote = emoteFrame:GetAttribute("Emote")
 				local iconEmote = emoteFrame:GetAttribute("EmoteIcon")
-				if animationEmote then					
+
+				if animationEmote then
 					animationEmote = animationEmote:gsub("'", "")
 					animationEmote = animationEmote:gsub(" ", "_")
 					EmoteController:PlayEmote(animationEmote)
-				else
-					self:ConfigureEmotes(emoteFrame)		
 				end
+
 				if iconEmote then
-					--TODO: Play emote icon
 					EmoteController:PlayEmoteIcon(iconEmote)
-				else
+				end
+
+				if not animationEmote and not iconEmote then
 					self:ConfigureEmotes(emoteFrame)
-				end	
+				end
 			end)
 		end)
 	end
@@ -424,12 +426,9 @@ end
 function EmoteWheelWidget:AssignSavedEmotes(emotes: table)
 	--Assign the player emotes to the emotes frame
 	for emoteIndex, emoteInfo: table in emotes do
-		warn(emoteInfo)
 		if emoteInfo.animationEmote then
 			local emote = Emotes[emoteInfo.animationEmote]
-			warn(emote)
 			emotesFrame[emoteIndex]:SetAttribute("Emote", emote.name)
-			warn(emotesFrame[emoteIndex]:GetAttribute("Emote"))
 		end
 		if emoteInfo.iconEmote then
 			local emoteIcon = EmoteIcons[emoteInfo.iconEmote]

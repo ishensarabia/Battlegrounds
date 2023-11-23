@@ -27,6 +27,7 @@ end
 
 --Play emote icon
 function EmoteService:PlayEmoteIcon(player, emoteName: string)
+	warn(player, emoteName)
 	--Check if the player actually has equipped the emote
 	local emotes = self:GetPlayerEquippedEmotes(player)
 	local ownsEmote = false
@@ -34,6 +35,7 @@ function EmoteService:PlayEmoteIcon(player, emoteName: string)
 	emoteName = emoteName:gsub(" ", "_")
 	emoteName = emoteName:gsub("'", "")
 	for index, emoteTable in emotes do
+		warn(emoteTable)
 		if emoteTable.iconEmote == emoteName then
 			ownsEmote = true
 		end
@@ -64,7 +66,7 @@ function EmoteService:PlayEmoteIcon(player, emoteName: string)
 		local emoteTween = TweenService:Create(
 			emoteIconImageLabel,
 			tweenInfo,
-			{ ImageTransparency = 0, Size = UDim2.fromScale(1, 1), Position = UDim2.fromScale(0, -0.33), Rotation = 0}
+			{ ImageTransparency = 0, Size = UDim2.fromScale(1, 1), Position = UDim2.fromScale(0, -0.33), Rotation = 0 }
 		)
 		emoteTween:Play()
 		emoteTween.Completed:Connect(function()
@@ -72,7 +74,12 @@ function EmoteService:PlayEmoteIcon(player, emoteName: string)
 				local emoteTween = TweenService:Create(
 					emoteIconImageLabel,
 					tweenInfo,
-					{ ImageTransparency = 1, Size = UDim2.fromScale(0.5, 0.5), Position = UDim2.fromScale(0.5, 0.5), Rotation = 99}
+					{
+						ImageTransparency = 1,
+						Size = UDim2.fromScale(0.5, 0.5),
+						Position = UDim2.fromScale(0.5, 0.5),
+						Rotation = 99,
+					}
 				)
 				emoteTween:Play()
 				emoteTween.Completed:Connect(function()
@@ -91,8 +98,9 @@ end
 --Save emote
 function EmoteService:SaveEmote(player, emoteIndex, emoteName, emoteType: string)
 	--Check if the emote is owned by the player
-	local emote = self:GetPlayerEmotes(player)[emoteName]
+	local emote = self:GetPlayerEmotes(player).EmotesOwned[emoteName]
 	if emote then
+		warn("Emote owned")
 		self._dataService:SaveEmote(player, emoteIndex, emoteName, emoteType)
 	end
 end
