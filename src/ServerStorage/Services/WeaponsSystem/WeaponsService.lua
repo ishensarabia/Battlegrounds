@@ -86,16 +86,28 @@ function WeaponsService:SetIKForWeapon(player, instance: Instance)
 		IKController.ChainRoot = player.Character.LeftUpperArm
 		IKController.EndEffector = player.Character.LeftHand
 		IKController.Target = instance.Handle.SecondHandleAttachment
+
+		-- Add hinge constraint
+		local hingeConstraint = Instance.new("HingeConstraint")
+		hingeConstraint.Name = "ElbowHingeConstraint"
+		hingeConstraint.Parent = player.Character.LeftLowerArm
+		hingeConstraint.Attachment0 = Instance.new("Attachment", player.Character.LeftUpperArm)
+		hingeConstraint.Attachment1 = Instance.new("Attachment", player.Character.LeftLowerArm)
+		hingeConstraint.LimitsEnabled = true
+		hingeConstraint.UpperAngle = 120
+		hingeConstraint.LowerAngle = 0
+		hingeConstraint.Restitution = 0.5
+		hingeConstraint.ActuatorType = Enum.ActuatorType.Motor
 	end
 end
 
-function WeaponsService:SetIKState(player, state : boolean)
+function WeaponsService:SetIKState(player, state: boolean)
 	if self.IKSessions[player.UserId] then
 		self.IKSessions[player.UserId].Enabled = state
 	end
 end
 
-function WeaponsService.Client:SetIKState(player, state : boolean)
+function WeaponsService.Client:SetIKState(player, state: boolean)
 	return self.Server:SetIKState(player, state)
 end
 
