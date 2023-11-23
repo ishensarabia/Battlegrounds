@@ -420,7 +420,7 @@ function MovementController:KnitInit()
 		end
 	end, true, CROUCH_KEYCODE, Enum.KeyCode.ButtonR3)
 
-	ContextActionService:SetPosition(ACTION_CROUCH, UDim2.fromScale(0.33,0.439))
+	ContextActionService:SetPosition(ACTION_CROUCH, UDim2.fromScale(0.33, 0.439))
 	ContextActionService:SetTitle(ACTION_CROUCH, ACTION_CROUCH)
 	--Hook the user input service to the jump action
 	--pc and console support
@@ -428,17 +428,6 @@ function MovementController:KnitInit()
 		if input.KeyCode == Enum.KeyCode.ButtonA or input.KeyCode == Enum.KeyCode.Space then
 			self:OnJumpRequest()
 		end
-	end)
-	--Detect speed changes in humanoid walk speed and play the appropriate animation
-	Players.LocalPlayer.CharacterAdded:Connect(function(character)
-		character.Humanoid.WalkSpeedChanged:Connect(function(speed)
-			if speed >= normalWalkSpeed then
-				warn("Playing sprinting animation")
-				self._AnimationController:PlayAnimation("Sprinting")
-			else
-				self._AnimationController:StopAnimation("Sprinting")
-			end
-		end)
 	end)
 
 	--mobile support
