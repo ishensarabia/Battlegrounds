@@ -6,6 +6,7 @@ local TweenService = game:GetService("TweenService")
 local Packages = game.ReplicatedStorage.Packages
 local Assets = ReplicatedStorage.Assets
 local Knit = require(ReplicatedStorage.Packages.Knit)
+local Fusion = require(Packages.Fusion)
 --Modules
 local FormatText = require(ReplicatedStorage.Source.Modules.Util.FormatText)
 local DragToRotateViewportFrame = require(ReplicatedStorage.Source.Modules.Util.DragToRotateViewportFrame)
@@ -253,13 +254,17 @@ end
 function MainMenuWidget:InitializeCameraTransition()
 	local CameraController = Knit.GetController("CameraController")
 	CameraController.isInMenu = true
-	--Set up main menu cutscene
-	local currentMap = workspace:WaitForChild("Map")
-	local cutscenePoints = currentMap.Cutscene
-	workspace.CurrentCamera.CFrame = cutscenePoints.StartingCamera.CFrame
-	task.spawn(function()
-		CameraController:TransitionBetweenPoints(cutscenePoints)
+
+	-- Get the cutscene points from the server
+	Knit.GetService("MenuService"):GetCutscenePoints():andThen(function(cutscenePoints)
+		workspace.CurrentCamera.CFrame = cutscenePoints.StartingCamera
+		task.spawn(function()
+			CameraController:TransitionBetweenPoints(cutscenePoints)
+		end)
+		return cutscenePoints
 	end)
+
+	-- Use the CFrame values directly instead of trying to access the parts
 end
 
 function MainMenuWidget:Initialize()
@@ -354,7 +359,5 @@ function MainMenuWidget:Initialize()
 	end)
 	return self
 end
-
-
 
 return MainMenuWidget:Initialize()

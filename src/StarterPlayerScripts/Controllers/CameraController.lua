@@ -18,34 +18,33 @@ local player = Players.LocalPlayer
 
 function CameraController:KnitStart() end
 
-function CameraController:TransitionBetweenPoints(points: Folder)
-	-- if self.activeTween then
-	-- 	self:CancelActiveTween()
-	-- 	warn("Active tween, returning false")
-	-- end
-	local cameraPoints = points:GetChildren()
-	for i = 1, #cameraPoints do
-		if points:FindFirstChild(i) then			
-			if points[i]:IsA("BasePart") then
-				if self.isInMenu then
-					task.wait()
-					camera.CameraType = Enum.CameraType.Scriptable
-					-- TweenObject:TweenCamera(TweenInfo.new(33),{CFrame = points[i].CFrame})
-					local cameraTweenPromise = TweenService:Create(camera, TweenInfo.new(33), { CFrame = points[i].CFrame })
-					self.activeTween = cameraTweenPromise
-					cameraTweenPromise:Play()
-					cameraTweenPromise.Completed:Wait()
-					camera.CFrame = workspace.Map:WaitForChild("Cutscene")[i].CFrame
-				else
-					camera.CameraType = Enum.CameraType.Custom
-					self:CancelActiveTween()
-					break	
-				end
-			else
-				warn("No point found")	
-			end
-		end
-	end
+function CameraController:TransitionBetweenPoints(points : table)
+    if type(points) ~= "table" then
+        warn("Points is not a table")
+        return
+    end
+
+    for i, point in (points) do
+        if point then
+            if self.isInMenu then
+                task.wait()
+                camera.CameraType = Enum.CameraType.Scriptable
+                local cameraTweenPromise = TweenService:Create(camera, TweenInfo.new(33), { 
+                    CFrame = point
+                })
+                self.activeTween = cameraTweenPromise
+                cameraTweenPromise:Play()
+                cameraTweenPromise.Completed:Wait()
+                camera.CFrame = point
+            else
+                camera.CameraType = Enum.CameraType.Custom
+                self:CancelActiveTween()
+                break
+            end
+        else
+            warn("No point found")
+        end
+    end
 end
 
 function CameraController:TransitionBetweenCurves(points : Folder)

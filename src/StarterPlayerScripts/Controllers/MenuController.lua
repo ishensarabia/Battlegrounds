@@ -40,7 +40,7 @@ function MenuController:ShowMenu()
     Knit.GetController("UIController").MainMenuWidget:ShowMenu()
     self.isInMenu = true
     self._cameraController:ChangeMode("Menu")
-    Knit.GetController("UIController").MainMenuWidget:InitializeCameraTransition()
+    -- Knit.GetController("UIController").MainMenuWidget:InitializeCameraTransition()
     
 end
 
