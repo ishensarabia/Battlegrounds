@@ -3,6 +3,11 @@
 registry = "test"
 
 [[package]]
+name = "elttob/fusion"
+version = "0.2.0"
+dependencies = []
+
+[[package]]
 name = "evaera/promise"
 version = "4.0.0"
 dependencies = []
@@ -20,7 +25,7 @@ dependencies = []
 [[package]]
 name = "sci-punk/battlegrounds"
 version = "0.1.0"
-dependencies = [["Component", "sleitnick/component@2.4.5"], ["Janitor", "howmanysmall/janitor@1.14.1"], ["Knit", "sleitnick/knit@1.4.6"], ["Maid", "quenty/maid@2.0.1-canary.140ed9d6.1"], ["Option", "sleitnick/option@1.0.3"], ["Signal", "sleitnick/signal@1.1.0"]]
+dependencies = [["Component", "sleitnick/component@2.4.5"], ["Fusion", "elttob/fusion@0.2.0"], ["Janitor", "howmanysmall/janitor@1.14.1"], ["Knit", "sleitnick/knit@1.4.6"], ["Maid", "quenty/maid@2.0.1-canary.140ed9d6.1"], ["Option", "sleitnick/option@1.0.3"], ["Signal", "sleitnick/signal@1.1.0"], ["Silo", "sleitnick/silo@0.1.1"], ["TableUtil", "sleitnick/table-util@1.2.1"]]
 
 [[package]]
 name = "sleitnick/comm"
@@ -48,8 +53,18 @@ version = "1.1.0"
 dependencies = []
 
 [[package]]
+name = "sleitnick/silo"
+version = "0.1.1"
+dependencies = []
+
+[[package]]
 name = "sleitnick/symbol"
 version = "2.0.0"
+dependencies = []
+
+[[package]]
+name = "sleitnick/table-util"
+version = "1.2.1"
 dependencies = []
 
 [[package]]
