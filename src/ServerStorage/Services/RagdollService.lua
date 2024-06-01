@@ -4,9 +4,11 @@ local Knit = require(ReplicatedStorage.Packages.Knit)
 
 local RagdollService = Knit.CreateService({
 	Name = "RagdollService",
-	Client = {},
+	Client = {
+		RagdollStateChanged = Knit.CreateUnreliableSignal(),
+	},
 })
-
+--To do change the humanoid state on the client (as the server doesn't owkr)
 function RagdollService:KnitStart() end
 
 local function activateVelocity(player)
@@ -52,7 +54,7 @@ end
 local function resyncClothes(player)
 	for i, v in pairs(player.character:GetChildren()) do --Hack. Refreshes and resyncs layered clothing.
 		if v:IsA("Accessory") then
-			for i2, v2 in pairs(v.Handle:GetChildren()) do
+			for i2, v2 in (v.Handle:GetChildren()) do
 				if v2:IsA("WrapLayer") then
 					local refWT = Instance.new("WrapTarget")
 					refWT.Parent = v2.Parent
@@ -124,9 +126,11 @@ local function setRagdollMotors(character: Model, state: boolean)
 	end
 end
 
-function RagdollService:RagdollPlayer(character: Model, time: number)
+function RagdollService:RagdollPlayer(player: Player, time: number)
+	self.Client.RagdollStateChanged:Fire(player, time)
+	activateVelocity(player)
+	local character = player.Character
 	local humanoid = character.Humanoid
-	local player = Players:GetPlayerFromCharacter(character)
 	humanoid:UnequipTools()
 	stopAnims(humanoid)
 	humanoid.AutoRotate = false
@@ -142,10 +146,7 @@ function RagdollService:RagdollPlayer(character: Model, time: number)
 	if RagdollService.deadCharacters >= RagdollService.maxDeadCharacters then
 		task.wait(0.1 * RagdollService.deadCharacters) --Activate ragdoll delay, tenth x per character
 	end
-
-	-- activateVelocity(player)
 	if RagdollService.ragdollsLdEnable == true and lDModeOn == true then --If LD mode is on
-		warn("LD mode on")
 		setLDRagdollState(character, false)
 		if time then
 			task.delay(time, function()
@@ -154,7 +155,6 @@ function RagdollService:RagdollPlayer(character: Model, time: number)
 			end)
 		end
 	else --If LD mode is off
-		warn("LD mode off")
 		RagdollService.currentRagdolls += 1
 		setRagdollMotors(character, false)
 		if time then
@@ -164,10 +164,25 @@ function RagdollService:RagdollPlayer(character: Model, time: number)
 			end)
 		end
 	end
+
+	if time then
+		task.delay(time, function()
+			--Set the humanoid state back to normal
+			humanoid:ChangeState(Enum.HumanoidStateType.GettingUp)
+
+			if RagdollService.ragdollsLdEnable == true and lDModeOn == true then
+				setLDRagdollState(character, true)
+			else
+				setRagdollMotors(character, true)
+			end
+
+			deactivateVelocity(player)
+		end)
+	end
 end
 
 function RagdollService.Client:RagdollPlayer(player, character)
-	return self.Server:RagdollPlayer(character)
+	return self.Server:RagdollPlayer(player)
 end
 
 function RagdollService:KnitInit()
@@ -189,7 +204,7 @@ function RagdollService:KnitInit()
 				self.deadCharacters += 1
 				stopAnims(humanoid)
 				activateVelocity(player)
-				self:RagdollPlayer(player.character)
+				self:RagdollPlayer(player)
 				resyncClothes(player)
 				task.wait() --Without this physics may not activate on platformstand
 				deactivateVelocity(player)

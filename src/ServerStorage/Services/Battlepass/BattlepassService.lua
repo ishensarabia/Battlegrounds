@@ -242,4 +242,17 @@ function BattlepassService.Client:BuyBattlepass(player: Player)
 	)
 end
 
+function BattlepassService:GiftBattlepass(gifter, recipientId, season)
+	-- Call the GiftBattlepass function of StoreService
+	local success = self._storeService:GiftBattlepass(gifter, recipientId, season)
+
+	-- Return the result
+	return success
+end  
+
+function BattlepassService.Client:GiftBattlepass(gifter: Player, recipientId: string, season: number)
+	self.Server:GiftBattlepass(gifter, recipientId, season)
+end
+
+
 return BattlepassService

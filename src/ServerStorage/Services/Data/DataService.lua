@@ -53,7 +53,7 @@ end
 function DataService:KnitStart()
 	-- Initialize profiles table0 to store
 	self.profiles = {}
-	self.profileStore = ProfileService.GetProfileStore("Development_Alpha_0.1017", DataConfig.profileTemplate)
+	self.profileStore = ProfileService.GetProfileStore("Development_Alpha_11", DataConfig.profileTemplate)
 	Players.PlayerRemoving:Connect(function(player)
 		self:onPlayerRemoving(player)
 	end)
@@ -216,7 +216,7 @@ end
 
 function DataService:SetWeaponEquipped(player, weapon: string, loadoutSlot: string)
 	local profile = self.profiles[player]
-	warn(profile.Data.Weapons[weapon] )
+	-- warn(profile.Data.Weapons[weapon] )
 	if profile and profile.Data.Weapons[weapon] and profile.Data.Weapons[weapon].Owned then
 		profile.Data.Loadout.WeaponEquipped = weapon
 		profile.Data.Loadout[loadoutSlot] = weapon
@@ -276,7 +276,7 @@ function DataService:SetKeyValue(player, key: string, newValue: any)
 			profile.Data[key] = newValue
 		end
 	end
-	warn(profile.Data)
+	-- warn(profile.Data)
 end
 
 

@@ -1,6 +1,7 @@
 local CollectionService = game:GetService("CollectionService")
 local RunService = game:GetService("RunService")
 local Players = game:GetService("Players")
+local StarterPlayer = game:GetService("StarterPlayer")
 
 local IsServer = RunService:IsServer()
 
@@ -190,7 +191,7 @@ function WeaponsSystem.setup()
 	WeaponsSystem.connections.weaponRemoved = CollectionService:GetInstanceRemovedSignal(WEAPON_TAG)
 		:Connect(WeaponsSystem.onWeaponRemoved)
 
-	for _, instance in pairs(CollectionService:GetTagged(WEAPON_TAG)) do
+	for _, instance in (CollectionService:GetTagged(WEAPON_TAG)) do
 		WeaponsSystem.onWeaponAdded(instance)
 	end
 
@@ -230,7 +231,7 @@ function WeaponsSystem.shutdown()
 	WeaponsSystem.remoteEvents = {}
 	WeaponsSystem.remoteFunctions = {}
 
-	for _, connection in pairs(WeaponsSystem.connections) do
+	for _, connection in WeaponsSystem.connections do
 		if typeof(connection) == "RBXScriptConnection" then
 			connection:Disconnect()
 		end
@@ -384,6 +385,7 @@ function WeaponsSystem.setWeaponEquipped(weapon, equipped)
 			WeaponsSystem.currentWeapon = nil
 			hasWeapon = false
 			weaponChanged = true
+			Knit.GetController("WidgetController").HUDWidget:HideWeaponInfo()
 		else
 			weaponChanged = false
 		end
@@ -392,6 +394,7 @@ function WeaponsSystem.setWeaponEquipped(weapon, equipped)
 			WeaponsSystem.currentWeapon = weapon
 			hasWeapon = true
 			weaponChanged = true
+			Knit.GetController("WidgetController").HUDWidget:ShowWeaponInfo(weapon.instance)
 		end
 	end
 
@@ -401,8 +404,9 @@ function WeaponsSystem.setWeaponEquipped(weapon, equipped)
 
 		if WeaponsSystem.currentWeapon then
 			WeaponsSystem.camera:setEnabled(true)
-			WeaponsSystem.camera:setZoomFactor(WeaponsSystem.currentWeapon:getConfigValue("ZoomFactor", 1.1))
-			WeaponsSystem.camera:setHasScope(WeaponsSystem.currentWeapon:getConfigValue("HasScope", false))
+			warn("Setting zoom factor to ", WeaponsSystem.currentWeapon.instance:GetAttribute("ZoomFactor") or 1.1)
+			WeaponsSystem.camera:setZoomFactor(WeaponsSystem.currentWeapon.instance:GetAttribute("ZoomFactor") or 1.1)
+			WeaponsSystem.camera:setHasScope(WeaponsSystem.currentWeapon.instance:GetAttribute("HasScope") or false)
 		else
 			WeaponsSystem.camera:setEnabled(false)
 		end
@@ -412,7 +416,7 @@ function WeaponsSystem.setWeaponEquipped(weapon, equipped)
 		WeaponsSystem.gui:setEnabled(hasWeapon)
 
 		if WeaponsSystem.currentWeapon then
-			WeaponsSystem.gui:setCrosshairWeaponScale(WeaponsSystem.currentWeapon:getConfigValue("CrosshairScale", 1))
+			WeaponsSystem.gui:setCrosshairWeaponScale(WeaponsSystem.currentWeapon.instance:GetAttribute("CrosshairScale") or 1)
 		else
 			WeaponsSystem.gui:setCrosshairWeaponScale(1)
 		end

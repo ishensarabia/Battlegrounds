@@ -6,7 +6,7 @@ local DragToRotateViewportFrame = require(ReplicatedStorage.Source.Modules.Util.
 local WeaponCustomizationController = Knit.CreateController({ Name = "WeaponCustomizationController" })
 
 --Widgets
-local WeaponCustomWidget = require(game.StarterPlayer.StarterPlayerScripts.Source.UI_Widgets.WeaponCustomWidget)
+local WeaponCustomWidget = require(game.StarterPlayer.StarterPlayerScripts.Source.Widgets.WeaponCustomWidget)
 
 function WeaponCustomizationController:KnitStart()
 	--services
@@ -39,7 +39,6 @@ function WeaponCustomizationController:ApplySkinForPreview(weaponModel, skinID: 
 end
 
 function WeaponCustomizationController:CreateWeaponPreviewWithSkin(weaponID : string, skinID : string)
-    warn(weaponID, skinID)
 	local weaponModel = ReplicatedStorage.Weapons[weaponID]:FindFirstChildWhichIsA("Model"):Clone()
 	--Check if the item is a tool get the model
 	if weaponModel:IsA("Tool") then

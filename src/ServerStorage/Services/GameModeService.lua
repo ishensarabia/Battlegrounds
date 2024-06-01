@@ -11,18 +11,18 @@ local GameModeService = Knit.CreateService({
 		InitializeElectionSignal = Knit.CreateSignal(),
 		UpdateVoteCountSignal = Knit.CreateSignal(),
 		InitializeGameModeSignal = Knit.CreateSignal(),
-		EndGameSignal = Knit.CreateSignal()
+		EndGameSignal = Knit.CreateSignal(),
 	},
 })
 
 --Constants
 local GAMEMODES = {
 	FreeForAll = {
-		Time = 600,
+		Time = 1200,
 		Description = "Kill everyone and be the last one standing!",
 	},
 	TeamDeathmatch = {
-		Time = 600,
+		Time = 10,
 		Description = "Kill everyone and be the last one standing!",
 	},
 }
@@ -51,25 +51,25 @@ function GameModeService:InitializeElection()
 end
 
 --TODO: set up the type of vote
-local function getMostVoted(votes, typeOfVote : string)
+local function getMostVoted(votes, typeOfVote: string)
 	local highestVote = 0
-    local mostVotedOption = nil
-    local totalVotes = 0
+	local mostVotedOption = nil
+	local totalVotes = 0
 
-    for option, voteCount in pairs(votes) do
-        totalVotes = totalVotes + voteCount
-        if voteCount > highestVote then
-            highestVote = voteCount
-            mostVotedOption = option
-        end
-    end
+	for option, voteCount in pairs(votes) do
+		totalVotes = totalVotes + voteCount
+		if voteCount > highestVote then
+			highestVote = voteCount
+			mostVotedOption = option
+		end
+	end
 
 	if typeOfVote == "Map" then
 		if totalVotes == 0 then
 			-- No votes were cast. Pick a random game mode.
 			local maps = {}
 			for index, mapFolder in (MAPS:GetChildren()) do
-				if mapFolder:IsA("Folder") then					
+				if mapFolder:IsA("Folder") then
 					table.insert(maps, mapFolder.Name)
 				end
 			end
@@ -82,7 +82,7 @@ local function getMostVoted(votes, typeOfVote : string)
 		if totalVotes == 0 then
 			-- No votes were cast. Pick a random game mode.
 			local gameModes = {}
-			for gameMode, gameModeInfo in (GAMEMODES) do
+			for gameMode, gameModeInfo in GAMEMODES do
 				table.insert(gameModes, gameMode)
 			end
 			local randomIndex = math.random(#gameModes)
@@ -101,7 +101,7 @@ function GameModeService:StartGameMode()
 		local mapVotes = self:GetVoteCount("Map")
 		local mostVotedMap, highestVote = getMostVoted(mapVotes, "Map")
 		if mostVotedMap then
-			self:LoadMap(mostVotedMap)		
+			-- self:LoadMap(mostVotedMap)
 		end
 		self.currentGameMode = mostVotedGameMode
 		self.Client.InitializeGameModeSignal:FireAll(GAMEMODES[mostVotedGameMode].Time)
@@ -114,9 +114,9 @@ function GameModeService:StartGameMode()
 	end
 end
 
-function GameModeService:LoadMap(map : string) 
+function GameModeService:LoadMap(map: string)
 	--Get the map folder
-	local selectedMap : Folder = MAPS[map]:Clone()
+	local selectedMap: Folder = MAPS[map]:Clone()
 	--Clean any previous map
 	workspace.Map:ClearAllChildren()
 	--Set the parent
@@ -126,10 +126,9 @@ function GameModeService:LoadMap(map : string)
 	local terrainRegion = selectedMap:FindFirstChildWhichIsA("TerrainRegion")
 	if terrainRegion then
 		TerrainSaveLoad.Load(terrainRegion)
-	else	
+	else
 		workspace.Terrain:Clear()
 	end
-
 end
 
 --End gamemode function
@@ -138,8 +137,8 @@ function GameModeService:EndGameMode()
 	--Get the results of the game mode
 	local leaderboard = self._leaderboardService:GetLeaderboard()
 	--Get top 3 players
-	local topPlayers = self._leaderboardService:GetTopPlayers(5)
-	--Display the top players 
+	local topPlayers = self._leaderboardService:GetTopPlayers(3)
+	--Display the top players
 	self.Client.EndGameSignal:FireAll(topPlayers)
 	for index, playerScoreData in topPlayers do
 		-- warn(playerScoreData)
@@ -155,7 +154,7 @@ function GameModeService:EndGameMode()
 			end
 		end
 	end)
-	task.delay(9,function()		
+	task.delay(9, function()
 		self:InitializeElection()
 	end)
 end

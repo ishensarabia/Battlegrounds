@@ -1,3 +1,4 @@
+--Services
 local MarketplaceService = game:GetService("MarketplaceService")
 local Players = game:GetService("Players")
 local PolicyService = game:GetService("PolicyService")
@@ -6,14 +7,23 @@ local Knit = require(ReplicatedStorage.Packages.Knit)
 --Assets
 local Skins = require(ReplicatedStorage.Source.Assets.Skins)
 local Emotes = require(ReplicatedStorage.Source.Assets.Emotes)
+local EmoteIcons = require(ReplicatedStorage.Source.Assets.EmoteIcons)
+--Modules
+local TableUtil = require(ReplicatedStorage.Source.Modules.Util.TableUtil)
+--Enums
+local RaritiesEnum = require(ReplicatedStorage.Source.Enums.RaritiesEnum)
 
+--Config
+local StoreConfig = require(ReplicatedStorage.Source.Configurations.StoreConfig)
 
 local StoreService = Knit.CreateService({
 	Name = "StoreService",
 	Client = {
 		CrateAddedSignal = Knit.CreateSignal(),
 		OpenCrateSignal = Knit.CreateSignal(),
-		BattlepassBoughtSignal = Knit.CreateSignal()
+		BattlepassBoughtSignal = Knit.CreateSignal(),
+		UpdateFeaturedItemsSignal = Knit.CreateSignal(),
+		UpdateDailyItemsSignal = Knit.CreateSignal(),
 	},
 })
 
@@ -110,161 +120,37 @@ StoreService.crates = {
 		Currency = "BattleGems",
 		Type = "Skin",
 		Contents = {
-			[1] = {
-				Name = Skins.AlterEgo.name,
-				Rarity = Skins.AlterEgo.rarity,
-				Skin = Skins.AlterEgo.skinID,
-			},
-			[2] = {
-				Name = Skins.Venomus.name,
-				Rarity = Skins.Venomus.rarity,
-				Skin = Skins.Venomus.skinID,
-			},
-			[3] = {
-				Name = Skins.AllSeeingEye.name,
-				Rarity = Skins.AllSeeingEye.rarity,
-				Skin = Skins.AllSeeingEye.skinID,
-			},
-			[4] = {
-				Name = Skins.AbstractPeach.name,
-				Rarity = Skins.AbstractPeach.rarity,
-				Skin = Skins.AbstractPeach.skinID,
-			},
-			[5] = {
-				Name = Skins.RoyalOrnate.name,
-				Rarity = Skins.RoyalOrnate.rarity,
-				Skin = Skins.RoyalOrnate.skinID,
-			},
-			[6] = {
-				Name = Skins.Pineapple.name,
-				Rarity = Skins.Pineapple.rarity,
-				Skin = Skins.Pineapple.skinID,
-			},
-			[7] = {
-				Name = Skins.Duckies.name,
-				Rarity = Skins.Duckies.rarity,
-				Skin = Skins.Duckies.skinID,
-			},
-			[8] = {
-				Name = Skins.Totopos.name,
-				Rarity = Skins.Totopos.rarity,
-				Skin = Skins.Totopos.skinID,
-			},
-			[9] = {
-				Name = Skins.DigitalDisturbance.name,
-				Rarity = Skins.DigitalDisturbance.rarity,
-				Skin = Skins.DigitalDisturbance.skinID,
-			},
-			[10] = {
-				Name = Skins.Connections.name,
-				Rarity = Skins.Connections.rarity,
-				Skin = Skins.Connections.skinID,
-			},
-			[11] = {
-				Name = Skins.PartyTime.name,
-				Rarity = Skins.PartyTime.rarity,
-				Skin = Skins.PartyTime.skinID,
-			},
-			[12] = {
-				Name = Skins.Cherries.name,
-				Rarity = Skins.Cherries.rarity,
-				Skin = Skins.Cherries.skinID,
-			},
-			[13] = {
-				Name = Skins.Steampunk.name,
-				Rarity = Skins.Steampunk.rarity,
-				Skin = Skins.Steampunk.skinID,
-			},
-			[14] = {
-				Name = Skins.Darkness.name,
-				Rarity = Skins.Darkness.rarity,
-				Skin = Skins.Darkness.skinID,
-			},
-			[15] = {
-				Name = Skins.VoidScars.name,
-				Rarity = Skins.VoidScars.rarity,
-				Skin = Skins.VoidScars.skinID,
-			},
-			[16] = {
-				Name = Skins.Constellation.name,
-				Rarity = Skins.Constellation.rarity,
-				Skin = Skins.Constellation.skinID,
-			},
-			[17] = {
-				Name = Skins.Bowies.name,
-				Rarity = Skins.Bowies.rarity,
-				Skin = Skins.Bowies.skinID,
-			},
-			[18] = {
-				Name = Skins.IndustrialSpace.name,
-				Rarity = Skins.IndustrialSpace.rarity,
-				Skin = Skins.IndustrialSpace.skinID,
-			},
-			[19] = {
-				Name = Skins.CoffinsSkulls.name,
-				Rarity = Skins.CoffinsSkulls.rarity,
-				Skin = Skins.CoffinsSkulls.skinID,
-			},
-			[20] = {
-				Name = Skins.RainbowBats.name,
-				Rarity = Skins.RainbowBats.rarity,
-				Skin = Skins.RainbowBats.skinID,
-			},
-			[21] = {
-				Name = Skins.SugarHaze.name,
-				Rarity = Skins.SugarHaze.rarity,
-				Skin = Skins.SugarHaze.skinID,
-			},
-			[22] = {
-				Name = Skins.ForestCamo.name,
-				Rarity = Skins.ForestCamo.rarity,
-				Skin = Skins.ForestCamo.skinID,
-			},
-			[23] = {
-				Name = Skins.SnowCamo.name,
-				Rarity = Skins.SnowCamo.rarity,
-				Skin = Skins.SnowCamo.skinID,
-			},
-			[24] = {
-				Name = Skins.DesertCamo.name,
-				Rarity = Skins.DesertCamo.rarity,
-				Skin = Skins.DesertCamo.skinID,
-			},
-			[25] = {
-				Name = Skins.SharkCamo.name,
-				Rarity = Skins.SharkCamo.rarity,
-				Skin = Skins.SharkCamo.skinID,
-			},
-			[26] = {
-				Name = Skins.PunkSpirit.name,
-				Rarity = Skins.PunkSpirit.rarity,
-				Skin = Skins.PunkSpirit.skinID,
-			},
-			[27] = {
-				Name = Skins.GhostCamo.name,
-				Rarity = Skins.GhostCamo.rarity,
-				Skin = Skins.GhostCamo.skinID,
-			},
-			[28] = {
-				Name = Skins.Kraken.name,
-				Rarity = Skins.Kraken.rarity,
-				Skin = Skins.Kraken.skinID,
-			},
-			[29] = {
-				Name = Skins.MonkeyRage.name,
-				Rarity = Skins.MonkeyRage.rarity,
-				Skin = Skins.MonkeyRage.skinID,
-			},
-			[30] = {
-				Name = Skins.Dragonfruits.name,
-				Rarity = Skins.Dragonfruits.rarity,
-				Skin = Skins.Dragonfruits.skinID,
-			},
-			[31] = {
-				Name = Skins.SpiderSense.name,
-				Rarity = Skins.SpiderSense.rarity,
-				Skin = Skins.SpiderSense.skinID,
-			},
+			[1] = Skins.AlterEgo,
+			[2] = Skins.Venomus,
+			[3] = Skins.AllSeeingEye,
+			[4] = Skins.AbstractPeach,
+			[5] = Skins.RoyalOrnate,
+			[6] = Skins.Pineapple,
+			[7] = Skins.Duckies,
+			[8] = Skins.Totopos,
+			[9] = Skins.DigitalDisturbance,
+			[10] = Skins.Connections,
+			[11] = Skins.PartyTime,
+			[12] = Skins.Cherries,
+			[13] = Skins.Steampunk,
+			[14] = Skins.Darkness,
+			[15] = Skins.VoidScars,
+			[16] = Skins.Constellation,
+			[17] = Skins.Bowies,
+			[18] = Skins.IndustrialSpace,
+			[19] = Skins.CoffinsSkulls,
+			[20] = Skins.RainbowBats,
+			[21] = Skins.SugarHaze,
+			[22] = Skins.ForestCamo,
+			[23] = Skins.SnowCamo,
+			[24] = Skins.DesertCamo,
+			[25] = Skins.SharkCamo,
+			[26] = Skins.PunkSpirit,
+			[27] = Skins.GhostCamo,
+			[28] = Skins.Kraken,
+			[29] = Skins.MonkeyRage,
+			[30] = Skins.Dragonfruits,
+			[31] = Skins.SpiderSense,
 		},
 		RaritiesPercentages = {
 			Common = 70,
@@ -290,61 +176,17 @@ StoreService.crates = {
 		Type = "Emote",
 		Color = Color3.fromRGB(30, 138, 165),
 		Contents = {
-			[1] = {
-				Name = Emotes.Club_Dance.name,
-				Rarity = Emotes.Club_Dance.rarity,
-				EmoteAnimation = Emotes.Club_Dance.animation,
-			},
-			[2] = {
-				Name = Emotes.Sleep.name,
-				Rarity = Emotes.Sleep.rarity,
-				EmoteAnimation = Emotes.Sleep.animation,
-			},
-			[3] = {
-				Name = Emotes.Boneless.name,
-				Rarity = Emotes.Boneless.rarity,
-				EmoteAnimation = Emotes.Boneless.animation,
-			},
-			[4] = {
-				Name = Emotes.Feet_Clap.name,
-				Rarity = Emotes.Feet_Clap.rarity,
-				EmoteAnimation = Emotes.Feet_Clap.animation,
-			},
-			[5] = {
-				Name = Emotes.Dab.name,
-				Rarity = Emotes.Dab.rarity,
-				EmoteAnimation = Emotes.Dab.animation,
-			},
-			[6] = {
-				Name = Emotes.Cosita.name,
-				Rarity = Emotes.Cosita.rarity,
-				EmoteAnimation = Emotes.Cosita.animation,
-			},
-			[7] = {
-				Name = Emotes.The_Twist.name,
-				Rarity = Emotes.The_Twist.rarity,
-				EmoteAnimation = Emotes.The_Twist.animation,
-			},
-			[8] = {
-				Name = Emotes.Zombiller.name,
-				Rarity = Emotes.Zombiller.rarity,
-				EmoteAnimation = Emotes.Zombiller.animation,
-			},
-			[9] = {
-				Name = Emotes.Worming.name,
-				Rarity = Emotes.Worming.rarity,
-				EmoteAnimation = Emotes.Worming.animation,
-			},
-			[10] = {
-				Name = Emotes.Hype.name,
-				Rarity = Emotes.Hype.rarity,
-				EmoteAnimation = Emotes.Hype.animation,
-			},
-			[11] = {
-				Name = Emotes.Fresh.name,
-				Rarity = Emotes.Fresh.rarity,
-				EmoteAnimation = Emotes.Fresh.animation,
-			},
+			[1] = Emotes.Club_Dance,
+			[2] = Emotes.Sleep,
+			[3] = Emotes.Boneless,
+			[4] = Emotes.Feet_Clap,
+			[5] = Emotes.Dab,
+			[6] = Emotes.Cosita,
+			[7] = Emotes.The_Twist,
+			[8] = Emotes.Zombiller,
+			[9] = Emotes.Worming,
+			[10] = Emotes.Hype,
+			[11] = Emotes.Fresh,
 		},
 		RaritiesPercentages = {
 			Common = 70,
@@ -361,9 +203,15 @@ function StoreService:KnitStart()
 	self._currencyService = Knit.GetService("CurrencyService")
 	self._dataService = Knit.GetService("DataService")
 	self._battlepassService = Knit.GetService("BattlepassService")
+	--Variables
+	self._featuredItems = {}
+	self._dailyItems = {}
+	--Initialize timed items
+	self:InitializeTimedItems()
 	--Developer products
 	local productFunctions = {}
 	--BattleCoins
+
 	-- ProductId 1554784963 small
 	productFunctions[1554784963] = function(receipt, player)
 		return self._currencyService:AddCurrency(player, "BattleCoins", 1500)
@@ -459,9 +307,176 @@ end
 
 function StoreService:KnitInit() end
 
-function StoreService:GetDailyItems() end
+local function getInsertCountBasedOnRarity(rarity)
+	if rarity == RaritiesEnum.Common then
+		return 5
+	elseif rarity == RaritiesEnum.Rare then
+		return 4
+	elseif rarity == RaritiesEnum.Epic then
+		return 1
+	elseif rarity == RaritiesEnum.Legendary then
+		return 1
+	elseif rarity == RaritiesEnum.Mythic then
+		return 1
+	end
+end
 
-function StoreService.Client:GetDailyItems() end
+function StoreService:InitializeTimedItems()
+	self:UpdateFeaturedItems()
+	task.spawn(function()
+		while true do
+			task.wait(StoreConfig.REFRESH_RATE)
+			self:UpdateFeaturedItems()
+		end
+	end)
+	self:UpdateDailyItems()
+	task.spawn(function()
+		while true do
+			task.wait(StoreConfig.REFRESH_RATE)
+			self:UpdateDailyItems()
+		end
+	end)
+end
+
+function StoreService:UpdateFeaturedItems()
+	self._featuredItems = self:GetFeaturedItems()
+	-- warn(self._featuredItems)
+	self.Client.UpdateFeaturedItemsSignal:FireAll(self._featuredItems)
+end
+
+function StoreService:GetFeaturedItems()
+	local skinsForSale = {}
+	local emotesForSale = {}
+
+	for index, skinData in pairs(Skins) do
+		local insertCount = getInsertCountBasedOnRarity(skinData.rarity)
+		for i = 1, insertCount do
+			local skinItem = { _type = StoreConfig.ItemTypes.Skin, data = skinData }
+			if not TableUtil.tableContainsValue(self._dailyItems, skinItem) then
+				skinsForSale[#skinsForSale + 1] = skinItem
+			end
+		end
+	end
+
+	for index, emoteData in pairs(Emotes) do
+		local insertCount = getInsertCountBasedOnRarity(emoteData.rarity)
+		for i = 1, insertCount do
+			local emoteItem = { _type = StoreConfig.ItemTypes.Emote, data = emoteData }
+			if not TableUtil.tableContainsValue(self._dailyItems, emoteItem) then
+				emotesForSale[#emotesForSale + 1] = emoteItem
+			end
+		end
+	end
+
+	local timeNow = os.time() + StoreConfig.RESET_TIME_OFFSET
+
+	-- update the shops every UPDATE_RATE seconds
+	local skinsIndex = math.floor((timeNow / StoreConfig.FEATURED_ITEMS_UPDATE_RATE) % #skinsForSale)
+	local emotesIndex = math.floor((timeNow / StoreConfig.FEATURED_ITEMS_UPDATE_RATE + 1) % #emotesForSale)
+
+	if skinsIndex == 0 then
+		skinsIndex = #skinsForSale
+	end
+
+	if emotesIndex == 0 then
+		emotesIndex = #emotesForSale
+	end
+
+	local featuredItems = {
+		skinsForSale[skinsIndex],
+		emotesForSale[emotesIndex],
+	}
+
+	return featuredItems
+end
+
+function StoreService:UpdateDailyItems()
+	self._dailyItems = self:GetDailyItems()
+	-- warn(self._dailyItems)
+	self.Client.UpdateDailyItemsSignal:FireAll(self._dailyItems)
+end
+
+function StoreService:GetDailyItems()
+	local dailyItems = {}
+	local timeNow = os.time() + StoreConfig.RESET_TIME_OFFSET
+	local itemsForSale = {}
+
+	-- Combine all items into one table
+	for index, skinData in pairs(Skins) do
+		local insertCount = getInsertCountBasedOnRarity(skinData.rarity)
+		for i = 1, insertCount do
+			table.insert(itemsForSale, { _type = StoreConfig.ItemTypes.Skin, data = skinData })
+		end
+	end
+
+	for index, emoteData in pairs(Emotes) do
+		local insertCount = getInsertCountBasedOnRarity(emoteData.rarity)
+		for i = 1, insertCount do
+			table.insert(itemsForSale, { _type = StoreConfig.ItemTypes.Emote, data = emoteData })
+		end
+	end
+
+	for index, emoteIconData in pairs(EmoteIcons) do
+		local insertCount = getInsertCountBasedOnRarity(emoteIconData.rarity)
+		for i = 1, insertCount do
+			if emoteIconData.forSale == nil or emoteIconData.forSale == true then
+				table.insert(itemsForSale, { _type = StoreConfig.ItemTypes.EmoteIcon, data = emoteIconData })
+			end
+		end
+	end
+
+	-- Calculate the index for each daily item
+	if #itemsForSale > 0 then
+		local skinCount = 0
+		local emoteCount = 0
+		local emoteIconCount = 0
+		local i = 1
+		while #dailyItems < StoreConfig.DAILY_ITEMS_NUM and i <= #itemsForSale * StoreConfig.DAILY_ITEMS_NUM do
+			local index = math.floor((timeNow / StoreConfig.DAILY_ITEMS_UPDATE_RATE + i) % #itemsForSale)
+			if index == 0 then
+				index = #itemsForSale
+			end
+
+			-- Check for item type limits
+			if
+				not TableUtil.tableContainsValue(dailyItems, itemsForSale[index])
+				and not TableUtil.tableContainsValue(self._featuredItems, itemsForSale[index])
+			then
+				if
+					itemsForSale[index]._type == StoreConfig.ItemTypes.Skin
+					and skinCount < StoreConfig.DailyItemTypesLimit.Skin
+				then
+					table.insert(dailyItems, itemsForSale[index])
+					skinCount = skinCount + 1
+				elseif
+					itemsForSale[index]._type == StoreConfig.ItemTypes.Emote
+					and emoteCount < StoreConfig.DailyItemTypesLimit.Emote
+				then
+					table.insert(dailyItems, itemsForSale[index])
+					emoteCount = emoteCount + 1
+				elseif
+					itemsForSale[index]._type == StoreConfig.ItemTypes.EmoteIcon
+					and emoteIconCount < StoreConfig.DailyItemTypesLimit.EmoteIcon
+				then
+					table.insert(dailyItems, itemsForSale[index])
+					emoteIconCount = emoteIconCount + 1
+				end
+			end
+
+			i += 1
+		end
+	end
+
+	return dailyItems
+end
+
+function StoreService.Client:GetFeaturedItems()
+	return self.Server:GetFeaturedItems()
+end
+
+function StoreService.Client:GetDailyItems()
+	return self.Server:GetDailyItems()
+end
 
 --Get bundles function
 function StoreService:GetBundles(bundleCategory: string)
@@ -494,6 +509,29 @@ function StoreService:BuyBundle(player, bundleCategory: string, bundleName: stri
 		MarketplaceService:PromptProductPurchase(player, bundle.ProductID)
 	end
 	return false
+end
+
+function StoreService:GiftBattlepass(gifter, recipientId, season)
+	-- Check if the recipient is in the game
+	local recipient = Players:GetPlayerByUserId(recipientId)
+	if not recipient then
+		warn("Recipient is not in the game")
+		return false
+	end
+	-- Check if the recipient already owns the battlepass for the specified season
+	local recipientBattlepassData = self._dataService:GetKeyValue(recipient, "Battlepass")
+	if recipientBattlepassData[season].Owned then
+		warn("Recipient already owns the battlepass for this season")
+		return false
+	end
+
+	-- Gift the battlepass
+	recipientBattlepassData[season].Owned = true
+	self._dataService:SetKeyValue(recipient, "Battlepass", recipientBattlepassData)
+	self._battlepassService.Client.BattlepassObtained:Fire(recipient)
+	self.Client.BattlepassGiftedSignal:Fire(gifter, recipient)
+
+	return true
 end
 
 --[Client] Buy bundle function
@@ -551,6 +589,7 @@ function StoreService:OpenCrate(player, crateName: string, crateType: string)
 			break
 		end
 	end
+
 	local rng = Random.new()
 
 	local function shuffle<K, V>(from: { [K]: V }): { [K]: V }
@@ -564,15 +603,15 @@ function StoreService:OpenCrate(player, crateName: string, crateType: string)
 	shuffle(crate.Contents)
 	local rewardChosen
 	for index, contentData: table in crate.Contents do
-		if contentData.Rarity == rarityChosen then
+		if contentData.rarity == rarityChosen then
 			--assign the reward to the player
 			rewardChosen = contentData
 			if crateType == "Skin" then
-				self._dataService:AddSkin(player, contentData.Name)
+				self._dataService:AddSkin(player, contentData.name)
 			end
 
 			if crateType == "Emote" then
-				self._dataService:AddEmote(player, contentData.Name, "Animation")
+				self._dataService:AddEmote(player, contentData.name, "Animation")
 			end
 			break
 		end

@@ -183,22 +183,21 @@ function DragToRotateViewportFrame:Initialize(viewportFrame, camera)
 	self.MouseMode = "LockPosition"
 end
 
-function DragToRotateViewportFrame:SetModel(model)
-	-- assertf(
-	-- 	isValueOfClass(model, "Model"),
-	-- 	'Called %s:SetModel with argument #1 %s "%s", expected Model.',
-	-- 	CLASS_NAME,
-	-- 	typeof(model),
-	-- 	tostring(model)
-	-- )
-	assertf(model.PrimaryPart ~= nil, "Called %s:SetModel with a model without a PrimaryPart.", CLASS_NAME)
+function DragToRotateViewportFrame:SetModel(worldModel : WorldModel)
+	assertf(worldModel.PrimaryPart ~= nil, "Called %s:SetModel with a model without a PrimaryPart.", CLASS_NAME)
+	--Check if the model has custom parameters
+	local customYAngle
+	
+	if worldModel.PrimaryPart:GetAttribute("PreviewYAngle") then
+		customYAngle = worldModel.PrimaryPart:GetAttribute("PreviewYAngle")
+	end
 
-	self.Model = model
+	self.Model = worldModel
 
-	model.Parent = self.ViewportFrame
-	model:SetPrimaryPartCFrame(CFrame.new())
+	worldModel.Parent = self.ViewportFrame
+	worldModel:PivotTo(CFrame.new())
 
-	self:SetAngles(CFrame.Angles(0, math.pi, 0))
+	self:SetAngles(CFrame.Angles(0, customYAngle or math.pi, 0))
 	self:Rotate(0, 0)
 	self.InitalCameraCFrame = self.Camera.CFrame
 	self.InitialFOV = self.Camera.FieldOfView
@@ -221,7 +220,7 @@ function DragToRotateViewportFrame:SetAngles(angles)
 
 		self.Camera.CFrame = (camCenter * angles) * CFrame.new(0, 0, camDist)
 	elseif self.RotateMode == "ModelRotates" then
-		self.Model:SetPrimaryPartCFrame(CFrame.new() * angles:Inverse())
+		self.Model:PivotTo(CFrame.new() * angles:Inverse())
 	else
 		warnf("Invalid RotateMode %s, expected %s or %s", tostring(self.RotateMode), "CameraRotates", "ModelRotates")
 	end

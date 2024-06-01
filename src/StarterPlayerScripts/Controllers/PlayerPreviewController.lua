@@ -6,7 +6,7 @@ local Assets = ReplicatedStorage.Assets
 local RunService = game:GetService("RunService")
 local Knit = require(ReplicatedStorage.Packages.Knit)
 --Widgets
-local WeaponCustomWidget = require(game.StarterPlayer.StarterPlayerScripts.Source.UI_Widgets.WeaponCustomWidget)
+local WeaponCustomWidget = require(game.StarterPlayer.StarterPlayerScripts.Source.Widgets.WeaponCustomWidget)
 
 local PlayerPreviewController = Knit.CreateController({ Name = "PlayerPreviewController" })
 

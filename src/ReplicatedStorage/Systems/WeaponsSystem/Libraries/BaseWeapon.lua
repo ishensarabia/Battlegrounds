@@ -42,7 +42,7 @@ function BaseWeapon.new(weaponsSystem, instance)
 	self.configValues = {}
 	self.trackedConfigurations = {}
 
-	self.ammoInWeaponValue = nil
+	self.ammoInWeapon = instance:GetAttribute("CurrentAmmo")
 
 	self.reloading = false
 	self.canReload = true
@@ -66,38 +66,34 @@ function BaseWeapon:doInitialSetup()
 	self.connections.childRemoved = self.instance.ChildRemoved:Connect(function(child)
 		self:onChildRemoved(child)
 	end)
-	for _, child in pairs(self.instance:GetChildren()) do
+	for _, child in (self.instance:GetChildren()) do
 		self:onChildAdded(child)
 	end
-	-- -- Set up custom attributes
-	-- for name, value in pairs(self.instance:GetAttributes()) do
-	-- 	warn("Attribute found. Name: " .. name .. "\nValue: " .. value)
-	-- 	self:addConfigAttribute(name, value)
-	-- end
 
-	-- Initialize self.ammoInWeaponValue
+	-- Initialize weapon ammo values
 	if selfClass.CanBeReloaded then
-		if IsServer then
-			self.ammoInWeaponValue = self.instance:FindFirstChild("CurrentAmmo")
-			if not self.ammoInWeaponValue then
-				self.ammoInWeaponValue = Instance.new("IntValue")
-				self.ammoInWeaponValue.Name = "CurrentAmmo"
-				self.ammoInWeaponValue.Value = 0
-				self.ammoInWeaponValue.Parent = self.instance
-			end
-			self.ammoInWeaponValue.Value = self:getConfigValue("AmmoCapacity", 30)
-		else
-			self.ammoInWeaponValue = self.instance:WaitForChild("CurrentAmmo")
-		end
+		self.ammoInWeapon = self.instance:GetAttribute("CurrentAmmo") or 0
+		self.totalAmmo = self.instance:GetAttribute("TotalAmmo")
 	end
 
-	self.connections.ancestryChanged = self.instance.AncestryChanged:Connect(function() self:onAncestryChanged() end)
+	self.connections.ancestryChanged = self.instance.AncestryChanged:Connect(function()
+		self:onAncestryChanged()
+	end)
 	self:onAncestryChanged()
 
 	-- Set up equipped/unequipped and activated/deactivated
 	if self.instanceIsTool then
 		self.connections.equipped = self.instance.Equipped:Connect(function()
-			if IsServer or (Players.LocalPlayer and (self.instance:IsDescendantOf(Players.LocalPlayer.Backpack) or self.instance:IsDescendantOf(Players.LocalPlayer.Character))) then
+			if
+				IsServer
+				or (
+					Players.LocalPlayer
+					and (
+						self.instance:IsDescendantOf(Players.LocalPlayer.Backpack)
+						or self.instance:IsDescendantOf(Players.LocalPlayer.Character)
+					)
+				)
+			then
 				self:setEquipped(true)
 				if self:getAmmoInWeapon() <= 0 then
 					-- Have to wait a frame, otherwise the reload animation will not play
@@ -109,7 +105,16 @@ function BaseWeapon:doInitialSetup()
 			end
 		end)
 		self.connections.unequipped = self.instance.Unequipped:Connect(function()
-			if IsServer or (Players.LocalPlayer and (self.instance:IsDescendantOf(Players.LocalPlayer.Backpack) or self.instance:IsDescendantOf(Players.LocalPlayer.Character))) then
+			if
+				IsServer
+				or (
+					Players.LocalPlayer
+					and (
+						self.instance:IsDescendantOf(Players.LocalPlayer.Backpack)
+						or self.instance:IsDescendantOf(Players.LocalPlayer.Character)
+					)
+				)
+			then
 				self:setEquipped(false)
 				if self.reloading then
 					self:cancelReload()
@@ -182,7 +187,13 @@ function BaseWeapon:addOptionalDescendant(key, descendantName)
 	end
 
 	if self.descendants[descendantName] == "Multiple" then
-		error("Weapon \""..self.instance.Name.."\" has multiple descendants named \""..descendantName.."\", so you cannot addOptionalDescendant with that descendant name.")
+		error(
+			'Weapon "'
+				.. self.instance.Name
+				.. '" has multiple descendants named "'
+				.. descendantName
+				.. '", so you cannot addOptionalDescendant with that descendant name.'
+		)
 	end
 
 	local found = self.descendants[descendantName]
@@ -204,7 +215,13 @@ function BaseWeapon:onDescendantAdded(descendant)
 	local desiredKey = self.optionalDescendantNames[descendant.Name]
 	if desiredKey then
 		if self.descendants[descendant.Name] == "Multiple" then
-			error("Weapon \""..self.instance.Name.."\" has multiple descendants named \""..descendant.Name.."\", so you cannot addOptionalDependency with that descendant name.")
+			error(
+				'Weapon "'
+					.. self.instance.Name
+					.. '" has multiple descendants named "'
+					.. descendant.Name
+					.. '", so you cannot addOptionalDependency with that descendant name.'
+			)
 		end
 		self[desiredKey] = descendant
 		self.optionalDescendantNames[descendant.Name] = nil
@@ -293,7 +310,7 @@ function BaseWeapon:onEquippedChanged()
 		end
 	end
 
-	if IsServer and self.equipped then		
+	if IsServer and self.equipped then
 		WeaponService:SetIKForWeapon(self.player, self.instance)
 	end
 
@@ -320,17 +337,11 @@ function BaseWeapon:setActivated(activated, fromNetwork)
 	self:onActivatedChanged()
 end
 
-function BaseWeapon:onActivatedChanged()
+function BaseWeapon:onActivatedChanged() end
 
-end
+function BaseWeapon:renderFire(fireInfo) end
 
-function BaseWeapon:renderFire(fireInfo)
-
-end
-
-function BaseWeapon:simulateFire(fireInfo)
-
-end
+function BaseWeapon:simulateFire(fireInfo) end
 
 function BaseWeapon:isOwnerAlive()
 	if self.instance:IsA("Tool") then
@@ -391,9 +402,7 @@ function BaseWeapon:getConfigValue(valueName, defaultValue)
 		return defaultValue
 	end
 end
--- 735 350 5549
--- 735 153 1892
--- 735 336 2568
+
 function BaseWeapon:tryPlaySound(soundName, playbackSpeedRange)
 	playbackSpeedRange = playbackSpeedRange or 0
 
@@ -408,7 +417,8 @@ function BaseWeapon:tryPlaySound(soundName, playbackSpeedRange)
 	end
 
 	local sound = soundTemplate:Clone()
-	sound.PlaybackSpeed = sound.PlaybackSpeed + localRandom:NextNumber(-playbackSpeedRange * 0.5, playbackSpeedRange * 0.5)
+	sound.PlaybackSpeed = sound.PlaybackSpeed
+		+ localRandom:NextNumber(-playbackSpeedRange * 0.5, playbackSpeedRange * 0.5)
 	sound.Parent = soundTemplate.Parent
 	sound:Play()
 	coroutine.wrap(function()
@@ -429,9 +439,7 @@ function BaseWeapon:getSound(soundName)
 	return soundTemplate
 end
 
-function BaseWeapon:onDestroyed()
-
-end
+function BaseWeapon:onDestroyed() end
 
 function BaseWeapon:onConfigValueAdded(valueObj)
 	local valueName = valueObj.Name
@@ -453,7 +461,7 @@ function BaseWeapon:onConfigValueAdded(valueObj)
 	end)
 end
 
-function BaseWeapon:addConfigAttribute(name : string, attribute : any)
+function BaseWeapon:addConfigAttribute(name: string, attribute: any)
 	self.configValues[name] = attribute
 end
 
@@ -491,7 +499,7 @@ function BaseWeapon:setConfiguration(config)
 			self:onConfigValueAdded(child)
 		end
 	end
-	
+
 	self.connections.configChildAdded = config.ChildAdded:Connect(function(child)
 		if child:IsA("ValueBase") then
 			self:onConfigValueAdded(child)
@@ -516,21 +524,18 @@ function BaseWeapon:onChildRemoved(child)
 	end
 end
 
-function BaseWeapon:onConfigValueChanged(valueName, newValue, oldValue)
+function BaseWeapon:onConfigValueChanged(valueName, newValue, oldValue) end
 
-end
+function BaseWeapon:onRenderStepped(dt) end
 
-function BaseWeapon:onRenderStepped(dt)
-
-end
-
-function BaseWeapon:onStepped(dt)
-
-end
+function BaseWeapon:onStepped(dt) end
 
 function BaseWeapon:getAnimationController()
 	if self.animController then
-		if not self.instanceIsTool or (self.animController.Parent and self.animController.Parent:IsAncestorOf(self.instance)) then
+		if
+			not self.instanceIsTool
+			or (self.animController.Parent and self.animController.Parent:IsAncestorOf(self.instance))
+		then
 			return self.animController
 		end
 	end
@@ -538,7 +543,8 @@ function BaseWeapon:getAnimationController()
 	self:setAnimationController(nil)
 
 	if self.instanceIsTool then
-		local humanoid = IsServer and self.instance.Parent:FindFirstChildOfClass("Humanoid") or self.instance.Parent:WaitForChild("Humanoid", math.huge)
+		local humanoid = IsServer and self.instance.Parent:FindFirstChildOfClass("Humanoid")
+			or self.instance.Parent:WaitForChild("Humanoid", math.huge)
 		local animController = nil
 		if not humanoid then
 			animController = self.instance.Parent:FindFirstChildOfClass("AnimationController")
@@ -577,7 +583,7 @@ function BaseWeapon:getAnimTrack(key)
 
 		local animation = AnimationsFolder:FindFirstChild(key)
 		if not animation then
-			error(string.format("No such animation \"%s\" ", tostring(key)))
+			error(string.format('No such animation "%s" ', tostring(key)))
 		end
 
 		track = animController:LoadAnimation(animation)
@@ -589,10 +595,11 @@ end
 
 function BaseWeapon:reload(player, fromNetwork)
 	if
-		not self.equipped or
-		self.reloading or
-		not self.canReload or
-		self:getAmmoInWeapon() == self:getConfigValue("AmmoCapacity", 30)
+		not self.equipped
+		or self.reloading
+		or not self.canReload
+		or self:getAmmoInWeapon() == self.instance:GetAttribute("AmmoCapacity")
+		or self:getTotalAmmo() <= 0
 	then
 		return false
 	end
@@ -659,9 +666,23 @@ function BaseWeapon:onReloaded(player, fromNetwork)
 			return
 		end
 
-		-- Add ammo to weapon
-		if self.ammoInWeaponValue then
-			self.ammoInWeaponValue.Value = self:getConfigValue("AmmoCapacity", 30)
+		-- Calculate ammo needed for reload
+		local ammoNeeded = self.instance:GetAttribute("AmmoCapacity") - self.instance:GetAttribute("CurrentAmmo")
+
+		-- Check if there's enough ammo to reload
+		if self.instance:GetAttribute("TotalAmmo") >= ammoNeeded then
+			-- Add ammo to weapon
+			self.instance:SetAttribute("CurrentAmmo", self.instance:GetAttribute("AmmoCapacity"))
+
+			-- Reduce total ammo
+			self.instance:SetAttribute("TotalAmmo", self.instance:GetAttribute("TotalAmmo") - ammoNeeded)
+		else
+			-- If not enough total ammo, reload only the total ammo left
+			local totalAmmoLeft = self.instance:GetAttribute("TotalAmmo")
+			self.instance:SetAttribute("CurrentAmmo", self.instance:GetAttribute("CurrentAmmo") + totalAmmoLeft)
+
+			-- Set total ammo to 0
+			self.instance:SetAttribute("TotalAmmo", 0)
 		end
 
 		if self.connections.reload then
@@ -703,25 +724,28 @@ function BaseWeapon:cancelReload(player, fromNetwork)
 end
 
 function BaseWeapon:getAmmoInWeapon()
-	if self.ammoInWeaponValue then
-		return self.ammoInWeaponValue.Value
+	if self.instance:GetAttribute("CurrentAmmo") then
+		return self.instance:GetAttribute("CurrentAmmo")
+	else
+		warn("No CurrentAmmo attribute found for weapon ", self.instance.Name)
 	end
-	return 0
+end
+
+function BaseWeapon:getTotalAmmo()
+	if self.instance:GetAttribute("TotalAmmo") then
+		return self.instance:GetAttribute("TotalAmmo")
+	else
+		warn("No TotalAmmo attribute found for weapon ", self.instance.Name)
+	end
 end
 
 function BaseWeapon:useAmmo(amount)
-	if self.ammoInWeaponValue then
-		local ammoUsed = math.min(amount, self.ammoInWeaponValue.Value)
-		self.ammoInWeaponValue.Value = self.ammoInWeaponValue.Value - ammoUsed
-		self.canReload = true
-		return ammoUsed
-	else
-		return 0
-	end
+	local ammoUsed = math.min(amount, self.instance:GetAttribute("CurrentAmmo"))
+	self.instance:SetAttribute("CurrentAmmo", self.instance:GetAttribute("CurrentAmmo") - ammoUsed)
+	self.canReload = true
+	return ammoUsed
 end
 
-function BaseWeapon:renderCharge()
-
-end
+function BaseWeapon:renderCharge() end
 
 return BaseWeapon

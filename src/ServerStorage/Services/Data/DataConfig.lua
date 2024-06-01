@@ -1,35 +1,36 @@
 local DataConfig = {}
 --External configs
 DataConfig.BattlepassConfig = require(script.Parent.Parent.Battlepass.BattlepassConfig)
+
 DataConfig.profileTemplate = {
 	BattleCoins = 0,
 	BattleGems = 0,
 	Weapons = {
-		Rocket_Launcher = {
+		["Rocket_Launcher"] = {
 			Owned = false,
 			Rank = 0,
 			Prestige = "Beginner",
 			Customization = {},
 		},
-		Crossbow = {
+		["Crossbow"] = {
 			Owned = true,
 			Rank = 0,
 			Prestige = "Beginner",
 			Customization = {},
 		},
-		Pistol = {
+		["Pistol"] = {
 			Owned = true,
 			Rank = 0,
 			Prestige = "Beginner",
 			Customization = {},
 		},
-		M4A4 = {
+		["M4A4"] = {
 			Owned = false,
 			Rank = 0,
 			Prestige = "Beginner",
 			Customization = {},
 		},
-		Kriss_Vector = {
+		["Kriss_Vector"] = {
 			Owned = false,
 			Rank = 0,
 			Prestige = "Beginner",
@@ -83,7 +84,7 @@ DataConfig.profileTemplate = {
 			Prestige = "Beginner",
 			Customization = {},
 		},
-		MK14 = {
+		["MK14"] = {
 			Owned = false,
 			Rank = 0,
 			Prestige = "Beginner",

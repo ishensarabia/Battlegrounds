@@ -1,7 +1,7 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local TweenService = game:GetService("TweenService")
 local Knit = require(ReplicatedStorage.Packages.Knit)
-local EmoteIcons = require(ReplicatedStorage.Source.Assets.Icons.EmoteIcons)
+local EmoteIcons = require(ReplicatedStorage.Source.Assets.EmoteIcons)
 
 local EmoteService = Knit.CreateService({
 	Name = "EmoteService",

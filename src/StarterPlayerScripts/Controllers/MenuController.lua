@@ -5,6 +5,8 @@ local player = Players.LocalPlayer
 
 --Module dependencies
 local Knit = require(ReplicatedStorage.Packages.Knit)
+--Controllers
+local WidgetController
 
 local MenuController = Knit.CreateController { Name = "MenuController" }
 local Cutscenes = {
@@ -15,6 +17,7 @@ local Cutscenes = {
 
 
 function MenuController:KnitStart()
+    WidgetController = Knit.GetController("WidgetController")
 end
 
 function MenuController:startCutscene(cutscene : string)
@@ -31,27 +34,35 @@ function MenuController:Play()
     self._cameraController:SetCameraType("Custom")
     self._cameraController:ChangeMode("Play")
     Knit.GetService("PlayerService"):SpawnCharacter()
+    --Show HUD on spawn
+    Players.LocalPlayer.CharacterAdded:Connect(function(character)
+        WidgetController.HUDWidget:ShowHUD()
+        --Hide HUD on death
+        character:WaitForChild("Humanoid").Died:Connect(function()
+            WidgetController.HUDWidget:HideHUD()
+        end)
+    end)
 end
 
 function MenuController:ShowMenu()
     if self.isInMenu then
         return
     end
-    Knit.GetController("UIController").MainMenuWidget:ShowMenu()
+    WidgetController.MainMenuWidget:ShowMenu()
     self.isInMenu = true
     self._cameraController:ChangeMode("Menu")
-    -- Knit.GetController("UIController").MainMenuWidget:InitializeCameraTransition()
+    -- WidgetController.MainMenuWidget:InitializeCameraTransition()
     
 end
 
 function MenuController:ShowPlayButton()
     if self.isInMenu then
-        Knit.GetController("UIController").MainMenuWidget:ShowPlayButton()
+        WidgetController.MainMenuWidget:ShowPlayButton()
     end
 end
 
 function MenuController:HidePlayButton()
-    Knit.GetController("UIController").MainMenuWidget:HidePlayButton()
+    WidgetController.MainMenuWidget:HidePlayButton()
 end
 
 function MenuController:KnitInit()

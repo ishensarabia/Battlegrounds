@@ -61,7 +61,6 @@ function LoadoutService.Client:SetWeaponEquipped(player, weaponName, loadoutSlot
 end
 
 function LoadoutService:BuyWeapon(player, weaponName)
-	warn(player, weaponName)
 	local CurrencyService = Knit.GetService("CurrencyService")
 	local playerCurrency = CurrencyService:GetCurrencyValue(player, "BattleCoins")
 	local playerLevel = player:GetAttribute("Level")
@@ -106,7 +105,6 @@ function LoadoutService:LoadWeaponCustomization(player, weaponName)
 		local customization = DataService:GetWeaponCustomization(player, weaponName)
 
 		if customization then
-			warn("[LoadoutService] Weapon customization detected for " .. weaponName, customization)
 			local customParts = self:GenerateWeaponParts(weapon:FindFirstChildOfClass("Model"))
 
 			for partName, customizationValueTable in pairs(customization) do
@@ -115,7 +113,6 @@ function LoadoutService:LoadWeaponCustomization(player, weaponName)
 				end
 
 				if customizationValueTable.Skin then
-					warn("Applying skin", customizationValueTable.Skin)
 					self:ApplyCustomizationValue(customizationValueTable.Skin, partName, customParts)
 				end
 			end
@@ -163,7 +160,6 @@ function LoadoutService.Client:ApplyCustomization(player, customizationValue, pa
 	if params.customParts then
 		customPart = params.customParts[params.partName]
 	end
-	warn("Applying custom", params.part)
 	if typeof(customizationValue) == "Color3" then
 		--Check for light emission and change the color value of it too
 		for index, value in customPart:GetChildren() do

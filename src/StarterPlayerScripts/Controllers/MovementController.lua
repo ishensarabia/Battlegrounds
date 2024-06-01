@@ -119,10 +119,10 @@ function MovementController:Dash(direction: string, vectorMultiplier: number)
 			-- Delete the body velocity object after 0.3 seconds
 			Debris:AddItem(linearVelocity, 0.8)
 
-			self.StatsService:ExecuteAction("Dash")
+			self._StatsService:ExecuteAction("Dash")
 			-- Reset debounced state, enable IK and footsteps sound at the end of the dash animation
 			animationTrack.Ended:Connect(function()
-				self.StatsService:StopAction("Dash")
+				self._StatsService:StopAction("Dash")
 				self.debounces.dash = false
 				character.Humanoid.JumpPower = 31
 				character.Humanoid.WalkSpeed = normalWalkSpeed
@@ -168,7 +168,7 @@ function MovementController:Slide()
 			slideLoop = RunService.Heartbeat:Connect(function()
 				slideForceLeft -= 0.133
 				if linearVelocity.Velocity.Magnitude > 0 and slideForceLeft > 9 then
-					self.StatsService:ExecuteAction("Slide")
+					self._StatsService:ExecuteAction("Slide")
 					self._AudioService:PlaySound(
 						"Slide",
 						true,
@@ -184,7 +184,7 @@ function MovementController:Slide()
 
 			-- Reset debounced state, enable IK and footsteps sound at the end of the dash animation
 			animationTrack.Ended:Connect(function()
-				self.StatsService:StopAction("Slide")
+				self._StatsService:StopAction("Slide")
 				self._VFXService:StopSlide()
 				self.isSliding = false
 				character.Humanoid.JumpPower = 31
@@ -200,6 +200,13 @@ function MovementController:Slide()
 end
 
 function MovementController:Crouch()
+	local function StopCrouch()
+		self.isCrouching = false
+		self._AnimationController:StopAnimation("Crouch")
+		character.Humanoid.WalkSpeed = normalWalkSpeed
+		character.Humanoid.CameraOffset = Vector3.new(0, 0, 0)
+	end
+
 	if character and character.Humanoid.Health > 0 then
 		if not self.isCrouching then
 			self.isCrouching = true
@@ -213,12 +220,8 @@ function MovementController:Crouch()
 					animationTrack:AdjustSpeed(1)
 				end
 			end)
-			character.Humanoid.FreeFalling:Connect(function(active)
-				self.isCrouching = false
-				self._AnimationController:StopAnimation("Crouch")
-				character.Humanoid.WalkSpeed = normalWalkSpeed
-				character.Humanoid.CameraOffset = Vector3.new(0, 0, 0)
-			end)
+			character.Humanoid.FreeFalling:Connect(StopCrouch)
+			character.Humanoid.Died:Connect(StopCrouch)
 			--Notify weapon controller
 			self._WeaponsController:Crouch(animationTrack)
 			character.Humanoid.CameraOffset = Vector3.new(0, -0.5, 0)
@@ -247,10 +250,21 @@ function MovementController:OnJumpRequest()
 		Debris:AddItem(bodyVelocity, 0.5)
 		self._AnimationController:StopAnimation("Climb")
 		self._AnimationController:PlayAnimation("Climb_Up")
-		self.StatsService:ExecuteAction("Climb_Up")
+		self._StatsService:ExecuteAction("Climb_Up")
 		if ledgePart then
 			ledgePart:Destroy()
 		end
+	end
+	local function DetachFromLedge()
+		rootPart.Anchored = false
+		humanoid.AutoRotate = true
+		isHolding = false
+		canVault = true
+		self._AnimationController:StopAnimation("Climb")
+		if ledgePart then
+			ledgePart:Destroy()
+		end
+		vaultConnection:Disconnect()
 	end
 	local function AttachToLedge(ledgeOffset)
 		if ledgePart then
@@ -284,25 +298,19 @@ function MovementController:OnJumpRequest()
 				0.25
 			)
 			if character:GetAttribute("Stamina") < 1 then
-				rootPart.Anchored = false
-				humanoid.AutoRotate = true
-				isHolding = false
-				canVault = true
-				self._AnimationController:StopAnimation("Climb")
-				if ledgePart then
-					ledgePart:Destroy()
-				end
-				vaultConnection:Disconnect()
+				DetachFromLedge()
 			end
 			if isHolding then
-				self.StatsService:ExecuteAction("Climb")
+				self._StatsService:ExecuteAction("Climb")
 			else
-				self.StatsService:StopAction("Climb")
+				self._StatsService:StopAction("Climb")
 				vaultConnection:Disconnect()
 			end
 			humanoid:ChangeState(Enum.HumanoidStateType.Seated)
 		end)
+		humanoid.Died:Connect(DetachFromLedge)
 	end
+	
 	if
 		canVault
 		and (
@@ -365,9 +373,9 @@ function MovementController:KnitInit()
 	self.isSliding = false
 	--Get the necessary controllers and services
 	self._AnimationController = Knit.GetController("AnimationController")
-	self.StatsService = Knit.GetService("StatsService")
+	self._RagdollService = Knit.GetService("RagdollService")
+	self._StatsService = Knit.GetService("StatsService")
 	Players.LocalPlayer.CharacterAdded:Connect(function(_character)
-		--Connect died event to reset values
 		canVault = true
 		if ledgePart then
 			ledgePart:Destroy()
@@ -376,52 +384,53 @@ function MovementController:KnitInit()
 		_character:WaitForChild("Humanoid"):SetStateEnabled(Enum.HumanoidStateType.Ragdoll, false)
 		_character.Humanoid:SetStateEnabled(Enum.HumanoidStateType.FallingDown, false)
 		character = _character
-	end)
-	--Bind actions to the context action service
-	ContextActionService:BindAction(ACTION_DASH, function(actionName, inputState, _inputObject)
-		if actionName == ACTION_DASH and inputState == Enum.UserInputState.Begin then
-			local Cam = workspace.CurrentCamera
-			if character.Humanoid.MoveDirection:Dot(Cam.CFrame.RightVector) > 0.75 then
-				self:Dash(DIRECTIONS.RIGHT, DASH_FORCE)
-			end
-			if character.Humanoid.MoveDirection:Dot(-Cam.CFrame.RightVector) > 0.75 then
-				self:Dash(DIRECTIONS.LEFT, -DASH_FORCE)
-			end
-			if character.Humanoid.MoveDirection:Dot(Cam.CFrame.LookVector) > 0.75 then
-				self:Dash(DIRECTIONS.FORWARD, DASH_FORCE)
-			end
-			if character.Humanoid.MoveDirection:Dot(-Cam.CFrame.LookVector) > 0.75 then
-				self:Dash(DIRECTIONS.BACKWARDS, -DASH_FORCE)
-			end
-		end
-	end, true, DASH_KEYCODE, Enum.KeyCode.ButtonB)
-
-	--Set the position and description of the dash action
-	ContextActionService:SetPosition(ACTION_DASH, UDim2.new({ 0.936, 0 }, { 0.439, 0 }))
-	ContextActionService:SetDescription(ACTION_DASH, "Dash movement")
-	ContextActionService:SetTitle(ACTION_DASH, ACTION_DASH)
-
-	ContextActionService:BindAction(ACTION_CROUCH, function(actionName, inputState, _inputObject)
-		if actionName == ACTION_CROUCH and inputState == Enum.UserInputState.Begin then
-			local humanoid = character:WaitForChild("Humanoid")
-			if humanoid:GetState() == Enum.HumanoidStateType.Running then
-				local currentSpeed = humanoid.WalkSpeed
-				if currentSpeed >= SLIDE_SPEED_THRESHOLD then
-					-- Slide to crouch conversion
-					self:Slide()
-				else
-					-- Normal crouching action
-					self:Crouch()
+		--Bind actions to the context action service
+		ContextActionService:BindAction(ACTION_DASH, function(actionName, inputState, _inputObject)
+			if actionName == ACTION_DASH and inputState == Enum.UserInputState.Begin then
+				local Cam = workspace.CurrentCamera
+				if character.Humanoid.MoveDirection:Dot(Cam.CFrame.RightVector) > 0.75 then
+					self:Dash(DIRECTIONS.RIGHT, DASH_FORCE)
+				end
+				if character.Humanoid.MoveDirection:Dot(-Cam.CFrame.RightVector) > 0.75 then
+					self:Dash(DIRECTIONS.LEFT, -DASH_FORCE)
+				end
+				if character.Humanoid.MoveDirection:Dot(Cam.CFrame.LookVector) > 0.75 then
+					self:Dash(DIRECTIONS.FORWARD, DASH_FORCE)
+				end
+				if character.Humanoid.MoveDirection:Dot(-Cam.CFrame.LookVector) > 0.75 then
+					self:Dash(DIRECTIONS.BACKWARDS, -DASH_FORCE)
 				end
 			end
-		end
-		if actionName == ACTION_CROUCH and inputState == Enum.UserInputState.End and self.isSliding then
-			self._AnimationController:StopAnimation("Slide")
-		end
-	end, true, CROUCH_KEYCODE, Enum.KeyCode.ButtonR3)
+		end, true, DASH_KEYCODE, Enum.KeyCode.ButtonB)
 
-	ContextActionService:SetPosition(ACTION_CROUCH, UDim2.fromScale(0.33, 0.439))
-	ContextActionService:SetTitle(ACTION_CROUCH, ACTION_CROUCH)
+		--Set the position and description of the dash action
+		ContextActionService:SetPosition(ACTION_DASH, UDim2.new({ 0.936, 0 }, { 0.439, 0 }))
+		ContextActionService:SetDescription(ACTION_DASH, "Dash movement")
+		ContextActionService:SetTitle(ACTION_DASH, ACTION_DASH)
+
+		ContextActionService:BindAction(ACTION_CROUCH, function(actionName, inputState, _inputObject)
+			if actionName == ACTION_CROUCH and inputState == Enum.UserInputState.Begin then
+				local humanoid = character:WaitForChild("Humanoid")
+				if humanoid:GetState() == Enum.HumanoidStateType.Running then
+					local currentSpeed = humanoid.WalkSpeed
+					if currentSpeed >= SLIDE_SPEED_THRESHOLD then
+						-- Slide to crouch conversion
+						self:Slide()
+					else
+						-- Normal crouching action
+						self:Crouch()
+					end
+				end
+			end
+			if actionName == ACTION_CROUCH and inputState == Enum.UserInputState.End and self.isSliding then
+				self._AnimationController:StopAnimation("Slide")
+			end
+		end, true, CROUCH_KEYCODE, Enum.KeyCode.ButtonR3)
+
+		ContextActionService:SetPosition(ACTION_CROUCH, UDim2.fromScale(0.33, 0.439))
+		ContextActionService:SetTitle(ACTION_CROUCH, ACTION_CROUCH)
+	end)
+
 	--Hook the user input service to the jump action
 	--pc and console support
 	UserInputService.InputBegan:Connect(function(input, gp)
@@ -447,6 +456,18 @@ function MovementController:KnitInit()
 			end
 		end)
 	end
+
+	--Listen to the event on ragdoll service to change the character's humanoid state
+	self._RagdollService.RagdollStateChanged:Connect(function(time)
+		character:WaitForChild("Humanoid"):ChangeState(Enum.HumanoidStateType.Physics)
+		if time then
+			task.delay(time, function()
+				--Set the humanoid state back to normal
+				character:WaitForChild("Humanoid"):ChangeState(Enum.HumanoidStateType.GettingUp)
+			end)
+		end
+	end)
 end
 
+--Change emote icon and animation
 return MovementController

@@ -15,7 +15,7 @@ local WeaponsService = Knit.CreateService({
 local function initializeWeaponsSystemAssets()
 	if not weaponsSystemInitialized then
 		-- Enable/make visible all necessary assets
-		local effectsFolder = weaponsSystemFolder.Assets.Effects
+		local effectsFolder = ReplicatedStorage.Assets.Effects
 		local partNonZeroTransparencyValues = {
 			["BulletHole"] = 1,
 			["Explosion"] = 1,

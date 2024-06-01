@@ -2,7 +2,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 --Assets
 local Skins = require(ReplicatedStorage.Source.Assets.Skins)
 local Emotes = require(ReplicatedStorage.Source.Assets.Emotes)
-local EmoteIcons = require(ReplicatedStorage.Source.Assets.Icons.EmoteIcons)
+local EmoteIcons = require(ReplicatedStorage.Source.Assets.EmoteIcons)
 local BattlepassConfig = {}
 --Reward types
 BattlepassConfig.RewardTypes = {
@@ -412,7 +412,13 @@ BattlepassConfig.rewards = {
 		},
 		[33] = {
 			freepass = {},
-			battlepass = {},
+			battlepass = {
+				[1] = {
+					rewardType = BattlepassConfig.RewardTypes.Skin,
+					rewardSkin = Skins.MayanFigures,
+					rarityColor = BattlepassConfig.RarityColors[Skins.MayanFigures.rarity],
+				}
+			},
 		},
 		[34] = {
 			freepass = {},

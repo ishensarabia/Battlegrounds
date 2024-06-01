@@ -5,7 +5,7 @@ local Knit = require(ReplicatedStorage.Packages.Knit)
 local NotificationController = Knit.CreateController({ Name = "NotificationController" })
 
 --Widgets
-local NotificationWidget = require(game.StarterPlayer.StarterPlayerScripts.Source.UI_Widgets.NotificationWidget)
+local NotificationWidget = require(game.StarterPlayer.StarterPlayerScripts.Source.Widgets.NotificationWidget)
 
 function NotificationController:KnitStart() end
 

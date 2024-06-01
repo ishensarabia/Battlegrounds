@@ -10,11 +10,14 @@ local ViewportModel = require(ReplicatedStorage.Source.Modules.Util.ViewportMode
 --Main
 local EmoteController = Knit.CreateController({ Name = "EmoteController" })
 local Emotes = require(ReplicatedStorage.Source.Assets.Emotes)
-local EmoteIcons = require(ReplicatedStorage.Source.Assets.Icons.EmoteIcons)
+local EmoteIcons = require(ReplicatedStorage.Source.Assets.EmoteIcons)
 --Widgets
-local EmoteWheelWidget = require(game.StarterPlayer.StarterPlayerScripts.Source.UI_Widgets.EmoteWheelWidget)
+local EmoteWheelWidget = require(game.StarterPlayer.StarterPlayerScripts.Source.Widgets.EmoteWheelWidget)
 --Variables
 local emoteAnimationTrack
+--Constants
+local EMOTE_KEYCODE_PC = Enum.KeyCode.T
+local EMOTE_KEYCODE_CONSOLE = Enum.KeyCode.DPadDown
 
 function EmoteController:KnitStart()
 	--Services
@@ -31,7 +34,7 @@ function EmoteController:KnitStart()
 				EmoteWheelWidget:Close()
 			end
 		end
-	end, true, Enum.KeyCode.T, Enum.KeyCode.ButtonY)
+	end, true, EMOTE_KEYCODE_PC, EMOTE_KEYCODE_CONSOLE)
 	ContextActionService:SetPosition("OpenEmoteWheel", UDim2.fromScale(0.6, 0.439))
 	ContextActionService:SetTitle("OpenEmoteWheel", "Emotes")
 end

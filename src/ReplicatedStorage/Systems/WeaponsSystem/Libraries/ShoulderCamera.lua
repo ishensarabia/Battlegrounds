@@ -646,7 +646,9 @@ function ShoulderCamera:onCurrentCharacterChanged(character)
 			self.isCrouching = false
 			self.isSliding = false
 			self.isDashing = false
+			self.zoomState = false
 			self:updateZoomState()
+			self:resetZoomFactor()
 		end)
 		self.eventConnections.characterChildAdded = character.ChildAdded:Connect(function(child)
 			if child:IsA("Tool") then
@@ -838,6 +840,7 @@ function ShoulderCamera:setHideToolWhileZoomed(hide)
 end
 
 function ShoulderCamera:setZoomFactor(zoomFactor)
+	warn("Setting zoom factor to " .. zoomFactor)
 	self.currentZoomFactor = zoomFactor
 	local nominalFOVRadians = math.rad(self.fieldOfView)
 	local nominalImageHeight = math.tan(nominalFOVRadians / 2)
