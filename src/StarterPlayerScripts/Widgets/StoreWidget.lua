@@ -49,6 +49,7 @@ local DailyItemsTimer
 
 local CategoriesFrame
 local ItemsScrollingFrame
+local CategoryTextLabel
 -- Variables
 local isOpeningCrate = false
 local isShowingDailyItems = false
@@ -256,13 +257,20 @@ function StoreWidget:Initialize()
 	end)
 
 	--Initialize the gui objects
+	CategoryTextLabel = StoreGui.CategoryTextLabel
+
 	DailyStoreMainFrame = StoreGui.DailyStoreMainFrame
+
 	FeaturedItemsFrame = StoreGui.DailyStoreMainFrame.FeaturedItemsFrame
 	FeaturedItemsTimer = StoreGui.DailyStoreMainFrame.FeaturedItemsTimer
+
 	DailyItemsTimer = StoreGui.DailyStoreMainFrame.DailyItemsTimer
 	DailyitemsFrame = StoreGui.DailyStoreMainFrame.DailyItemsFrame
+
 	CategoriesFrame = StoreGui.CategoriesFrame
+
 	ItemsScrollingFrame = StoreGui.ItemsScrollingFrame
+
 	StoreGui.Enabled = false
 	--Hide the gui objects by size for animation purposes
 	HideStoreContents()
@@ -292,6 +300,10 @@ function StoreWidget:Initialize()
 			end
 		end
 	)
+
+	StoreService.InsufficientFundsSignal:Connect(function(currencyNeeded: number, currencyType: string)
+		warn(currencyNeeded, currencyType)
+	end)
 
 	StoreService.UpdateFeaturedItemsSignal:Connect(function(featuredItems: table)
 		--Check if there's new featured items and update
@@ -373,7 +385,7 @@ function StoreWidget:CreateBundlesFrames(bundles: table, category: string)
 		glowEffectTween:Play()
 		--Create the buy button
 		local buyButton = ButtonWidget.new(bundleFrame.BuyButton, function()
-			StoreService:BuyBundle(category, bundleName)
+			StoreService:PurchaseBundle(category, bundleName)
 		end)
 	end
 end
@@ -454,7 +466,7 @@ function StoreWidget:GenerateCratesFrames(crates: table)
 		glowEffectTween:Play()
 		--Create the buy button
 		local buyButton = ButtonWidget.new(crateFrame.BuyButton, function()
-			StoreService:BuyCrate(crateName)
+			StoreService:PurchaseCrate(crateName)
 		end)
 		--Create the open button
 		local openButton = ButtonWidget.new(crateFrame.OpenButton, function()
@@ -468,6 +480,8 @@ function StoreWidget:OpenStore(category: string, _backButtonCallback: Function?)
 	StarterGui:SetCoreGuiEnabled(Enum.CoreGuiType.Chat, false)
 	--Clean the store contents and set up the scrolling frame for new category
 	ItemsScrollingFrame.CanvasPosition = Vector2.new(0, 0)
+	--Set the category text
+	CategoryTextLabel.Text = category:gsub("(%u)", " %1")
 	if _backButtonCallback then
 		backButtonCallback = _backButtonCallback
 	end

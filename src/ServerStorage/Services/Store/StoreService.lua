@@ -24,6 +24,7 @@ local StoreService = Knit.CreateService({
 		BattlepassBoughtSignal = Knit.CreateSignal(),
 		UpdateFeaturedItemsSignal = Knit.CreateSignal(),
 		UpdateDailyItemsSignal = Knit.CreateSignal(),
+		InsufficientFundsSignal = Knit.CreateSignal(),
 	},
 })
 
@@ -491,7 +492,7 @@ function StoreService.Client:GetBundles(player, bundleCategory: string)
 end
 
 --Buy bundle function
-function StoreService:BuyBundle(player, bundleCategory: string, bundleName: string)
+function StoreService:PurchaseBundle(player, bundleCategory: string, bundleName: string)
 	warn(player, bundleName, bundleCategory)
 	local bundle = self.bundles[bundleCategory][bundleName]
 	local success, result = pcall(function()
@@ -535,8 +536,8 @@ function StoreService:GiftBattlepass(gifter, recipientId, season)
 end
 
 --[Client] Buy bundle function
-function StoreService.Client:BuyBundle(player, bundleCategory: string, bundleName: string)
-	return self.Server:BuyBundle(player, bundleCategory, bundleName)
+function StoreService.Client:PurchaseBundle(player, bundleCategory: string, bundleName: string)
+	return self.Server:PurchaseBundle(player, bundleCategory, bundleName)
 end
 
 --Get crates function
@@ -550,7 +551,7 @@ function StoreService.Client:GetCrates()
 end
 
 --Buy crate function
-function StoreService:BuyCrate(player, crateName: string)
+function StoreService:PurchaseCrate(player, crateName: string)
 	local crate = self.crates[crateName]
 	--Get currency
 	local currentCurrency = self._currencyService:GetCurrency(player, crate.Currency)
@@ -561,12 +562,14 @@ function StoreService:BuyCrate(player, crateName: string)
 		local totalAmountOfCrates = self._dataService:AddCrate(player, crateName, true)
 		--Fire the signal
 		self.Client.CrateAddedSignal:Fire(player, crateName, totalAmountOfCrates)
+	else
+		self.Client.InsufficientFundsSignal:Fire(player, crate.Price, crate.Currency)
 	end
 end
 
 --[Client] Buy crate function
-function StoreService.Client:BuyCrate(player, crateName: string)
-	return self.Server:BuyCrate(player, crateName)
+function StoreService.Client:PurchaseCrate(player, crateName: string)
+	return self.Server:PurchaseCrate(player, crateName)
 end
 
 --Open crate function

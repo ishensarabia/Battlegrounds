@@ -1,6 +1,4 @@
 local DataConfig = {}
---External configs
-DataConfig.BattlepassConfig = require(script.Parent.Parent.Battlepass.BattlepassConfig)
 
 DataConfig.profileTemplate = {
 	BattleCoins = 0,
