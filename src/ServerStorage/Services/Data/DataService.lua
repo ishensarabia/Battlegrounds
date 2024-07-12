@@ -53,7 +53,7 @@ end
 function DataService:KnitStart()
 	-- Initialize profiles table0 to store
 	self.profiles = {}
-	self.profileStore = ProfileService.GetProfileStore("Development_Alpha_12", DataConfig.profileTemplate)
+	self.profileStore = ProfileService.GetProfileStore("Development_Alpha_05", DataConfig.profileTemplate)
 	Players.PlayerRemoving:Connect(function(player)
 		self:onPlayerRemoving(player)
 	end)
@@ -263,10 +263,12 @@ function DataService:onPlayerRemoving(player)
 	end
 end
 
-function DataService.WipeData(player)
-	local data = DataService:GetProfileData(player)
-	data = {}
-	player:Kick("Your data has been wiped")
+function DataService:WipeData(player)
+	local profile = self.profiles[player]
+	if profile then
+		profile.Data = DataConfig.profileTemplate
+		player:Kick("Your data has been wiped")
+	end
 end
 
 function DataService:SetKeyValue(player, key: string, newValue: any)
@@ -356,9 +358,9 @@ function DataService:AddSkin(player, skinName: string)
 	end
 end
 
+
 function DataService:AddEmote(player, emoteName: string, emoteType: string)
 	local profile = self.profiles[player]
-	-- warn(profile.Data.Emotes)
 	if profile then
 		if profile.Data.Emotes.EmotesOwned[emoteName] then
 			-- profile.Data.Emotes.EmotesOwned[emoteName] += 1
@@ -368,6 +370,7 @@ function DataService:AddEmote(player, emoteName: string, emoteType: string)
 			profile.Data.Emotes.EmotesOwned[emoteName].Type = emoteType
 		end
 	end
+	warn(profile.Data.Emotes)
 	-- warn(profile.Data.Emotes.EmotesOwned)
 end
 

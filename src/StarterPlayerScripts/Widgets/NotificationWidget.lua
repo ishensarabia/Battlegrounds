@@ -8,8 +8,10 @@ local Knit = require(ReplicatedStorage.Packages.Knit)
 --Main
 local NotificationWidget = {}
 local isInitialized = false
+--Controllers
+local WidgetController
 --Notifiaction tween info
-local notificationTweenInfo = TweenInfo.new(1.33, Enum.EasingStyle.Elastic, Enum.EasingDirection.Out, 0, true, 0)
+local notificationTweenInfo = TweenInfo.new(1, Enum.EasingStyle.Elastic, Enum.EasingDirection.Out, 0, true, 0)
 local transparencyTweenInfo = TweenInfo.new(1.3, Enum.EasingStyle.Bounce, Enum.EasingDirection.InOut, 0, true)
 --Constants
 local DELAY_TIME_BEFORE_NOTIFICATION = 0.33
@@ -22,6 +24,7 @@ function NotificationWidget:Initialize()
 	else
 		NotificationWidget.NotificationGui = game.Players.LocalPlayer.PlayerGui.NotificationGui
 	end
+	WidgetController = Knit.GetController("WidgetController")
 	--Enable the gui
 	NotificationWidget.NotificationGui.Enabled = true
 	--Hide the notification frames
@@ -73,7 +76,7 @@ end
 
 --Function to create a notification
 function NotificationWidget:DisplayNotification(notificationType: string, params: table)
-	warn(params)
+	-- warn(params)
 	if not isInitialized then
 		NotificationWidget:Initialize()
 	end
@@ -149,10 +152,10 @@ function NotificationWidget:DisplayNotification(notificationType: string, params
 				params.damageDealt + damageDealtFrame:GetAttribute("CurrentDamage")
 			)
 			isDisplayingDamageDealtFrame = true
-			task.delay(1.33, function()
+			task.delay(1, function()
 				isDisplayingDamageDealtFrame = false
 			end)
-		else
+		else	
 			damageDealtFrame:SetAttribute("CurrentDamage", params.damageDealt)
 		end
 		--Set the parent
@@ -161,7 +164,8 @@ function NotificationWidget:DisplayNotification(notificationType: string, params
 		--Set the size of the text labels to 0
 		hideTextLabelsBySize(damageDealtFrame)
 		hideTextLabelsBySize(wipeoutRewardsFrame)
-		damageDealtFrame.DamageAmountTextLabel.Text = damageDealtFrame:GetAttribute("CurrentDamage")
+		--Animate the digits for the text label
+		WidgetController:AnimateDigitsForTextLabel(damageDealtFrame.DamageAmountTextLabel, params.damageDealt, 1)
 		--Set the reward attributes to the wipeoutRewardsFrame
 		updateRewardAttribute("BattlecoinsGained", "battlecoinsGained")
 		updateRewardAttribute("ExperienceGained", "experienceGained")
@@ -345,7 +349,7 @@ function NotificationWidget:DisplayNotification(notificationType: string, params
 		assistFrame.Parent = assistNoticationFrame
 		-- Set the params
 		assistFrame.UsernameTextLabel.Text = params.playerWipedOutAssist
-		assistFrame.DamageDealtTextLabel.Text = params.damageDealt
+		assistFrame.DamageDealtTextLabel.Text = "0"
 		--Set the size of the text labels to 0
 		hideTextLabelsBySize(assistFrame)
 		--Hide the gradient of the frames
@@ -354,6 +358,7 @@ function NotificationWidget:DisplayNotification(notificationType: string, params
 		NotificationWidget.AudioController:PlaySound("knockout")
 		--Animate shine for the frame
 		AnimateShineForFrame(assistFrame, true)
+		WidgetController:AnimateDigitsForTextLabel(assistFrame.DamageDealtTextLabel, params.damageDealt, 1)
 		--Create the tweens for the text labels
 		local damageDealtTween = TweenService:Create(
 			assistFrame.DamageDealtTextLabel,

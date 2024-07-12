@@ -6,7 +6,7 @@ local Knit = require(ReplicatedStorage.Packages.Knit)
 local SCALING_FACTOR = 1.05
 local BASE_LEVEL_UP_XP = 1000
 --Config
-local BattlepassConfig = require(ServerStorage.Source.Services.Battlepass.BattlepassConfig)
+local BattlepassConfig = require(ReplicatedStorage.Source.Configurations.BattlepassConfig)
 
 local BattlepassService = Knit.CreateService({
 	Name = "BattlepassService",

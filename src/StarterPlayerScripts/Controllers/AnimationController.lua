@@ -4,12 +4,16 @@ local Knit = require(ReplicatedStorage.Packages.Knit)
 
 local AnimationController = Knit.CreateController({ Name = "AnimationController" })
 
+--Assets
+local emotes = require(ReplicatedStorage.Source.Assets.Emotes)
+
 function AnimationController:KnitStart() end
 
-function AnimationController:InitAnimation(character, animationName: string, animationID: string)
+function AnimationController:InitAnimation(character : Model, animationName: string, animationID: string)
 	local animationTrack = Instance.new("Animation")
+	animationTrack.Name = animationName
 	animationTrack.AnimationId = animationID
-	animationTrack.Parent = character
+	animationTrack.Parent = character.Humanoid
 	self._animationTracks[animationName] = character:WaitForChild("Humanoid").Animator:LoadAnimation(animationTrack)
 end
 
@@ -22,6 +26,8 @@ function AnimationController:PlayAnimation(animationName: string, playbackSpeed:
 	end
 	return self._animationTracks[animationName]
 end
+
+
 
 --Stop animation function
 function AnimationController:StopAnimation(animationName: string)

@@ -195,11 +195,6 @@ function LoadoutWidget:UnlockLoadoutItem(weaponName)
 			end)
 			itemFrame.Frame.BuyButtonFrame.BuyButton.Visible = false
 			itemFrame.Frame.BuyEarlyButtonFrame.BuyEarlyButton.Visible = false
-			ButtonWidget.new(itemFrame.Frame, function()
-				LoadoutWidget.state = "WeaponPreview"
-				LoadoutWidget:SetInventoryItemsVis(false)
-				WeaponPreviewWidget:OpenPreview(weaponName, self.slot)
-			end)
 			break
 		end
 	end
@@ -280,11 +275,11 @@ function LoadoutWidget:OpenLoadout(callback)
 						FormatText.To_comma_value(weapon:GetAttribute("Price"))
 					--Create early buy button
 					ButtonWidget.new(itemFrame.Frame.BuyEarlyButtonFrame, function()
-						Knit.GetService("LoadoutService"):BuyWeapon(itemID, true)
+						Knit.GetService("LoadoutService"):PurchaseWeapon(itemID, true)
 					end)
 					--Create buy button
 					ButtonWidget.new(itemFrame.Frame.BuyButtonFrame, function()
-						Knit.GetService("LoadoutService"):BuyWeapon(itemID, false)
+						Knit.GetService("LoadoutService"):PurchaseWeapon(itemID, false)
 					end)
 				else -- If item is owned
 					itemFrame.Frame.BuyEarlyButtonFrame.BuyEarlyButton.Visible = false

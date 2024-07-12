@@ -4,8 +4,9 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local TweenService = game:GetService("TweenService")
 local Assets = ReplicatedStorage.Assets
 local Knit = require(ReplicatedStorage.Packages.Knit)
---Knit Services
 local UserInputService = game:GetService("UserInputService")
+--Controllers
+local WidgetController = Knit.GetController("WidgetController")
 --Modules
 local UserInputTypeSystemModule = require(ReplicatedStorage.Source.Modules.Util.UserInputTypeSystemModule)
 --Widgets
@@ -21,10 +22,12 @@ local InputIcons = require(ReplicatedStorage.Source.Assets.Icons.InputIcons)
 local TWEEN_INFO = TweenInfo.new(0.33)
 local GREEN_COLOR = Color3.fromRGB(152, 255, 178)
 local RED_COLOR = Color3.fromRGB(255, 90, 90)
+local GREEN_COLOR_SEQUENCE = ColorSequence.new({ ColorSequenceKeypoint.new(0, GREEN_COLOR), ColorSequenceKeypoint.new(1, GREEN_COLOR) })
 --Gui Variables
 local mainFrame
 local currentWeaponFrame
 local healthFrame
+local levelUpFrame
 
 function HUDWidget:Initialize()
 	warn("HUD widget initialized")
@@ -40,9 +43,12 @@ function HUDWidget:Initialize()
 	mainFrame = HUDGui.MainFrame
 	currentWeaponFrame = mainFrame.CurrentWeaponFrame
 	healthFrame = mainFrame.HealthFrame
+	levelUpFrame = mainFrame.LevelUpFrame
+
 	--Hide the gui elements
 	mainFrame.Position = UDim2.fromScale(-1, mainFrame.Position.Y.Scale)
 	currentWeaponFrame.Position = UDim2.fromScale(currentWeaponFrame.Position.X.Scale, 1.5)
+	levelUpFrame.Position = UDim2.fromScale(1, levelUpFrame.Position.Y.Scale)
 
 	self:InitializeHealth()
 
@@ -59,7 +65,6 @@ function HUDWidget:Initialize()
 			-- respawnButton.instance.InputIcon.Visible = false
 		end
 	end)
-	warn(GREEN_COLOR)
 	return self
 end
 
@@ -75,37 +80,90 @@ function HUDWidget:ResetHealth()
 	TweenService:Create(healthFrame.HealthIconTextLabel, TweenInfo.new(0.5), { Size = self.initialHealthIconSize })
 		:Play()
 	healthFrame.HealthIconTextLabel.Position = self.initialHealthIconPostion
+
 	if self.healthPulseTween then
 		self.healthPulseTween:Cancel()
 		self.healthPulseTween = nil
 	end
 end
+
+function HUDWidget:LevelUp(newLevel)
+	--Animate the level up frame
+	local levelUpTween =
+		TweenService:Create(levelUpFrame, TWEEN_INFO, { Position = levelUpFrame:GetAttribute("TargetPosition") })
+	levelUpTween:Play()
+	levelUpTween.Completed:Connect(function()
+		local progressCircle: Frame = mainFrame.LevelUpFrame.LevelFrame.ProgressCircleFrame
+		local levelTextLabel = progressCircle.LevelTextLabel
+		local rightCircle: UIGradient = progressCircle.Right.Frame.UIGradient
+		local leftCircle: UIGradient = progressCircle.Left.Frame.UIGradient
+		levelTextLabel.Text = newLevel - 1
+
+		--Tween the levelUpFrame to give the illusion of a level up
+		TweenService:Create(
+			progressCircle,
+			TweenInfo.new(1, Enum.EasingStyle.Sine, Enum.EasingDirection.Out, 0, true),
+			{ Size = progressCircle.Size + UDim2.fromScale(0.1, 0.1) }
+		):Play()
+
+		WidgetController:TweenProgressCircle(leftCircle, rightCircle, 360)
+		task.delay(1, function()
+			levelTextLabel.Text = newLevel
+			WidgetController:TweenProgressCircle(leftCircle, rightCircle, 0)
+			task.delay(1, function()
+				TweenService
+					:Create(levelUpFrame, TWEEN_INFO, { Position = UDim2.fromScale(1, levelUpFrame.Position.Y.Scale) })
+					:Play()
+			end)
+		end)
+	end)
+end
+
 function HUDWidget:InitializeHealth()
 	player.CharacterAdded:Connect(function(character)
 		local humanoid = character:WaitForChild("Humanoid")
+		local leftCircle = healthFrame.Left.Frame.UIGradient
+		local rightCircle = healthFrame.Right.Frame.UIGradient
 
 		healthFrame.HealthStackFrame.CurrentHealthTextLabel.Text = math.floor(humanoid.Health)
 		healthFrame.HealthStackFrame.TotalHealthTextLabel.Text = math.floor(humanoid.MaxHealth)
+
+		local healthPercentage = humanoid.Health / humanoid.MaxHealth
+
+		WidgetController:TweenProgressCircle(leftCircle, rightCircle, healthPercentage * 360)
+		leftCircle.Color = GREEN_COLOR_SEQUENCE
+		rightCircle.Color = GREEN_COLOR_SEQUENCE
+
 		healthFrame.HealthIconTextLabel.TextColor3 = GREEN_COLOR
 
 		self.initialHealthIconSize = healthFrame.HealthIconTextLabel.Size
 		self.initialHealthIconPostion = healthFrame.HealthIconTextLabel.Position
-		
+		self:ResetHealth()
+
+
 		humanoid:GetPropertyChangedSignal("Health"):Connect(function()
-			healthFrame.HealthStackFrame.CurrentHealthTextLabel.Text = math.floor(humanoid.Health)
+			WidgetController:AnimateDigitsForTextLabel(
+				healthFrame.HealthStackFrame.CurrentHealthTextLabel,
+				math.floor(humanoid.Health),
+				1
+			)
 			-- Calculate the health percentage
 			local healthPercentage = humanoid.Health / humanoid.MaxHealth
 			-- Lerp between custom green and red based on the health percentage
 			local color = GREEN_COLOR:Lerp(RED_COLOR, 1 - healthPercentage)
+			local colorSequence = ColorSequence.new({ ColorSequenceKeypoint.new(0, color), ColorSequenceKeypoint.new(1, color) })
 			-- Create a tween to animate the color change
 			local colorTween =
 				TweenService:Create(healthFrame.HealthIconTextLabel, TweenInfo.new(0.5), { TextColor3 = color })
 			colorTween:Play()
+
+			WidgetController:TweenProgressCircle(leftCircle, rightCircle, healthPercentage * 360, nil, colorSequence)
+
 			-- If health is less than a quarter, animate the size to give a pulse effect
 			if healthPercentage < 0.25 then
 				if not self.healthPulseTween then
 					local newScale = UDim2.fromScale(
-						self.initialHealthIconSize.X.Scale * 0.85,
+						self.initialHealthIconSize.X.Scale * 0.9,
 						self.initialHealthIconSize.Y.Scale * 0.85
 					)
 					self.healthPulseTween = TweenService:Create(
@@ -167,10 +225,18 @@ function HUDWidget:ShowWeaponInfo(weapon: Instance)
 	currentWeaponFrame.AmmoStackFrame.TotalAmmoTextLabel.Text = weapon:GetAttribute("TotalAmmo")
 	--Connect to the weapon's attribute changed event
 	weapon:GetAttributeChangedSignal("CurrentAmmo"):Connect(function()
-		currentWeaponFrame.AmmoStackFrame.CurrentAmmoTextLabel.Text = weapon:GetAttribute("CurrentAmmo")
+		WidgetController:AnimateDigitsForTextLabel(
+			currentWeaponFrame.AmmoStackFrame.CurrentAmmoTextLabel,
+			weapon:GetAttribute("CurrentAmmo"),
+			1
+		)
 	end)
 	weapon:GetAttributeChangedSignal("TotalAmmo"):Connect(function()
-		currentWeaponFrame.AmmoStackFrame.TotalAmmoTextLabel.Text = weapon:GetAttribute("TotalAmmo")
+		WidgetController:AnimateDigitsForTextLabel(
+			currentWeaponFrame.AmmoStackFrame.TotalAmmoTextLabel,
+			weapon:GetAttribute("TotalAmmo"),
+			1
+		)
 	end)
 end
 

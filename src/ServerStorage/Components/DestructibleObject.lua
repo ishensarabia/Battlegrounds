@@ -32,7 +32,6 @@ function DestructibleObject:DestroyObject(player)
 	if not self.isConstructed then
 		return
 	end
-	warn("Object : " .. self.Instance.Name .. " has been destroyed")
 	self.isConstructed = false
 	local DataService = Knit.GetService("DataService")
 	if player then
@@ -47,7 +46,6 @@ function DestructibleObject:DestroyObject(player)
 				constructPrompt.Parent = child.Attachment
 				constructPrompt.RequiresLineOfSight = false
 				constructPrompt.ActionText = "Build"
-				warn("created attachment" .. constructPrompt.Name)
 				table.insert(self.constructPrompts, constructPrompt)
 				self._janitor:Add(constructPrompt)
 
@@ -80,7 +78,6 @@ function DestructibleObject:DestroyObject(player)
 
 		self:_setBuildTime()
 	end
-	warn("Destroying object")
 	for key, child in pairs(self.Instance:GetChildren()) do
 		if child:IsA("BasePart") then
 			child.Anchored = false

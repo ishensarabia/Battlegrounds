@@ -60,7 +60,7 @@ function LoadoutService.Client:SetWeaponEquipped(player, weaponName, loadoutSlot
 	return self.Server:SetWeaponEquipped(player, weaponName, loadoutSlot)
 end
 
-function LoadoutService:BuyWeapon(player, weaponName)
+function LoadoutService:PurchaseWeapon(player, weaponName)
 	local CurrencyService = Knit.GetService("CurrencyService")
 	local playerCurrency = CurrencyService:GetCurrencyValue(player, "BattleCoins")
 	local playerLevel = player:GetAttribute("Level")
@@ -86,15 +86,15 @@ function LoadoutService:BuyWeapon(player, weaponName)
 
 	if playerCurrency >= weaponPrice then
 		self.Client.WeaponBoughtSignal:Fire(player, weaponName)
-		return CurrencyService:BuyWeapon(player, weaponName, isEarlyBuy)
+		return CurrencyService:PurchaseWeapon(player, weaponName, isEarlyBuy)
 	else
 		return false, "Not enough currency to purchase weapon"
 	end
 end
 
 --Client function
-function LoadoutService.Client:BuyWeapon(player, weaponName)
-	return self.Server:BuyWeapon(player, weaponName)
+function LoadoutService.Client:PurchaseWeapon(player, weaponName)
+	return self.Server:PurchaseWeapon(player, weaponName)
 end
 
 function LoadoutService:LoadWeaponCustomization(player, weaponName)

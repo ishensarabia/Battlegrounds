@@ -840,7 +840,7 @@ function ShoulderCamera:setHideToolWhileZoomed(hide)
 end
 
 function ShoulderCamera:setZoomFactor(zoomFactor)
-	warn("Setting zoom factor to " .. zoomFactor)
+	-- warn("Setting zoom factor to " .. zoomFactor)
 	self.currentZoomFactor = zoomFactor
 	local nominalFOVRadians = math.rad(self.fieldOfView)
 	local nominalImageHeight = math.tan(nominalFOVRadians / 2)

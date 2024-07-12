@@ -144,11 +144,13 @@ function ChallengesWidget:CloseChallenges()
 end
 
 function ChallengesWidget:UpdateChallengeFrame(challengeData, typeOfChallenge)
-	local challengeFrame = challengesFrame[typeOfChallenge .. "ChallengesFrame"][challengeData.name]
-	challengeFrame.BarFrame.ProgressText.Text = challengeData.progression .. "/" .. challengeData.goal
-	--Update the bar
-	challengeFrame.BarFrame.ProgressBar.Size =
-		UDim2.fromScale((challengeData.progression / challengeData.goal) * 1, 0.9)
+	if self.isActive then		
+		local challengeFrame = challengesFrame[typeOfChallenge .. "ChallengesFrame"][challengeData.name]
+		challengeFrame.BarFrame.ProgressText.Text = challengeData.progression .. "/" .. challengeData.goal
+		--Update the bar
+		challengeFrame.BarFrame.ProgressBar.Size =
+			UDim2.fromScale((challengeData.progression / challengeData.goal) * 1, 0.9)
+	end
 end
 
 function ChallengesWidget:ChallengeCompleted(challengeData, typeOfChallenge)

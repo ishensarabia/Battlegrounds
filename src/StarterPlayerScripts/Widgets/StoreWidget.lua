@@ -12,6 +12,7 @@ local FormatText = require(ReplicatedStorage.Source.Modules.Util.FormatText)
 local TableUtil = require(ReplicatedStorage.Source.Modules.Util.TableUtil)
 --Services
 local StoreService = Knit.GetService("StoreService")
+local DataService = Knit.GetService("DataService")
 local WidgetController = Knit.GetController("WidgetController")
 --Widgets
 local ContentInfoWidget = require(game.StarterPlayer.StarterPlayerScripts.Source.Widgets.ContentInfoWidget)
@@ -39,46 +40,34 @@ local DISTANCE_PER_BUNDLE = {
 --Screen guis
 local StoreGui
 --Gui objects
-local FeaturedItemsFrame
+local MainFrame: Frame
+local FeaturedItemsFrame: Frame
 local FeaturedItemsTimer
 
-local DailyStoreMainFrame
+local DailyStoreMainFrame: Frame
 
 local DailyitemsFrame
 local DailyItemsTimer
 
 local CategoriesFrame
-local ItemsScrollingFrame
+local ItemsScrollingFrame: Frame
 local CategoryTextLabel
+local SubcategoriesFrame: Frame
 -- Variables
 local isOpeningCrate = false
 local isShowingDailyItems = false
 local backButtonCallback
+local player = game.Players.LocalPlayer
+--Enums
+local CurrenciesEnum = require(ReplicatedStorage.Source.Enums.CurrenciesEnum)
+local ItemTypesEnum = require(ReplicatedStorage.Source.Enums.ItemTypesEnum)
+
+--Assets
+local Assets = ReplicatedStorage.Assets
+local BuyButton = Assets.GuiObjects.Buttons.BuyButton
+local Prestiges = require(ReplicatedStorage.Source.Assets.Prestiges)
 
 local buttonTweenInfo = TweenInfo.new(0.15, Enum.EasingStyle.Linear, Enum.EasingDirection.InOut, 0, true, 0)
-
-local function HideStoreContents(shouldTween: boolean)
-	for index, child in StoreGui:GetChildren() do
-		if child:IsA("GuiObject") and child:GetAttribute("TargetSize") then
-			if shouldTween then
-				local tween = TweenService:Create(child, TweenInfo.new(0.09), { Size = UDim2.new(0, 0, 0, 0) })
-				tween:Play()
-				tween.Completed:Wait()
-			else
-				child.Size = UDim2.new(0, 0, 0, 0)
-			end
-		end
-		if child:IsA("GuiObject") and child:GetAttribute("TargetTransparency") then
-			if shouldTween then
-				local tween = TweenService:Create(child, TweenInfo.new(0.09), { ImageTransparency = 1 })
-				tween:Play()
-				tween.Completed:Wait()
-			else
-				child.ImageTransparency = 1
-			end
-		end
-	end
-end
 
 local function getTimeUntilTextUpdate(itemTypes: string)
 	local now = os.time() + StoreConfig.RESET_TIME_OFFSET
@@ -156,31 +145,232 @@ local function ShowItemsScrollingFrame()
 	tween.Completed:Wait()
 end
 
+local function HideSubcategoriesFrame()
+	--Hide the subcategories frame by tweening the size
+	SubcategoriesFrame:TweenSize(UDim2.new(0, 0, 0, 0), Enum.EasingDirection.InOut, Enum.EasingStyle.Linear, 0.09, true)
+end
+
 local function PlayOpenStoreAnimation(category: string)
 	if not StoreGui.Enabled then
 		StoreGui.Enabled = true
-		for index, child in StoreGui:GetChildren() do
-			if child:IsA("GuiObject") and child:GetAttribute("TargetSize") then
-				TweenService:Create(child, TweenInfo.new(0.39), { Size = child:GetAttribute("TargetSize") }):Play()
-			end
-			if child:IsA("GuiObject") and child:GetAttribute("TargetTransparency") then
-				TweenService
-					:Create(
-						child,
-						TweenInfo.new(0.69),
-						{ ImageTransparency = child:GetAttribute("TargetTransparency") }
-					)
-					:Play()
-			end
-		end
+		MainFrame:TweenPosition(UDim2.fromScale(0, 0), Enum.EasingDirection.InOut, Enum.EasingStyle.Linear, 0.13)
 	end
 	if category == "DailyItems" then
 		HideItemsScrollingFrame()
 		ShowDailyItems()
+		HideSubcategoriesFrame()
 	end
-	if category == "Crates" or category == "BattleGems" or category == "BattleCoins" then
+	if
+		category == "Crates"
+		or category == "BattleGems"
+		or category == "BattleCoins"
+		or category == StoreConfig.Categories.Prestige
+	then
 		HideDailyItems()
 		ShowItemsScrollingFrame()
+	end
+end
+
+local function CreateOwnedText(parentFrame: Frame)
+	local ownedText = Instance.new("TextLabel")
+	ownedText.Text = "Owned"
+	ownedText.Size = UDim2.new(0.5, 0, 0.2, 0)
+	ownedText.Position = UDim2.new(0.25, 0, 0.5, 0)
+	ownedText.BackgroundTransparency = 1
+	ownedText.TextColor3 = Color3.fromRGB(255, 255, 255)
+	ownedText.TextStrokeTransparency = 0
+	ownedText.TextScaled = true
+	ownedText.Font = Enum.Font.GothamBold
+	ownedText.ZIndex = 6
+	ownedText.Parent = parentFrame
+end
+
+local function CreatePurchasableSkinFrame(skin: table, prestigeNeeded: number?)
+	WidgetController:CreateSkinFrame(skin.data, ItemsScrollingFrame):andThen(function(skinFrame)
+		--Check if the player owns the skin
+		DataService:GetKeyValue("Skins"):andThen(function(skins: table)
+			if skins[skin.data.name] then
+				CreateOwnedText(skinFrame)
+				return
+			else
+				if prestigeNeeded then
+					--Get the prestige needed frame
+					local prestigeNeededFrame = Assets.GuiObjects.Frames.PrestigeNeededFrame:Clone()
+					prestigeNeededFrame.Parent = skinFrame
+					--Assign the prestige needed text
+					prestigeNeededFrame.PrestigeTextLabel.Text = prestigeNeeded
+					--Assign the icon for the prestige needed
+					prestigeNeededFrame.PrestigeIcon.Image = Prestiges[prestigeNeeded].icon
+					--Check if the player has the required prestige
+					if player:GetAttribute("Prestige") >= prestigeNeeded then
+						--Create the buy button frame
+						local buyButton = BuyButton:Clone()
+						buyButton.Parent = skinFrame
+						--Assign the price text
+						buyButton.LabelImageButton.PriceText.Text = FormatText.To_comma_value(skin.data.price)
+						--Assign the currency icon
+						buyButton.LabelImageButton.CurrencyIcon.Image = CurrenciesEnum.Icons[skin.data.currency]
+						--Create the buy button
+						ButtonWidget.new(skinFrame.BuyButton, function()
+							StoreService:PurchaseSkin(skin.data.name):andThen(function(result)
+								if result then
+									CreateOwnedText(skinFrame)
+									skinFrame.BuyButton:Destroy()
+								end
+							end)
+						end)
+					end
+				else
+				end
+			end
+		end)
+	end)
+end
+
+local function CreatePurchaseableEmoteFrame(emote: table, prestigeNeeded: number?)
+	local emoteFrame = WidgetController:CreateEmoteFrame(emote.data, ItemsScrollingFrame)
+	--Check if the player owns the emote
+	DataService:GetKeyValue("Emotes"):andThen(function(emotes: table)
+		if emotes.EmotesOwned[emote.data.name] then
+			CreateOwnedText(emoteFrame)
+			return
+		else
+			if prestigeNeeded then
+				--Get the prestige needed frame
+				local prestigeNeededFrame = Assets.GuiObjects.Frames.PrestigeNeededFrame:Clone()
+				prestigeNeededFrame.Parent = emoteFrame
+				--Assign the prestige needed text
+				prestigeNeededFrame.PrestigeTextLabel.Text = prestigeNeeded
+				--Assign the icon for the prestige needed
+				prestigeNeededFrame.PrestigeIcon.Image = Prestiges[prestigeNeeded].icon
+				--Check if the player has the required prestige
+				if player:GetAttribute("Prestige") >= prestigeNeeded then
+					--Create the buy button frame
+					local buyButton = BuyButton:Clone()
+					buyButton.Parent = emoteFrame
+					--Assign the price text
+					buyButton.LabelImageButton.PriceText.Text = FormatText.To_comma_value(emote.data.price)
+					--Assign the currency icon
+					buyButton.LabelImageButton.CurrencyIcon.Image = CurrenciesEnum.Icons[emote.data.currency]
+					--Create the buy button
+					ButtonWidget.new(emoteFrame.BuyButton, function()
+						StoreService:PurchaseEmote(emote.data.name, "Animation"):andThen(function(result)
+							if result then
+								CreateOwnedText(emoteFrame)
+								emoteFrame.BuyButton:Destroy()
+							end
+						end)
+					end)
+				end
+			else
+				--Create the buy button frame
+				local buyButton = BuyButton:Clone()
+				buyButton.Parent = emoteFrame
+				--Assign the price text
+				buyButton.LabelImageButton.PriceText.Text = FormatText.To_comma_value(emote.data.price)
+				--Assign the currency icon
+				buyButton.LabelImageButton.CurrencyIcon.Image = CurrenciesEnum.Icons[emote.data.currency]
+				--Create the buy button
+				ButtonWidget.new(emoteFrame.BuyButton, function()
+					StoreService:PurchaseEmote(emote.data.name, "Animation"):andThen(function(result)
+						if result then
+							CreateOwnedText(emoteFrame)
+							emoteFrame.BuyButton:Destroy()
+						end
+					end)
+				end)
+			end
+		end
+	end)
+end
+
+local function CreateItemFramesForItems(items: table, parentFrame: Frame, aspectRatio: number?)
+	for index, itemData in items do
+		if itemData._type == ItemTypesEnum.Emote then
+			local emoteFrame = WidgetController:CreateEmoteFrame(itemData.data, parentFrame)
+			emoteFrame.UIAspectRatioConstraint.AspectRatio = aspectRatio or 1
+			--Check if the player owns the emote
+			DataService:GetKeyValue("Emotes"):andThen(function(emotes: table)
+				--Change spaces to underscores (for the emote ID)
+				local emoteID = itemData.data.name:gsub(" ", "_")
+				if emotes.EmotesOwned[emoteID] then
+					CreateOwnedText(emoteFrame)
+					return
+				else
+					--Create the buy button frame
+					local buyButton = BuyButton:Clone()
+					buyButton.Parent = emoteFrame
+					--Assign the price text
+					buyButton.LabelImageButton.PriceText.Text = FormatText.To_comma_value(itemData.data.price)
+					--Assign the currency icon
+					buyButton.LabelImageButton.CurrencyIcon.Image = CurrenciesEnum.Icons[itemData.data.currency]
+					--Create the buy button
+					ButtonWidget.new(emoteFrame.BuyButton, function()
+						StoreService:PurchaseEmote(itemData.data.name, "Animation"):andThen(function(result)
+							if result then
+								CreateOwnedText(emoteFrame)
+								emoteFrame.BuyButton:Destroy()
+							end
+						end)
+					end)
+				end
+			end)
+		elseif itemData._type == ItemTypesEnum.Skin then
+			WidgetController:CreateSkinFrame(itemData.data, parentFrame):andThen(function(skinFrame: Frame)
+				skinFrame.UIAspectRatioConstraint.AspectRatio = aspectRatio or 1
+				--Check if the player owns the skin
+				DataService:GetKeyValue("Skins"):andThen(function(skins: table)
+					if skins[itemData.data.name] then
+						CreateOwnedText(skinFrame)
+						return
+					else
+						--Create the buy button frame
+						local buyButton = BuyButton:Clone()
+						buyButton.Parent = skinFrame
+						--Assign the price text
+						buyButton.LabelImageButton.PriceText.Text = FormatText.To_comma_value(itemData.data.price)
+						--Assign the currency icon
+						buyButton.LabelImageButton.CurrencyIcon.Image = CurrenciesEnum.Icons[itemData.data.currency]
+						--Create the buy button
+						ButtonWidget.new(skinFrame.BuyButton, function()
+							StoreService:PurchaseSkin(itemData.data.name):andThen(function(result)
+								if result then
+									CreateOwnedText(skinFrame)
+									skinFrame.BuyButton:Destroy()
+								end
+							end)
+						end)
+					end
+				end)
+			end)
+		elseif itemData._type == ItemTypesEnum.EmoteIcon then
+			local emoteIconFrame = WidgetController:CreateEmoteIconFrame(itemData.data, parentFrame)
+			emoteIconFrame.UIAspectRatioConstraint.AspectRatio = aspectRatio or 1
+			--Check if the player owns the emote icon
+			DataService:GetKeyValue("Emotes"):andThen(function(emotes: table)
+				if emotes.EmotesOwned[itemData.data.name] then
+					CreateOwnedText(emoteIconFrame)
+					return
+				else
+					--Create the buy button frame
+					local buyButton = BuyButton:Clone()
+					buyButton.Parent = emoteIconFrame
+					--Assign the price text
+					buyButton.LabelImageButton.PriceText.Text = FormatText.To_comma_value(itemData.data.price)
+					--Assign the currency icon
+					buyButton.LabelImageButton.CurrencyIcon.Image = CurrenciesEnum.Icons[itemData.data.currency]
+					--Create the buy button
+					ButtonWidget.new(emoteIconFrame.BuyButton, function()
+						StoreService:PurchaseEmote(itemData.data.name, "Icon"):andThen(function(result)
+							if result then
+								CreateOwnedText(emoteIconFrame)
+								emoteIconFrame.BuyButton:Destroy()
+							end
+						end)
+					end)
+				end
+			end)
+		end
 	end
 end
 
@@ -192,16 +382,7 @@ function StoreWidget:UpdateFeaturedItems()
 		end
 	end
 
-	-- Create frames for each featured item
-	for index, itemData in self._featuredItemsCache do
-		if itemData._type == StoreConfig.ItemTypes.Emote then
-			WidgetController:CreateEmoteFrame(itemData.data, FeaturedItemsFrame)
-		elseif itemData._type == StoreConfig.ItemTypes.Skin then
-			WidgetController:CreateSkinFrame(itemData.data, FeaturedItemsFrame)
-		elseif itemData._type == StoreConfig.ItemTypes.EmoteIcon then
-			WidgetController:CreateEmoteIconFrame(itemData.data, FeaturedItemsFrame)
-		end
-	end
+	CreateItemFramesForItems(self._featuredItemsCache, FeaturedItemsFrame, 0.8)
 end
 
 function StoreWidget:UpdateDailyItems()
@@ -211,18 +392,8 @@ function StoreWidget:UpdateDailyItems()
 			value:Destroy()
 		end
 	end
-	--Loop through the daily items and create the frames
-	for index, value in self._dailyItemsCache do
-		if value._type == StoreConfig.ItemTypes.Skin then
-			WidgetController:CreateSkinFrame(value.data, DailyitemsFrame)
-		end
-		if value._type == StoreConfig.ItemTypes.Emote then
-			WidgetController:CreateEmoteFrame(value.data, DailyitemsFrame)
-		end
-		if value._type == StoreConfig.ItemTypes.EmoteIcon then
-			WidgetController:CreateEmoteIconFrame(value.data, DailyitemsFrame)
-		end
-	end
+
+	CreateItemFramesForItems(self._dailyItemsCache, DailyitemsFrame, 0.8)
 end
 
 function StoreWidget:Initialize()
@@ -250,35 +421,45 @@ function StoreWidget:Initialize()
 	end
 
 	--Set the back button callback
-	ButtonWidget.new(StoreGui.BackButtonFrame, function()
+	ButtonWidget.new(StoreGui.MainFrame.BackButtonFrame, function()
 		--Close the store
 		StoreWidget:CloseStore()
 		backButtonCallback()
 	end)
 
 	--Initialize the gui objects
-	CategoryTextLabel = StoreGui.CategoryTextLabel
+	MainFrame = StoreGui.MainFrame
+	CategoryTextLabel = MainFrame.CategoryTextLabel
 
-	DailyStoreMainFrame = StoreGui.DailyStoreMainFrame
+	DailyStoreMainFrame = MainFrame.DailyStoreMainFrame
 
-	FeaturedItemsFrame = StoreGui.DailyStoreMainFrame.FeaturedItemsFrame
-	FeaturedItemsTimer = StoreGui.DailyStoreMainFrame.FeaturedItemsTimer
+	FeaturedItemsFrame = MainFrame.DailyStoreMainFrame.FeaturedItemsFrame
+	FeaturedItemsTimer = MainFrame.DailyStoreMainFrame.FeaturedItemsTimer
 
-	DailyItemsTimer = StoreGui.DailyStoreMainFrame.DailyItemsTimer
-	DailyitemsFrame = StoreGui.DailyStoreMainFrame.DailyItemsFrame
+	DailyItemsTimer = MainFrame.DailyStoreMainFrame.DailyItemsTimer
+	DailyitemsFrame = MainFrame.DailyStoreMainFrame.DailyItemsFrame
 
-	CategoriesFrame = StoreGui.CategoriesFrame
+	CategoriesFrame = MainFrame.CategoriesFrame
+	SubcategoriesFrame = MainFrame.SubcategoriesFrame
 
-	ItemsScrollingFrame = StoreGui.ItemsScrollingFrame
+	ItemsScrollingFrame = MainFrame.ItemsScrollingFrame
 
 	StoreGui.Enabled = false
-	--Hide the gui objects by size for animation purposes
-	HideStoreContents()
+
 	--Create the category buttons
 	for index, child in CategoriesFrame:GetChildren() do
 		if child:IsA("Frame") then
 			ButtonWidget.new(child.Frame, function()
 				StoreWidget:OpenStore(child:GetAttribute("Category"))
+			end)
+		end
+	end
+	--Create subcategory buttons
+	for index, child in SubcategoriesFrame:GetChildren() do
+		if child:IsA("Frame") then
+			ButtonWidget.new(child.Frame, function()
+				--For now use default category as prestige is the only categoy using subcategories **TODO**: Expand the store to other categories
+				StoreWidget:ChangeSubcategory(child:GetAttribute("Subcategory"))
 			end)
 		end
 	end
@@ -384,7 +565,7 @@ function StoreWidget:CreateBundlesFrames(bundles: table, category: string)
 		)
 		glowEffectTween:Play()
 		--Create the buy button
-		local buyButton = ButtonWidget.new(bundleFrame.BuyButton, function()
+		ButtonWidget.new(bundleFrame.BuyButton, function()
 			StoreService:PurchaseBundle(category, bundleName)
 		end)
 	end
@@ -478,18 +659,21 @@ end
 function StoreWidget:OpenStore(category: string, _backButtonCallback: Function?)
 	--Disable the chat gui so that it doesn't overlap with other buttons
 	StarterGui:SetCoreGuiEnabled(Enum.CoreGuiType.Chat, false)
+	StarterGui:SetCoreGuiEnabled(Enum.CoreGuiType.PlayerList, false)
 	--Clean the store contents and set up the scrolling frame for new category
+	for index, child in ItemsScrollingFrame:GetChildren() do
+		if child:IsA("Frame") then
+			child:Destroy()
+		end
+	end
 	ItemsScrollingFrame.CanvasPosition = Vector2.new(0, 0)
 	--Set the category text
 	CategoryTextLabel.Text = category:gsub("(%u)", " %1")
 	if _backButtonCallback then
 		backButtonCallback = _backButtonCallback
 	end
-	for index, child in ItemsScrollingFrame:GetChildren() do
-		if child:IsA("Frame") then
-			child:Destroy()
-		end
-	end
+
+	HideSubcategoriesFrame()
 
 	PlayOpenStoreAnimation(category)
 
@@ -522,6 +706,46 @@ function StoreWidget:OpenStore(category: string, _backButtonCallback: Function?)
 			StoreWidget:CreateBundlesFrames(battleGemBundles, BUNDLE_CATEGORIES.BattleGems)
 		end)
 	end
+
+	if category == StoreConfig.Categories.Prestige then
+		ItemsScrollingFrame.UIGridLayout.HorizontalAlignment = Enum.HorizontalAlignment.Left
+		SubcategoriesFrame:TweenSize(
+			SubcategoriesFrame:GetAttribute("TargetSize"),
+			Enum.EasingDirection.InOut,
+			Enum.EasingStyle.Linear,
+			0.13
+		)
+		--Get the prestige items
+		StoreService:GetPrestigeItems():andThen(function(prestigeItems: table)
+			for index, skin: table in prestigeItems.Skins do
+				CreatePurchasableSkinFrame(skin, skin.prestigeNeeded)
+			end
+		end)
+	end
+end
+
+function StoreWidget:ChangeSubcategory(subcategory: string)
+	--Clean the store contents and set up the scrolling frame for new subcategory
+	for index, child in ItemsScrollingFrame:GetChildren() do
+		if child:IsA("Frame") then
+			child:Destroy()
+		end
+	end
+	ItemsScrollingFrame.CanvasPosition = Vector2.new(0, 0)
+	--Get the prestige items
+	StoreService:GetPrestigeItems():andThen(function(prestigeItems: table)
+		if subcategory == StoreConfig.Subcategoires.Prestige.Skins then
+			for index, skin: table in prestigeItems.Skins do
+				CreatePurchasableSkinFrame(skin, skin.prestigeNeeded)
+			end
+		end
+
+		if subcategory == StoreConfig.Subcategoires.Prestige.Emotes then
+			for index, emote: table in prestigeItems.Emotes do
+				CreatePurchaseableEmoteFrame(emote, emote.prestigeNeeded)
+			end
+		end
+	end)
 end
 
 function StoreWidget:CloseStore()
@@ -536,12 +760,19 @@ function StoreWidget:CloseStore()
 			child:Destroy()
 		end
 	end
-	--Hide the store contents
-	HideStoreContents(true)
+	MainFrame:TweenPosition(
+		UDim2.fromScale(1, MainFrame.Position.Y.Scale),
+		Enum.EasingDirection.InOut,
+		Enum.EasingStyle.Linear,
+		0.13
+	)
 	--Disable the store gui
-	StoreGui.Enabled = false
+	task.delay(0.13, function()
+		StoreGui.Enabled = false
+	end)
 	--Reenable the chat gui
 	StarterGui:SetCoreGuiEnabled(Enum.CoreGuiType.Chat, true)
+	StarterGui:SetCoreGuiEnabled(Enum.CoreGuiType.PlayerList, true)
 end
 
 return StoreWidget:Initialize()

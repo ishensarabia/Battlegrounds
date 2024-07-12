@@ -10,21 +10,21 @@
 local emotes = require(game.ReplicatedStorage.Source.Assets.Emotes)
 return {
 	Building = {
-		Build = "rbxassetid://14399306154",
+		Build = "rbxassetid://18397012701",
 	},
 	Movement = {
-		Forward_Dash = "rbxassetid://12432088961",
-		Backwards_Dash = "rbxassetid://12432237836",
-		Right_Dash = "rbxassetid://12432228382",
-		Left_Dash = "rbxassetid://12432217627",
-		Climb = "rbxassetid://13084101795",
-		Climb_Up = "rbxassetid://13086372330",
+		Forward_Dash = "rbxassetid://18367046937",
+		Backwards_Dash = "rbxassetid://18367977406",
+		Right_Dash = "rbxassetid://18368176329",
+		Left_Dash = "rbxassetid://18368474907",
+		Climb = "rbxassetid://18366906994",
+		Climb_Up = "rbxassetid://18367374086",
 		Slide = "rbxassetid://13884788134",
-		Crouch = "rbxassetid://14449504194",
+		Crouch = "rbxassetid://18389522899",
 		Sprinting = "rbxassetid://15407280617",
 	},
 	Emotes = {
-		Sleep = emotes.Sleep.animation,
+		-- Sleep = emotes.Sleep.animation,
 		Club_Dance = emotes.Club_Dance.animation,
 		Boneless = emotes.Boneless.animation,
 		Feet_Clap = emotes.Feet_Clap.animation,
@@ -40,5 +40,7 @@ return {
 		Ballin = emotes.Ballin.animation,
 		Slitherin = emotes.Slitherin.animation,
 		Rider = emotes.Rider.animation,
+		Bandit_Dance = emotes.Bandit_Dance.animation,
+		Eagling = emotes.Eagling.animation,
 	},
 }

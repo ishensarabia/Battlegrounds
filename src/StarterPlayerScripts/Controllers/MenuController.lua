@@ -1,3 +1,4 @@
+local MarketplaceService = game:GetService("MarketplaceService")
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local player = Players.LocalPlayer
@@ -7,6 +8,8 @@ local player = Players.LocalPlayer
 local Knit = require(ReplicatedStorage.Packages.Knit)
 --Controllers
 local WidgetController
+--Services
+local LevelService
 
 local MenuController = Knit.CreateController { Name = "MenuController" }
 local Cutscenes = {
@@ -18,6 +21,12 @@ local Cutscenes = {
 
 function MenuController:KnitStart()
     WidgetController = Knit.GetController("WidgetController")
+
+    warn(LevelService)
+    --Connect level up signal
+    LevelService.LevelUpSignal:Connect(function(newLevel)
+        WidgetController.HUDWidget:LevelUp(newLevel)
+    end)
 end
 
 function MenuController:startCutscene(cutscene : string)
@@ -66,8 +75,10 @@ function MenuController:HidePlayButton()
 end
 
 function MenuController:KnitInit()
+    LevelService = Knit.GetService("LevelService")
     self._cameraController = Knit.GetController("CameraController")
     self.isInMenu = true
+
 end
 
 

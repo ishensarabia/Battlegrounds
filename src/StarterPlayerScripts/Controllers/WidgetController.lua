@@ -4,10 +4,11 @@ local Knit = require(game.ReplicatedStorage.Packages.Knit)
 local Promise = require(Knit.Util.Promise)
 
 local WidgetController = Knit.CreateController({ Name = "WidgetController" })
-local UIModules = script.Parent.Parent.Widgets
+local Widgets = script.Parent.Parent.Widgets
 local Assets = ReplicatedStorage.Assets
 --Modules
 local ViewportModel = require(ReplicatedStorage.Source.Modules.Util.ViewportModel)
+local FormatText = require(ReplicatedStorage.Source.Modules.Util.FormatText)
 
 local RARITIES_COLORS = {
 	Common = Color3.fromRGB(39, 180, 126),
@@ -17,7 +18,7 @@ local RARITIES_COLORS = {
 	Mythic = Color3.fromRGB(184, 17, 17),
 }
 function WidgetController:KnitStart()
-	for key, child in (UIModules:GetChildren()) do
+	for key, child in (Widgets:GetChildren()) do
 		if child:IsA("ModuleScript") then
 			self[child.Name] = require(child)
 		end
@@ -124,11 +125,11 @@ end
 --create emote frame
 function WidgetController:CreateEmoteFrame(emoteData: table, parent: GuiObject?, layoutOrder: number?)
 	local emoteFrame = Assets.GuiObjects.Frames.EmoteTemplateFrame:Clone()
-	emoteFrame.NameTextLabel.Text = emoteData.Name or emoteData.name
-	emoteFrame.RarityTextLabel.Text = emoteData.Rarity or emoteData.rarity
+	emoteFrame.NameTextLabel.Text = emoteData.name
+	emoteFrame.RarityTextLabel.Text = emoteData.rarity
 	--set rarity color
-	emoteFrame.RarityTextLabel.TextColor3 = RARITIES_COLORS[emoteData.Rarity or emoteData.rarity]
-	emoteFrame.ItemFrame.ImageColor3 = RARITIES_COLORS[emoteData.Rarity or emoteData.rarity]
+	emoteFrame.RarityTextLabel.TextColor3 = RARITIES_COLORS[emoteData.rarity]
+	emoteFrame.ItemFrame.ImageColor3 = RARITIES_COLORS[emoteData.rarity]
 	task.spawn(function()
 		Knit.GetController("EmoteController")
 			:DisplayEmotePreview(emoteData.Name or emoteData.name, emoteFrame.ViewportFrame, true)
@@ -140,6 +141,77 @@ function WidgetController:CreateEmoteFrame(emoteData: table, parent: GuiObject?,
 		emoteFrame.LayoutOrder = layoutOrder
 	end
 	return emoteFrame
+end
+
+--Animate digits for text label
+function WidgetController:AnimateDigitsForTextLabel(textLabel: TextLabel, targetValue: number, incrementValue: number)
+	local textLabelInitalScaleSize = textLabel.Size
+	local currentValue = textLabel.Text
+	if type(currentValue) == "string" then
+		currentValue = currentValue:gsub(",", "")
+		currentValue = tonumber(currentValue)
+	end
+
+	if type(targetValue) == "string" then
+		targetValue = targetValue:gsub(",", "")
+		targetValue = tonumber(targetValue)
+	end
+
+	local connection
+	connection = game:GetService("RunService").RenderStepped:Connect(function()
+		if currentValue < targetValue then
+			currentValue = currentValue + incrementValue
+			textLabel.Text = FormatText.To_comma_value(currentValue)
+			textLabel.Size = textLabelInitalScaleSize + UDim2.new(0.05, 0, 0.1, 0)
+		elseif currentValue > targetValue then
+			currentValue = currentValue - incrementValue
+			textLabel.Text = FormatText.To_comma_value(currentValue)
+			textLabel.Size = textLabelInitalScaleSize - UDim2.new(0.05, 0, 0.1, 0)
+		else
+			textLabel.Text = FormatText.To_comma_value(targetValue) -- Ensure the final value is set correctly
+			textLabel.Size = textLabelInitalScaleSize
+			connection:Disconnect() -- Disconnect the RenderStepped event when the animation is done
+		end
+	end)
+end
+
+function WidgetController:TweenProgressCircle(
+	leftCircle: UIGradient,
+	rightCircle: UIGradient,
+	rotation: number,
+	justLeveledUp: boolean?,
+	newColor: ColorSequence?
+)
+	-- Divide rotation in two parts so it can be animated between the two parts
+	local leftProgress = math.clamp(rotation, 180, 360)
+	local rightProgress = math.clamp(rotation, 0, 180)
+
+	if newColor then
+		leftCircle.Color = newColor
+		rightCircle.Color = newColor
+	end
+
+	local leftTween = TweenService:Create(leftCircle, TweenInfo.new(0.5), { Rotation = leftProgress })
+	local rightTween = TweenService:Create(rightCircle, TweenInfo.new(0.5), { Rotation = rightProgress })
+
+	-- Play the tweens in the correct order
+	if justLeveledUp then
+		leftTween:Play()
+		leftTween.Completed:Wait()
+		rightTween:Play()
+	else
+		if rotation >= 180 then
+			rightTween:Play()
+			rightTween.Completed:Wait()
+			leftTween:Play()
+		else
+			leftTween:Play()
+			leftTween.Completed:Wait()
+			rightTween:Play()
+		end
+	end
+
+	return leftTween, rightTween
 end
 
 --create emote icon frame

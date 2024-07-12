@@ -76,9 +76,9 @@ function WeaponsService:SendWeaponData(targetPlayer: Player, typeOfData: string,
 end
 
 function WeaponsService:SetIKForWeapon(player, instance: Instance)
-	warn("Setting weapon IK for weapon : " .. instance.Name .. " for player: " .. player.Name)
 	--Animate the selected weapon
-	if not self.IKSessions[player.UserId] then
+	if not self.IKSessions[player.UserId] and instance.Handle:FindFirstChild("SecondHandleAttachment") then
+		warn("Setting weapon IK for weapon : " .. instance.Name .. " for player: " .. player.Name)
 		local IKController = Instance.new("IKControl")
 		IKController.Name = "SecondHandleIK"
 		self.IKSessions[player.UserId] = IKController
@@ -86,6 +86,7 @@ function WeaponsService:SetIKForWeapon(player, instance: Instance)
 		IKController.ChainRoot = player.Character.LeftUpperArm
 		IKController.EndEffector = player.Character.LeftHand
 		IKController.Target = instance.Handle.SecondHandleAttachment
+		IKController.Pole = instance.Handle.SecondHandleAttachment
 
 		-- Add hinge constraint
 		local hingeConstraint = Instance.new("HingeConstraint")

@@ -28,7 +28,7 @@ function PlayerPreviewController:SpawnWeaponInCharacterMenu()
 	local idleAnimationTrack = playerCharacter.Humanoid.Animator:LoadAnimation(idleAnimation)
 	idleAnimationTrack:Play()
 	local longWeaponAnimation = Instance.new("Animation")
-	longWeaponAnimation.AnimationId = "rbxassetid://11191090687"
+	longWeaponAnimation.AnimationId = "rbxassetid://18386448190"
 	longWeaponAnimation.Name = "longWeapon"
 	local longWeaponAnimationTrack = playerCharacter.Humanoid.Animator:LoadAnimation(longWeaponAnimation)
 	longWeaponAnimationTrack:Play()

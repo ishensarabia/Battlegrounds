@@ -404,7 +404,6 @@ function WeaponsSystem.setWeaponEquipped(weapon, equipped)
 
 		if WeaponsSystem.currentWeapon then
 			WeaponsSystem.camera:setEnabled(true)
-			warn("Setting zoom factor to ", WeaponsSystem.currentWeapon.instance:GetAttribute("ZoomFactor") or 1.1)
 			WeaponsSystem.camera:setZoomFactor(WeaponsSystem.currentWeapon.instance:GetAttribute("ZoomFactor") or 1.1)
 			WeaponsSystem.camera:setHasScope(WeaponsSystem.currentWeapon.instance:GetAttribute("HasScope") or false)
 		else

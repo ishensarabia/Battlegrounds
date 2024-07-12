@@ -301,8 +301,8 @@ function BulletWeapon:simulateProjectile(firingPlayer, fireInfo, projectileIdx, 
 	local gravityFactor = self:getConfigValue("GravityFactor", 0)
 	local minSpread = self.instance:GetAttribute("MinSpread") or 0
 	local maxSpread = self.instance:GetAttribute("MaxSpread") or 0
-	local shouldMovePart = self:getConfigValue("ShouldMovePart", false)
-	local explodeOnImpact = self:getConfigValue("ExplodeOnImpact", false)
+	local shouldMovePart = self.instance:GetAttribute("ShouldMovePart") or false
+	local explodeOnImpact = self.instance:GetAttribute("ExplodeOnImpact") or false
 	local blastRadius = self:getConfigValue("BlastRadius", 8)
 
 	-- Cheat the origin of the shot back if gun tip in wall/object

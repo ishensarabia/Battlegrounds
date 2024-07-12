@@ -3,7 +3,12 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Skins = require(ReplicatedStorage.Source.Assets.Skins)
 local Emotes = require(ReplicatedStorage.Source.Assets.Emotes)
 local EmoteIcons = require(ReplicatedStorage.Source.Assets.EmoteIcons)
+--Enums
+local RaritiesEnum = require(ReplicatedStorage.Source.Enums.RaritiesEnum)
 local BattlepassConfig = {}
+
+BattlepassConfig.SEASON_REFRESH_RATE = 60 * 60 * 24 * 45 -- 1 month and a half
+BattlepassConfig.RESET_TIME_OFFSET = -60 * 60 * 4 -- Amount of time to offset from GMT
 --Reward types
 BattlepassConfig.RewardTypes = {
 	BattleCoins = "BattleCoins",
@@ -27,15 +32,6 @@ BattlepassConfig.RewardDescriptions = {
 	[BattlepassConfig.RewardTypes.Emote_Icon] = "an Emote Icon is a cosmetic that can be displayed alongside normal emotes or individually in your emote wheel!",
 }
 
---Rarity of rewards
-BattlepassConfig.Rarity = {
-	Common = "Common",
-	Rare = "Rare",
-	Epic = "Epic",
-	Legendary = "Legendary",
-	Mythic = "Mythic",
-}
-
 --Images
 BattlepassConfig.RewardIcons = {
 	[BattlepassConfig.RewardTypes.BattleCoins] = "rbxassetid://13343092476",
@@ -44,19 +40,9 @@ BattlepassConfig.RewardIcons = {
 	[BattlepassConfig.RewardTypes.Crate] = "rbxassetid://1532101515",
 }
 
---Rarity to color of rewards dictionary
-BattlepassConfig.RarityColors = {
-	[BattlepassConfig.Rarity.Common] = Color3.fromRGB(39, 180, 126),
-	[BattlepassConfig.Rarity.Rare] = Color3.fromRGB(0, 132, 255),
-	[BattlepassConfig.Rarity.Epic] = Color3.fromRGB(223, 226, 37),
-	[BattlepassConfig.Rarity.Legendary] = Color3.fromRGB(174, 56, 204),
-	[BattlepassConfig.Rarity.Mythic] = Color3.fromRGB(184, 17, 17),
-}
-
 BattlepassConfig.seasonDevProdctsDictionary = {
 	Season_1 = 1532101515,
 }
-
 
 --Battlepass rewards per season
 BattlepassConfig.rewards = {
@@ -66,19 +52,19 @@ BattlepassConfig.rewards = {
 				[1] = {
 					rewardType = BattlepassConfig.RewardTypes.BattleCoins,
 					rewardAmount = 150,
-					rarity = BattlepassConfig.Rarity.Common,
-					rarityColor = BattlepassConfig.RarityColors[BattlepassConfig.Rarity.Common],
+					rarity = RaritiesEnum.Common,
+					rarityColor = RaritiesEnum.Colors[RaritiesEnum.Common],
 				},
 			},
 			battlepass = {
 				[1] = {
 					rewardType = BattlepassConfig.RewardTypes.Skin,
 					rewardSkin = Skins.SpiderSpirit,
-					rarityColor = BattlepassConfig.RarityColors[Skins.SpiderSpirit.rarity],
+					rarityColor = RaritiesEnum.Colors[Skins.SpiderSpirit.rarity],
 				},
 				[2] = {
 					rewardType = BattlepassConfig.RewardTypes.Emote_Icon,
-					rarityColor = BattlepassConfig.RarityColors[EmoteIcons.Im_Fine_Skull.rarity],
+					rarityColor = RaritiesEnum.Colors[EmoteIcons.Im_Fine_Skull.rarity],
 					rewardEmoteIcon = EmoteIcons.Im_Fine_Skull,
 				},
 			},
@@ -88,32 +74,32 @@ BattlepassConfig.rewards = {
 				[1] = {
 					rewardType = BattlepassConfig.RewardTypes.Crate,
 					crateName = "Skins_Crate",
-					rarity = BattlepassConfig.Rarity.Rare,
-					rarityColor = BattlepassConfig.RarityColors[BattlepassConfig.Rarity.Rare],
+					rarity = RaritiesEnum.Rare,
+					rarityColor = RaritiesEnum.Colors[RaritiesEnum.Rare],
 				},
 				[2] = {
 					rewardType = BattlepassConfig.RewardTypes.Emote,
 					rewardEmote = Emotes.Ballin,
-					rarityColor = BattlepassConfig.RarityColors[Emotes.Ballin.rarity],
+					rarityColor = RaritiesEnum.Colors[Emotes.Ballin.rarity],
 				},
 			},
 			battlepass = {
 				[1] = {
 					rewardType = BattlepassConfig.RewardTypes.BattleCoins,
 					rewardAmount = 1000,
-					rarity = BattlepassConfig.Rarity.Common,
-					rarityColor = BattlepassConfig.RarityColors[BattlepassConfig.Rarity.Common],
+					rarity = RaritiesEnum.Common,
+					rarityColor = RaritiesEnum.Colors[RaritiesEnum.Common],
 				},
 				[2] = {
 					rewardType = BattlepassConfig.RewardTypes.Experience_Boost,
-					rarity = BattlepassConfig.Rarity.Rare,
-					rarityColor = BattlepassConfig.RarityColors[BattlepassConfig.Rarity.Rare],
+					rarity = RaritiesEnum.Rare,
+					rarityColor = RaritiesEnum.Colors[RaritiesEnum.Rare],
 				},
 				[3] = {
 					rewardType = BattlepassConfig.RewardTypes.Crate,
 					crateName = "Skins_Crate",
-					rarity = BattlepassConfig.Rarity.Rare,
-					rarityColor = BattlepassConfig.RarityColors[BattlepassConfig.Rarity.Rare],
+					rarity = RaritiesEnum.Rare,
+					rarityColor = RaritiesEnum.Colors[RaritiesEnum.Rare],
 				},
 			},
 		},
@@ -122,15 +108,15 @@ BattlepassConfig.rewards = {
 				[1] = {
 					rewardType = BattlepassConfig.RewardTypes.BattleCoins,
 					rewardAmount = 1000,
-					rarity = BattlepassConfig.Rarity.Common,
-					rarityColor = BattlepassConfig.RarityColors[BattlepassConfig.Rarity.Common],
+					rarity = RaritiesEnum.Common,
+					rarityColor = RaritiesEnum.Colors[RaritiesEnum.Common],
 				},
 			},
 			battlepass = {
 				[1] = {
 					rewardType = BattlepassConfig.RewardTypes.Emote,
 					rewardEmote = Emotes.Take_The_L,
-					rarityColor = BattlepassConfig.RarityColors[Emotes.Take_The_L.rarity],
+					rarityColor = RaritiesEnum.Colors[Emotes.Take_The_L.rarity],
 				},
 			},
 		},
@@ -139,26 +125,26 @@ BattlepassConfig.rewards = {
 				[1] = {
 					rewardType = BattlepassConfig.RewardTypes.BattleCoins,
 					rewardAmount = 1000,
-					rarity = BattlepassConfig.Rarity.Common,
-					rarityColor = BattlepassConfig.RarityColors[BattlepassConfig.Rarity.Common],
+					rarity = RaritiesEnum.Common,
+					rarityColor = RaritiesEnum.Colors[RaritiesEnum.Common],
 				},
 			},
 			battlepass = {
 				[1] = {
 					rewardType = BattlepassConfig.RewardTypes.Emote_Icon,
-					rarityColor = BattlepassConfig.RarityColors[EmoteIcons.Ghost.rarity],
+					rarityColor = RaritiesEnum.Colors[EmoteIcons.Ghost.rarity],
 					rewardEmoteIcon = EmoteIcons.Ghost,
 				},
 				[2] = {
 					rewardType = BattlepassConfig.RewardTypes.Experience_Boost,
-					rarity = BattlepassConfig.Rarity.Rare,
-					rarityColor = BattlepassConfig.RarityColors[BattlepassConfig.Rarity.Rare],
+					rarity = RaritiesEnum.Rare,
+					rarityColor = RaritiesEnum.Colors[RaritiesEnum.Rare],
 				},
 				[3] = {
 					rewardType = BattlepassConfig.RewardTypes.Crate,
 					crateName = "Skins_Crate",
-					rarity = BattlepassConfig.Rarity.Rare,
-					rarityColor = BattlepassConfig.RarityColors[BattlepassConfig.Rarity.Rare],
+					rarity = RaritiesEnum.Rare,
+					rarityColor = RaritiesEnum.Colors[RaritiesEnum.Rare],
 				},
 			},
 		},
@@ -168,14 +154,14 @@ BattlepassConfig.rewards = {
 				[1] = {
 					rewardType = BattlepassConfig.RewardTypes.BattleGems,
 					rewardAmount = 100,
-					rarity = BattlepassConfig.Rarity.Common,
-					rarityColor = BattlepassConfig.RarityColors[BattlepassConfig.Rarity.Common],
+					rarity = RaritiesEnum.Common,
+					rarityColor = RaritiesEnum.Colors[RaritiesEnum.Common],
 				},
 				[2] = {
 					rewardType = BattlepassConfig.RewardTypes.Crate,
 					crateName = "Skins_Crate",
-					rarity = BattlepassConfig.Rarity.Rare,
-					rarityColor = BattlepassConfig.RarityColors[BattlepassConfig.Rarity.Rare],
+					rarity = RaritiesEnum.Rare,
+					rarityColor = RaritiesEnum.Colors[RaritiesEnum.Rare],
 				},
 			},
 		},
@@ -185,12 +171,12 @@ BattlepassConfig.rewards = {
 				[1] = {
 					rewardType = BattlepassConfig.RewardTypes.Skin,
 					rewardSkin = Skins.Melancoly,
-					rarityColor = BattlepassConfig.RarityColors[Skins.Melancoly.rarity],
+					rarityColor = RaritiesEnum.Colors[Skins.Melancoly.rarity],
 				},
 				[2] = {
 					rewardType = BattlepassConfig.RewardTypes.Experience_Boost,
-					rarity = BattlepassConfig.Rarity.Rare,
-					rarityColor = BattlepassConfig.RarityColors[BattlepassConfig.Rarity.Rare],
+					rarity = RaritiesEnum.Rare,
+					rarityColor = RaritiesEnum.Colors[RaritiesEnum.Rare],
 				},
 			},
 		},
@@ -200,27 +186,27 @@ BattlepassConfig.rewards = {
 					rewardType = BattlepassConfig.RewardTypes.BattleCoins,
 					rewardAmount = 1000,
 
-					rarity = BattlepassConfig.Rarity.Common,
-					rarityColor = BattlepassConfig.RarityColors[BattlepassConfig.Rarity.Common],
+					rarity = RaritiesEnum.Common,
+					rarityColor = RaritiesEnum.Colors[RaritiesEnum.Common],
 				},
 			},
 			battlepass = {
 				[1] = {
 					rewardType = BattlepassConfig.RewardTypes.BattleGems,
 					rewardAmount = 100,
-					rarity = BattlepassConfig.Rarity.Common,
-					rarityColor = BattlepassConfig.RarityColors[BattlepassConfig.Rarity.Common],
+					rarity = RaritiesEnum.Common,
+					rarityColor = RaritiesEnum.Colors[RaritiesEnum.Common],
 				},
 				[2] = {
 					rewardType = BattlepassConfig.RewardTypes.Experience_Boost,
-					rarity = BattlepassConfig.Rarity.Rare,
-					rarityColor = BattlepassConfig.RarityColors[BattlepassConfig.Rarity.Rare],
+					rarity = RaritiesEnum.Rare,
+					rarityColor = RaritiesEnum.Colors[RaritiesEnum.Rare],
 				},
 				[3] = {
 					rewardType = BattlepassConfig.RewardTypes.Crate,
 					crateName = "Skins_Crate",
-					rarity = BattlepassConfig.Rarity.Rare,
-					rarityColor = BattlepassConfig.RarityColors[BattlepassConfig.Rarity.Rare],
+					rarity = RaritiesEnum.Rare,
+					rarityColor = RaritiesEnum.Colors[RaritiesEnum.Rare],
 				},
 			},
 		},
@@ -230,20 +216,20 @@ BattlepassConfig.rewards = {
 				[1] = {
 					rewardType = BattlepassConfig.RewardTypes.BattleCoins,
 					rewardAmount = 1000,
-					rarity = BattlepassConfig.Rarity.Common,
-					rarityColor = BattlepassConfig.RarityColors[BattlepassConfig.Rarity.Common],
+					rarity = RaritiesEnum.Common,
+					rarityColor = RaritiesEnum.Colors[RaritiesEnum.Common],
 				},
 				[2] = {
 					rewardType = BattlepassConfig.RewardTypes.BattleGems,
 					rewardAmount = 100,
-					rarity = BattlepassConfig.Rarity.Common,
-					rarityColor = BattlepassConfig.RarityColors[BattlepassConfig.Rarity.Common],
+					rarity = RaritiesEnum.Common,
+					rarityColor = RaritiesEnum.Colors[RaritiesEnum.Common],
 				},
 				[4] = {
 					rewardType = BattlepassConfig.RewardTypes.Crate,
 					crateName = "Skins_Crate",
-					rarity = BattlepassConfig.Rarity.Rare,
-					rarityColor = BattlepassConfig.RarityColors[BattlepassConfig.Rarity.Rare],
+					rarity = RaritiesEnum.Rare,
+					rarityColor = RaritiesEnum.Colors[RaritiesEnum.Rare],
 				},
 			},
 		},
@@ -263,7 +249,7 @@ BattlepassConfig.rewards = {
 				[1] = {
 					rewardType = BattlepassConfig.RewardTypes.Emote,
 					rewardEmote = Emotes.The_Robot,
-					rarityColor = BattlepassConfig.RarityColors[Emotes.The_Robot.rarity],
+					rarityColor = RaritiesEnum.Colors[Emotes.The_Robot.rarity],
 				},
 			},
 		},
@@ -272,7 +258,7 @@ BattlepassConfig.rewards = {
 				[1] = {
 					rewardType = BattlepassConfig.RewardTypes.Skin,
 					rewardSkin = Skins.Tech,
-					rarityColor = BattlepassConfig.RarityColors[Skins.Tech.rarity],
+					rarityColor = RaritiesEnum.Colors[Skins.Tech.rarity],
 				},
 			},
 			battlepass = {},
@@ -286,8 +272,8 @@ BattlepassConfig.rewards = {
 				[1] = {
 					rewardType = BattlepassConfig.RewardTypes.BattleGems,
 					rewardAmount = 100,
-					rarity = BattlepassConfig.Rarity.Common,
-					rarityColor = BattlepassConfig.RarityColors[BattlepassConfig.Rarity.Common],
+					rarity = RaritiesEnum.Common,
+					rarityColor = RaritiesEnum.Colors[RaritiesEnum.Common],
 				},
 			},
 			battlepass = {},
@@ -297,8 +283,8 @@ BattlepassConfig.rewards = {
 				[1] = {
 					rewardType = BattlepassConfig.RewardTypes.Crate,
 					crateName = "Skins_Crate",
-					rarity = BattlepassConfig.Rarity.Rare,
-					rarityColor = BattlepassConfig.RarityColors[BattlepassConfig.Rarity.Rare],
+					rarity = RaritiesEnum.Rare,
+					rarityColor = RaritiesEnum.Colors[RaritiesEnum.Rare],
 				},
 			},
 			battlepass = {},
@@ -309,7 +295,7 @@ BattlepassConfig.rewards = {
 				[1] = {
 					rewardType = BattlepassConfig.RewardTypes.Skin,
 					rewardSkin = Skins.SkullRoses,
-					rarityColor = BattlepassConfig.RarityColors[Skins.SkullRoses.rarity],
+					rarityColor = RaritiesEnum.Colors[Skins.SkullRoses.rarity],
 				},
 			},
 		},
@@ -323,7 +309,7 @@ BattlepassConfig.rewards = {
 				[1] = {
 					rewardType = BattlepassConfig.RewardTypes.Emote,
 					rewardEmote = Emotes.Did_it,
-					rarityColor = BattlepassConfig.RarityColors[Emotes.Did_it.rarity],
+					rarityColor = RaritiesEnum.Colors[Emotes.Did_it.rarity],
 				},
 			},
 		},
@@ -337,7 +323,7 @@ BattlepassConfig.rewards = {
 				[1] = {
 					rewardType = BattlepassConfig.RewardTypes.Skin,
 					rewardSkin = Skins.SpiderSense,
-					rarityColor = BattlepassConfig.RarityColors[Skins.SpiderSense.rarity],
+					rarityColor = RaritiesEnum.Colors[Skins.SpiderSense.rarity],
 				},
 			},
 		},
@@ -351,7 +337,7 @@ BattlepassConfig.rewards = {
 				[1] = {
 					rewardType = BattlepassConfig.RewardTypes.Emote,
 					rewardEmote = Emotes.Rider,
-					rarityColor = BattlepassConfig.RarityColors[Emotes.Rider.rarity],
+					rarityColor = RaritiesEnum.Colors[Emotes.Rider.rarity],
 				},
 			},
 		},
@@ -369,7 +355,7 @@ BattlepassConfig.rewards = {
 				[1] = {
 					rewardType = BattlepassConfig.RewardTypes.Emote,
 					rewardEmote = Emotes.Slitherin,
-					rarityColor = BattlepassConfig.RarityColors[Emotes.Slitherin.rarity],
+					rarityColor = RaritiesEnum.Colors[Emotes.Slitherin.rarity],
 				},
 			},
 		},
@@ -411,8 +397,8 @@ BattlepassConfig.rewards = {
 				[1] = {
 					rewardType = BattlepassConfig.RewardTypes.Skin,
 					rewardSkin = Skins.MayanFigures,
-					rarityColor = BattlepassConfig.RarityColors[Skins.MayanFigures.rarity],
-				}
+					rarityColor = RaritiesEnum.Colors[Skins.MayanFigures.rarity],
+				},
 			},
 		},
 		[34] = {
@@ -487,7 +473,7 @@ BattlepassConfig.rewards = {
 }
 
 BattlepassConfig.Seasons = {
-	Season_1 =  {
+	Season_1 = {
 		seasonName = "Season 1",
 		seasonNumber = 1,
 		seasonImage = "rbxassetid://13343092476",

@@ -2,8 +2,7 @@
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Players = game:GetService("Players")
 local Knit = require(ReplicatedStorage.Packages.Knit)
---Config
-local MoneyConfig = require(script.Parent.MoneyConfig)
+--Assets
 local Weapons = ReplicatedStorage.Weapons
 
 local CurrencyService = Knit.CreateService({
@@ -12,7 +11,6 @@ local CurrencyService = Knit.CreateService({
 		CurrencyChanged = Knit.CreateSignal(),
 	},
 	_CurrencyPerPlayer = {},
-	_StartingBattleCoins = MoneyConfig.StartingBattleCoins,
 })
 
 function CurrencyService:GetCurrencyValue(player: Player, currency: string): number
@@ -40,8 +38,8 @@ function CurrencyService:RemoveCurrency(player: Player, currencyType: string, am
 		return true
 	end
 end
---BuyWeapon 
-function CurrencyService:BuyWeapon(player: Player, weaponName: string, isEarlyBuy: boolean)
+--PurchaseWeapon 
+function CurrencyService:PurchaseWeapon(player: Player, weaponName: string, isEarlyBuy: boolean)
     local weaponInstance = Weapons[weaponName]
 	
     local price = weaponInstance:GetAttribute("Price")
@@ -71,9 +69,9 @@ function CurrencyService:BuyWeapon(player: Player, weaponName: string, isEarlyBu
         return false, "Weapon does not exist"
     end
 end
---BuyWeapon Client
-function CurrencyService.Client:BuyWeapon(player: Player, weaponName: string)
-	return self.Server:BuyWeapon(player, weaponName)
+--PurchaseWeapon Client
+function CurrencyService.Client:PurchaseWeapon(player: Player, weaponName: string)
+	return self.Server:PurchaseWeapon(player, weaponName)
 end
 
 --Get currency

@@ -76,6 +76,11 @@ function EmoteWheelWidget:Initialize()
 		ClearPlayerEmotes()
 		self:ConfigureEmotes()
 	end)
+	--Create the close configure button
+	ButtonWidget.new(closeConfigureButton, function()
+		--Close the emote wheel
+		self:CloseConfiguration()
+	end)
 	--Disable the gui
 	emoteWheelGui.Enabled = false
 	--Hide the emotes and wheel frame initially by setting their size to 0
@@ -89,7 +94,7 @@ function EmoteWheelWidget:Initialize()
 	--Create the configure button
 	ButtonWidget.new(wheelFrame.ConfigureButtonFrame.button, function()
 		--Open the emote wheel
-		self:Open()
+		self:ConfigureEmotes()
 	end)
 
 	--Set up the emote wheel
@@ -107,6 +112,8 @@ function EmoteWheelWidget:Initialize()
 		--Connect the attribute changed to update the emote frame
 		emoteFrame:GetAttributeChangedSignal("Emote"):Connect(function()
 			if emoteFrame:GetAttribute("Emote") then
+				--Clear the viewport frame before displaying the emote
+				emoteFrame.ViewportFrame:ClearAllChildren()
 				emoteFrame.EmoteNameTextLabel.Visible = true
 				emoteFrame.EmoteNameTextLabel.Text = emoteFrame:GetAttribute("Emote")
 				emoteFrame.AddButton.Visible = false
@@ -153,6 +160,23 @@ function EmoteWheelWidget:Initialize()
 				self:ConfigureEmotes(emoteFrame)
 			end
 		end)
+		--Connect the mouse enter and leave events from the emote frame
+		self.emoteFramesConnections[emoteFrame.Name] = {}
+		self.emoteFramesConnections[emoteFrame.Name].mouseEnter = emoteFrame.MouseEnter:Connect(function()
+			TweenService:Create(
+				emoteFrame.SelectionHoverImage,
+				buttonTweenInfo,
+				{ ImageColor3 = Color3.fromRGB(255, 255, 255), ImageTransparency = 0 }
+			):Play()
+		end)
+		self.emoteFramesConnections[emoteFrame.Name].mouseLeave = emoteFrame.MouseLeave:Connect(function()
+			warn("Mouse left")
+			TweenService:Create(
+				emoteFrame.SelectionHoverImage,
+				buttonTweenInfo,
+				{ ImageColor3 = Color3.fromRGB(0, 0, 0), ImageTransparency = 0.37 }
+			):Play()
+		end)
 	end
 
 	--Get the player's emotes
@@ -193,6 +217,11 @@ function EmoteWheelWidget:Close()
 			child.SelectionHoverImage.ImageTransparency = 0.37
 		end
 	end
+	--Disconnect the mouse enter and leave events from the emote frames
+	for _, connection in self.emoteFramesConnections do
+		connection.mouseEnter:Disconnect()
+		connection.mouseLeave:Disconnect()
+	end
 	--Check if configuration mode is open
 	if playerEmotesScrollingFrame.Size ~= UDim2.fromScale(0, 0) then
 		self:CloseConfiguration()
@@ -201,8 +230,16 @@ end
 
 --Enter emote configuration mode
 function EmoteWheelWidget:ConfigureEmotes(emoteFrame: Frame)
+	if self.isConfiguringEmotes then
+		self:CloseConfiguration()
+		return
+	end
 	self.isConfiguringEmotes = true
-	for _, emoteFrame: Frame in pairs(emotesFrame:GetChildren()) do
+	--if there's an initial emote frame, make it the current emote editing frame
+	if emoteFrame then
+		self:SelectEmoteToConfigure(emoteFrame)
+	end
+	for _, emoteFrame: Frame in (emotesFrame:GetChildren()) do
 		if emoteFrame:GetAttribute("Emote") then
 			emoteFrame.EmoteNameTextLabel.Visible = true
 			emoteFrame.EmoteNameTextLabel.Text = emoteFrame:GetAttribute("Emote")
@@ -258,7 +295,6 @@ function EmoteWheelWidget:ConfigureEmotes(emoteFrame: Frame)
 		:Play()
 	TweenService:Create(emoteIconsButton, buttonTweenInfo, { Size = emoteIconsButton:GetAttribute("TargetSize") })
 		:Play()
-	--Tween the
 	--Get the player's emotes according to the current emotes displaying
 	--Check if the player emotes scroll frame has any children (Note that the first child is grid layoutt)
 	if #playerEmotesScrollingFrame:GetChildren() < 2 then
@@ -275,6 +311,7 @@ function EmoteWheelWidget:ConfigureEmotes(emoteFrame: Frame)
 					if EmoteWheelWidget.currentEmotesDisplaying == "Animations" then
 						if emoteInfo.Type == "Animation" then
 							local emote: table = Emotes[emoteName]
+							warn(emote)
 							emoteFrame = WidgetController:CreateEmoteFrame(emote)
 							--Create the emote frame
 							ButtonWidget.new(emoteFrame, function()
@@ -307,15 +344,6 @@ function EmoteWheelWidget:ConfigureEmotes(emoteFrame: Frame)
 			end
 		end)
 	end
-	--if there's an initial emote frame, make it the current emote editing frame
-	if emoteFrame then
-		self:SelectEmoteToConfigure(emoteFrame)
-	end
-	--Create the close configure button
-	ButtonWidget.new(closeConfigureButton, function()
-		--Close the emote wheel
-		self:CloseConfiguration()
-	end)
 end
 
 function EmoteWheelWidget:SelectEmoteToConfigure(emoteFrame: Frame)
@@ -324,7 +352,9 @@ function EmoteWheelWidget:SelectEmoteToConfigure(emoteFrame: Frame)
 		self:DeselectEmoteToConfigure(self.currentEmoteEditingFrame)
 	end
 	self.currentEmoteEditingFrame = emoteFrame
-
+	--Disconnect the mouse enter and leave events from the emote frames to avoid the hover effect
+	self.emoteFramesConnections[emoteFrame.Name].mouseEnter:Disconnect()
+	self.emoteFramesConnections[emoteFrame.Name].mouseLeave:Disconnect()
 	TweenService:Create(
 		emoteFrame.SelectionHoverImage,
 		buttonTweenInfo,
@@ -355,21 +385,25 @@ function EmoteWheelWidget:DeselectEmoteToConfigure(emoteFrame: Frame)
 		buttonTweenInfo,
 		{ ImageColor3 = Color3.fromRGB(0, 0, 0), ImageTransparency = 0.37 }
 	):Play()
-	--Connect the mouse enter and leave events from the emote frame
-	self.emoteFramesConnections[emoteFrame.Name].mouseEnter = emoteFrame.MouseEnter:Connect(function()
-		TweenService:Create(
-			emoteFrame.SelectionHoverImage,
-			buttonTweenInfo,
-			{ ImageColor3 = Color3.fromRGB(255, 255, 255), ImageTransparency = 0 }
-		):Play()
-	end)
-	self.emoteFramesConnections[emoteFrame.Name].mouseLeave = emoteFrame.MouseLeave:Connect(function()
-		TweenService:Create(
-			emoteFrame.SelectionHoverImage,
-			buttonTweenInfo,
-			{ ImageColor3 = Color3.fromRGB(0, 0, 0), ImageTransparency = 0.37 }
-		):Play()
-	end)
+	--Connect the mouse enter and leave events for the emote frame again
+	self.emoteFramesConnections[emoteFrame.Name].mouseEnter = self.currentEmoteEditingFrame.MouseEnter:Connect(
+		function()
+			TweenService:Create(
+				emoteFrame.SelectionHoverImage,
+				buttonTweenInfo,
+				{ ImageColor3 = Color3.fromRGB(255, 255, 255), ImageTransparency = 0 }
+			):Play()
+		end
+	)
+	self.emoteFramesConnections[emoteFrame.Name].mouseLeave = self.currentEmoteEditingFrame.MouseLeave:Connect(
+		function()
+			TweenService:Create(
+				emoteFrame.SelectionHoverImage,
+				buttonTweenInfo,
+				{ ImageColor3 = Color3.fromRGB(0, 0, 0), ImageTransparency = 0.37 }
+			):Play()
+		end
+	)
 	self.currentEmoteEditingFrame = nil
 end
 
@@ -380,7 +414,7 @@ function EmoteWheelWidget:CloseConfiguration()
 		self:DeselectEmoteToConfigure(self.currentEmoteEditingFrame)
 	end
 	--Hide the discard buttons from the emotes frames
-	for _, emoteFrame: Frame in pairs(emotesFrame:GetChildren()) do
+	for _, emoteFrame: Frame in (emotesFrame:GetChildren()) do
 		emoteFrame.DiscardButton.Visible = false
 		emoteFrame.EmoteIconFrame.DiscardButton.Visible = false
 	end

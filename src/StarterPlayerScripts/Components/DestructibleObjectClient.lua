@@ -1,23 +1,25 @@
+local Players = game:GetService("Players")
 local Janitor = require(game.ReplicatedStorage.Packages.Janitor)
 local Knit = require(game.ReplicatedStorage.Packages.Knit)
 local Component = require(game.ReplicatedStorage.Packages.Component)
-local Animations = require(game.ReplicatedStorage.Source.Assets.Animations)
+--Knit Controllers
+local AnimationController = Knit.GetController("AnimationController")
 
 local assets = game.ReplicatedStorage.Assets
 --Constants
 
--- local Conditions = {}
--- function Conditions.ShouldConstruct(component)
---     if (component.Instance:FindFirstChild("Interactable")) then
---         return true
---     else
---         return false
---     end
--- end
+local Conditions = {}
+function Conditions.ShouldConstruct(component)
+    if (component.Instance:FindFirstChild("Interactable")) then
+        return true
+    else
+        return false
+    end
+end
 
 local DestructibleObjectClient = Component.new({
 	Tag = "DestructibleObject",
-	-- Extensions = {Conditions}
+	Extensions = {Conditions}
 })
 
 local function addParticles(part)
@@ -41,24 +43,8 @@ function DestructibleObjectClient:Construct()
 	self.constructPrompts = {}
 end
 
-function DestructibleObjectClient:_setUpAnimation()
-	local buildingAnimation = Instance.new("Animation")
-	buildingAnimation.AnimationId = Animations.Building["Build"]
-	self._janitor:Add(buildingAnimation)
-
-	Knit.Player.CharacterAdded:Wait()
-	local animator = Knit.Player.Character:WaitForChild("Humanoid"):WaitForChild("Animator")
-
-	local buildingAnimationTrack = animator:LoadAnimation(buildingAnimation)
-	buildingAnimationTrack.Priority = Enum.AnimationPriority.Action
-	buildingAnimationTrack.Looped = true
-
-	self._janitor:Add(buildingAnimationTrack)
-	return buildingAnimationTrack
-end
 
 function DestructibleObjectClient:Start()
-	self._buildingAnimationTrack = self:_setUpAnimation()
 	--Setup proximity prompts
 	if self.Instance and self.Instance:FindFirstChild("Interactable") then
 		for index, buildPart in (self.Instance.Interactable:GetChildren()) do
@@ -72,7 +58,7 @@ function DestructibleObjectClient:Start()
 					end))
 	
 					self._janitor:Add(child.PromptButtonHoldBegan:Connect(function(player)
-						self._buildingAnimationTrack:Play()
+						AnimationController:PlayAnimation("Build")
 					end))
 	
 					self._janitor:Add(child.Triggered:Connect(function()
@@ -80,12 +66,39 @@ function DestructibleObjectClient:Start()
 					end))
 	
 					self._janitor:Add(child.PromptButtonHoldEnded:Connect(function(player)
-						self._buildingAnimationTrack:Stop(0.5)
+						AnimationController:StopAnimation("Build")
 					end))
 				end
 			end))
 		end
 	end
+	--Check for new interactable parts
+	self._janitor:Add(self.Instance.Interactable.ChildAdded:Connect(function(child)
+		if child:IsA("BasePart") then
+			self._janitor:Add(child.Attachment.ChildAdded:Connect(function(buildPart)
+				addParticles(buildPart)
+				if child:IsA("ProximityPrompt") then
+					self._janitor:Add(child)
+	
+					self._janitor:Add(child.PromptShown:Connect(function()
+						Knit.GetService("DestructibleObjectService"):SetBuildTime(self.Instance)
+					end))
+	
+					self._janitor:Add(child.PromptButtonHoldBegan:Connect(function(player)
+						AnimationController:PlayAnimation("Build")
+					end))
+	
+					self._janitor:Add(child.Triggered:Connect(function()
+						removeParticles(self.Instance.Interactable:GetChildren())
+					end))
+	
+					self._janitor:Add(child.PromptButtonHoldEnded:Connect(function(player)
+						AnimationController:StopAnimation("Build")
+					end))
+				end
+			end))
+		end
+	end))
 end
 
 function DestructibleObjectClient:Stop()

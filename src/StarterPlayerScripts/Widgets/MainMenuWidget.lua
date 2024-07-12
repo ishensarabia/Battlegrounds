@@ -17,6 +17,9 @@ local ChallengesWidget = require(game.StarterPlayer.StarterPlayerScripts.Source.
 local ButtonWidget = require(game.StarterPlayer.StarterPlayerScripts.Source.Widgets.ButtonWidget)
 local RespawnWidget = require(game.StarterPlayer.StarterPlayerScripts.Source.Widgets.RespawnWidget)
 local StoreWidget = require(game.StarterPlayer.StarterPlayerScripts.Source.Widgets.StoreWidget)
+--Configurations
+local LevelsConfig = require(ReplicatedStorage.Source.Configurations.LevelsConfig)
+
 --Main
 local MainMenuWidget = {}
 local MainMenuGui
@@ -26,11 +29,19 @@ local mainFrame
 --UI Objects
 local PlayButton
 local CharacterCanvas
+local LevelFrame
+
+--Enums
+local CurrenciesEnum = require(ReplicatedStorage.Source.Enums.CurrenciesEnum)
 
 local leftSideButtonsFrame
 local rightSideButtonsFrame
 --Constants
 local ACTION_PLAY = "Play"
+--Controllers
+local WidgetController = Knit.GetController("WidgetController")
+
+local Prestiges = require(ReplicatedStorage.Source.Assets.Prestiges)
 
 --Connections
 local userInputConnection
@@ -147,16 +158,20 @@ function MainMenuWidget:HidePlayButton()
 		--Get the parent as it is the canvas group
 		TweenService:Create(PlayButton.instance.Parent, TweenInfo.new(0.325), { GroupTransparency = 1 })
 	playButtonTween:Play()
-	PlayButton.Active = false
+
+
+	playButtonTween.Completed:Connect(function()
+		PlayButton.instance.Active = false
+	end)
 end
 
 function MainMenuWidget:ShowPlayButton()
 	if self.isActive then
+		PlayButton.instance.Active = true
 		local playButtonTween =
 			--Get the parent as it is the canvas group
 			TweenService:Create(PlayButton.instance.Parent, TweenInfo.new(0.325), { GroupTransparency = 0 })
 		playButtonTween:Play()
-		PlayButton.Active = true
 	end
 end
 
@@ -203,8 +218,14 @@ function MainMenuWidget:InitializeCameraTransition()
 		end)
 		return cutscenePoints
 	end)
+end
 
-	-- Use the CFrame values directly instead of trying to access the parts
+function MainMenuWidget:UpdateCurrencyValue(currencyName, currencyValue)
+	if currencyName == CurrenciesEnum.BattleCoinsthen then
+		WidgetController:AnimateDigitsForTextLabel(mainFrame.BattleCoinsFrame.AmountLabel, currencyValue, 0.5)
+	elseif currencyName == CurrenciesEnum.BattleGems then
+		WidgetController:AnimateDigitsForTextLabel(mainFrame.BattleGemsFrame.AmountLabel, currencyValue, 0.5)
+	end
 end
 
 function MainMenuWidget:Initialize()
@@ -223,12 +244,74 @@ function MainMenuWidget:Initialize()
 	leftSideButtonsFrame = MainMenuGui.LeftSideButtonsFrame
 	rightSideButtonsFrame = MainMenuGui.RightSideButtonsFrame
 	CharacterCanvas = PlayerGui.MainMenuGui.CharacterCanvas
+	LevelFrame = CharacterCanvas.LevelFrame
+	--Set up level frame
+	LevelFrame.ProgressCircleFrame.LevelTextLabel.Text = player:GetAttribute("Level") or "Loading..."
+	--Connect attribute change
+	player:GetAttributeChangedSignal("Level"):Connect(function()
+		LevelFrame.ProgressCircleFrame.LevelTextLabel.Text = player:GetAttribute("Level")
+		if player:GetAttribute("Level") == LevelsConfig.LEVEL_TO_PRESTIGE then
+			CharacterCanvas.PrestigeFrame.Visible = true
+			--Create the presige buttton
+			ButtonWidget.new(CharacterCanvas.PrestigeFrame, function()
+				self:HideMenu()
+				WidgetController.PrestigeWidget:OpenPrestige()
+			end)
+		else
+			CharacterCanvas.PrestigeFrame.Visible = false
+		end
+	end)
+	player:GetAttributeChangedSignal("Prestige"):Connect(function()
+		if player:GetAttribute("Prestige") > 0 then
+			LevelFrame.ProgressCircleFrame.PrestigeIcon.Visible = true
+			LevelFrame.ProgressCircleFrame.PrestigeIcon.Image = Prestiges[player:GetAttribute("Prestige")].icon
+		else
+			LevelFrame.ProgressCircleFrame.PrestigeIcon.Visible = false
+		end		
+	end)
+	player:GetAttributeChangedSignal("Experience"):Connect(function()
+		if self.isActive then
+			local experience = player:GetAttribute("Experience")
+			local experienceToNextLevel = player:GetAttribute("ExperienceToLevelUp")
+			local progress
+			--If the player has no experience to next level, set the progress to 1
+			if not experienceToNextLevel then
+				progress = 1
+			else
+				progress = experience / experienceToNextLevel
+			end
+			local rotation = math.floor(math.clamp(progress, 0, 1) * 360)
+			local ProgressCircleFrame = LevelFrame.ProgressCircleFrame
+			local leftCircle = ProgressCircleFrame.Left.Frame.UIGradient
+			local rightCircle = ProgressCircleFrame.Right.Frame.UIGradient
+			local justLeveledUp = false
+
+			-- Check if the player has just leveled up
+			if experienceToNextLevel and experience >= experienceToNextLevel then
+				-- Calculate the remaining experience and the progress for the next level
+				local remainingExperience = experience - experienceToNextLevel
+				local nextLevelExperience = player:GetAttribute("ExperienceToNextLevel")
+				--if there's no experience to next level, means the player is max level, so set the progress to 1
+				if not nextLevelExperience then
+					progress = 1
+				else
+					progress = remainingExperience / nextLevelExperience
+				end
+
+				rotation = math.floor(math.clamp(progress, 0, 1) * 360)
+				justLeveledUp = true
+			end
+
+			WidgetController:TweenProgressCircle(leftCircle, rightCircle, rotation, justLeveledUp)
+		end
+	end)
+
 	--Setup buttons
 	setupMainMenuButtons()
 	self:HidePlayButton()
 
 	local battleCoinsFrame = mainFrame.BattleCoinsFrame
-	local battleGemsFrame = mainFrame.BattleGemsFrame	
+	local battleGemsFrame = mainFrame.BattleGemsFrame
 	playerPreviewViewportFrame = PlayerGui.MainMenuGui.CharacterCanvas.ViewportFrame
 	--Set up currencies
 	local currencyService = Knit.GetService("CurrencyService")
@@ -246,10 +329,10 @@ function MainMenuWidget:Initialize()
 	currencyService.CurrencyChanged:Connect(function(currencyName, newCurrencyValue)
 		--format currency value
 		newCurrencyValue = FormatText.To_comma_value(newCurrencyValue)
-		if currencyName == "BattleCoins" then
-			battleCoinsFrame.AmountLabel.Text = newCurrencyValue
-		elseif currencyName == "BattleGems" then
-			battleGemsFrame.AmountLabel.Text = newCurrencyValue
+		if currencyName == CurrenciesEnum.BattleCoins then
+			WidgetController:AnimateDigitsForTextLabel(battleCoinsFrame.AmountLabel, newCurrencyValue, 100)
+		elseif currencyName == CurrenciesEnum.BattleGems then
+			WidgetController:AnimateDigitsForTextLabel(battleGemsFrame.AmountLabel, newCurrencyValue, 100)
 		end
 	end)
 	self:InitializeCameraTransition()

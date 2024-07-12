@@ -12,6 +12,7 @@ local EmoteIcons = require(ReplicatedStorage.Source.Assets.EmoteIcons)
 local TableUtil = require(ReplicatedStorage.Source.Modules.Util.TableUtil)
 --Enums
 local RaritiesEnum = require(ReplicatedStorage.Source.Enums.RaritiesEnum)
+local ItemTypesEnum = require(ReplicatedStorage.Source.Enums.ItemTypesEnum)
 
 --Config
 local StoreConfig = require(ReplicatedStorage.Source.Configurations.StoreConfig)
@@ -188,6 +189,8 @@ StoreService.crates = {
 			[9] = Emotes.Worming,
 			[10] = Emotes.Hype,
 			[11] = Emotes.Fresh,
+			[12] = Emotes.Bandit_Dance,
+			[13] = Emotes.Eagling
 		},
 		RaritiesPercentages = {
 			Common = 70,
@@ -195,6 +198,32 @@ StoreService.crates = {
 			Epic = 5,
 			Legendary = 4,
 			Mythic = 1,
+		},
+	},
+}
+
+StoreService.prestigeItems = {
+	Skins = {
+		[1] = {
+			price = 200,
+			currency = "BattleGems",
+			prestigeNeeded = 1,
+			data = Skins.AllSeeingEye,
+		},
+		[2] = {
+			price = 2_000,
+			currency = "BattleGems",
+			prestigeNeeded = 2,
+			data = Skins.MayanFigures,
+		},
+	},
+	
+	Emotes = {
+		[1] = {
+			price = 200,
+			currency = "BattleGems",
+			prestigeNeeded = 3,
+			data = Emotes.Club_Dance,
 		},
 	},
 }
@@ -352,7 +381,7 @@ function StoreService:GetFeaturedItems()
 	for index, skinData in pairs(Skins) do
 		local insertCount = getInsertCountBasedOnRarity(skinData.rarity)
 		for i = 1, insertCount do
-			local skinItem = { _type = StoreConfig.ItemTypes.Skin, data = skinData }
+			local skinItem = { _type = ItemTypesEnum.Skin, data = skinData }
 			if not TableUtil.tableContainsValue(self._dailyItems, skinItem) then
 				skinsForSale[#skinsForSale + 1] = skinItem
 			end
@@ -362,7 +391,7 @@ function StoreService:GetFeaturedItems()
 	for index, emoteData in pairs(Emotes) do
 		local insertCount = getInsertCountBasedOnRarity(emoteData.rarity)
 		for i = 1, insertCount do
-			local emoteItem = { _type = StoreConfig.ItemTypes.Emote, data = emoteData }
+			local emoteItem = { _type = ItemTypesEnum.Emote, data = emoteData }
 			if not TableUtil.tableContainsValue(self._dailyItems, emoteItem) then
 				emotesForSale[#emotesForSale + 1] = emoteItem
 			end
@@ -406,14 +435,14 @@ function StoreService:GetDailyItems()
 	for index, skinData in pairs(Skins) do
 		local insertCount = getInsertCountBasedOnRarity(skinData.rarity)
 		for i = 1, insertCount do
-			table.insert(itemsForSale, { _type = StoreConfig.ItemTypes.Skin, data = skinData })
+			table.insert(itemsForSale, { _type = ItemTypesEnum.Skin, data = skinData })
 		end
 	end
 
 	for index, emoteData in pairs(Emotes) do
 		local insertCount = getInsertCountBasedOnRarity(emoteData.rarity)
 		for i = 1, insertCount do
-			table.insert(itemsForSale, { _type = StoreConfig.ItemTypes.Emote, data = emoteData })
+			table.insert(itemsForSale, { _type = ItemTypesEnum.Emote, data = emoteData })
 		end
 	end
 
@@ -421,7 +450,7 @@ function StoreService:GetDailyItems()
 		local insertCount = getInsertCountBasedOnRarity(emoteIconData.rarity)
 		for i = 1, insertCount do
 			if emoteIconData.forSale == nil or emoteIconData.forSale == true then
-				table.insert(itemsForSale, { _type = StoreConfig.ItemTypes.EmoteIcon, data = emoteIconData })
+				table.insert(itemsForSale, { _type = ItemTypesEnum.EmoteIcon, data = emoteIconData })
 			end
 		end
 	end
@@ -444,19 +473,19 @@ function StoreService:GetDailyItems()
 				and not TableUtil.tableContainsValue(self._featuredItems, itemsForSale[index])
 			then
 				if
-					itemsForSale[index]._type == StoreConfig.ItemTypes.Skin
+					itemsForSale[index]._type == ItemTypesEnum.Skin
 					and skinCount < StoreConfig.DailyItemTypesLimit.Skin
 				then
 					table.insert(dailyItems, itemsForSale[index])
 					skinCount = skinCount + 1
 				elseif
-					itemsForSale[index]._type == StoreConfig.ItemTypes.Emote
+					itemsForSale[index]._type == ItemTypesEnum.Emote
 					and emoteCount < StoreConfig.DailyItemTypesLimit.Emote
 				then
 					table.insert(dailyItems, itemsForSale[index])
 					emoteCount = emoteCount + 1
 				elseif
-					itemsForSale[index]._type == StoreConfig.ItemTypes.EmoteIcon
+					itemsForSale[index]._type == ItemTypesEnum.EmoteIcon
 					and emoteIconCount < StoreConfig.DailyItemTypesLimit.EmoteIcon
 				then
 					table.insert(dailyItems, itemsForSale[index])
@@ -469,6 +498,14 @@ function StoreService:GetDailyItems()
 	end
 
 	return dailyItems
+end
+
+function StoreService:GetPrestigeItems()
+	return self.prestigeItems
+end
+
+function StoreService.Client:GetPrestigeItems()
+	return self.Server:GetPrestigeItems()
 end
 
 function StoreService.Client:GetFeaturedItems()
@@ -565,6 +602,57 @@ function StoreService:PurchaseCrate(player, crateName: string)
 	else
 		self.Client.InsufficientFundsSignal:Fire(player, crate.Price, crate.Currency)
 	end
+end
+
+--Purchase skin function
+function StoreService:PurchaseSkin(player, skinName: string, currency: string?)
+	--Get the skin data so the player doesn't have to send the whole skin data
+	--remove spaces and dashes from the skin name
+	skinName = skinName:gsub("%s+", ""):gsub("-", "")
+	local skinData = Skins[skinName]
+	local price = skinData.price
+	local _currency = currency or skinData.currency
+	local currentCurrency = self._currencyService:GetCurrency(player, _currency)
+	if currentCurrency >= price then
+		self._currencyService:RemoveCurrency(player, _currency, price)
+		self._dataService:AddSkin(player, skinData.name)
+		return true
+	else
+		self.Client.InsufficientFundsSignal:Fire(player, price, _currency)
+		return false
+	end
+end
+
+function StoreService:PurchaseEmote(player, emoteID: string, emoteType: string, currency: string?)
+	--Get the emote data so the player doesn't have to send the whole emote data
+	--Change spaces to underscores
+	emoteID = emoteID:gsub("%s+", "_")
+	local emoteData = Emotes[emoteID] or EmoteIcons[emoteID]
+	local price = emoteData.price
+	local _currency = currency or emoteData.currency
+	warn(_currency)
+	local currentCurrency = self._currencyService:GetCurrency(player, _currency)
+	warn(currentCurrency, price)
+	if currentCurrency >= price then
+		self._currencyService:RemoveCurrency(player, _currency, price)
+		self._dataService:AddEmote(player, emoteData.name, emoteType)
+		warn("Emote purchased")
+		return true
+	else
+		warn("Insufficient funds")
+		self.Client.InsufficientFundsSignal:Fire(player, price, _currency)
+		return false
+	end
+end
+
+--[Client] Purchase emote function
+function StoreService.Client:PurchaseEmote(player, emoteName: string, emoteType: string, currency: string)
+	return self.Server:PurchaseEmote(player, emoteName, emoteType, currency)
+end
+
+--[Client] Purchase skin function
+function StoreService.Client:PurchaseSkin(player, skinName: string, currency: string)
+	return self.Server:PurchaseSkin(player, skinName, currency)
 end
 
 --[Client] Buy crate function

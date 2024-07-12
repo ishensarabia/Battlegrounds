@@ -150,7 +150,7 @@ function GameModeService:EndGameMode()
 	task.delay(3, function()
 		for index, player in Players:GetPlayers() do
 			if player.Character then
-				player.Character.Humanoid:TakeDamage(100)
+				player.Character:Destroy()
 			end
 		end
 	end)
