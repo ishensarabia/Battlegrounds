@@ -68,13 +68,13 @@ function EmoteWheelWidget:Initialize()
 	ButtonWidget.new(emoteWheelGui.EmoteAnimationsButton, function()
 		EmoteWheelWidget.currentEmotesDisplaying = "Animations"
 		ClearPlayerEmotes()
-		self:ConfigureEmotes()
+		self:UpdatePlayerEmotes()
 	end)
 	--Create the emote icons button
 	ButtonWidget.new(emoteWheelGui.EmoteIconsButton, function()
 		EmoteWheelWidget.currentEmotesDisplaying = "Icons"
 		ClearPlayerEmotes()
-		self:ConfigureEmotes()
+		self:UpdatePlayerEmotes()
 	end)
 	--Create the close configure button
 	ButtonWidget.new(closeConfigureButton, function()
@@ -298,11 +298,18 @@ function EmoteWheelWidget:ConfigureEmotes(emoteFrame: Frame)
 	--Get the player's emotes according to the current emotes displaying
 	--Check if the player emotes scroll frame has any children (Note that the first child is grid layoutt)
 	if #playerEmotesScrollingFrame:GetChildren() < 2 then
+		self:UpdatePlayerEmotes()
+	end
+end
+
+function EmoteWheelWidget:UpdatePlayerEmotes()
+	--Get the player's emotes according to the current emotes displaying
+	--Check if the player emotes scroll frame has any children (Note that the first child is grid layoutt)
+	if #playerEmotesScrollingFrame:GetChildren() < 2 then
 		EmoteController:GetPlayerEmotes():andThen(function(emotes)
 			local emotesOwned = emotes.EmotesOwned
 			if emotesOwned then
 				for emoteName, emoteInfo: table in emotesOwned do
-					-- warn(emoteInfo)
 					--format the emote name to be the same as the emote name in the emotes table
 					emoteName = emoteName:gsub(" ", "_")
 					emoteName = emoteName:gsub("'", "")
@@ -311,7 +318,6 @@ function EmoteWheelWidget:ConfigureEmotes(emoteFrame: Frame)
 					if EmoteWheelWidget.currentEmotesDisplaying == "Animations" then
 						if emoteInfo.Type == "Animation" then
 							local emote: table = Emotes[emoteName]
-							warn(emote)
 							emoteFrame = WidgetController:CreateEmoteFrame(emote)
 							--Create the emote frame
 							ButtonWidget.new(emoteFrame, function()
@@ -330,6 +336,7 @@ function EmoteWheelWidget:ConfigureEmotes(emoteFrame: Frame)
 							--Create the emote icon frame
 							ButtonWidget.new(emoteFrame, function()
 								--Assign the emote to the emote frame slot
+								warn("Assigning emote")
 								self:AssignEmote(emoteIcon.name, "Icon")
 								--Close the emote wheel
 								-- self:Close()
