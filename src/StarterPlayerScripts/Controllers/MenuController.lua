@@ -1,4 +1,3 @@
-local MarketplaceService = game:GetService("MarketplaceService")
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local player = Players.LocalPlayer
@@ -21,11 +20,11 @@ local Cutscenes = {
 
 function MenuController:KnitStart()
     WidgetController = Knit.GetController("WidgetController")
-
-    warn(LevelService)
     --Connect level up signal
     LevelService.LevelUpSignal:Connect(function(newLevel)
-        WidgetController.HUDWidget:LevelUp(newLevel)
+        if WidgetController.HUDWidget then            
+            WidgetController.HUDWidget:LevelUp(newLevel)
+        end
     end)
 end
 

@@ -73,11 +73,11 @@ end
 local function SetupWeaponPreviewButtons()
 	--Create customization buttons
 	ButtonWidget.new(customizationButtonsFrame.SkinsButton.Frame, function()
-		OpenCustomizationWidget("Skins")
+		OpenCustomizationWidget("skins")
 	end)
 
 	ButtonWidget.new(customizationButtonsFrame.ColorButton.Frame, function()
-		OpenCustomizationWidget("Color")
+		OpenCustomizationWidget("color")
 	end)
 	--Preview equip buttons
 	--Create equip button

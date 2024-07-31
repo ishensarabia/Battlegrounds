@@ -66,6 +66,7 @@ local ItemTypesEnum = require(ReplicatedStorage.Source.Enums.ItemTypesEnum)
 local Assets = ReplicatedStorage.Assets
 local BuyButton = Assets.GuiObjects.Buttons.BuyButton
 local Prestiges = require(ReplicatedStorage.Source.Assets.Prestiges)
+local Weapons = ReplicatedStorage.Weapons
 
 local buttonTweenInfo = TweenInfo.new(0.15, Enum.EasingStyle.Linear, Enum.EasingDirection.InOut, 0, true, 0)
 
@@ -74,7 +75,7 @@ local function getTimeUntilTextUpdate(itemTypes: string)
 	local timeUntilNextUpdate
 	if itemTypes == "Featured" then
 		timeUntilNextUpdate = StoreConfig.FEATURED_ITEMS_UPDATE_RATE - (now % StoreConfig.FEATURED_ITEMS_UPDATE_RATE)
-	elseif itemTypes == "Daily" then
+	elseif itemTypes == "daily" then
 		timeUntilNextUpdate = StoreConfig.DAILY_ITEMS_UPDATE_RATE - (now % StoreConfig.DAILY_ITEMS_UPDATE_RATE)
 	end
 
@@ -111,7 +112,7 @@ local function ShowDailyItems()
 
 			FeaturedItemsTimer.Text = "Refreshes in: " .. hours .. ":" .. minutes .. ":" .. seconds
 
-			local hours, minutes, seconds = getTimeUntilTextUpdate("Daily")
+			local hours, minutes, seconds = getTimeUntilTextUpdate("daily")
 
 			DailyItemsTimer.Text = "Refreshes in: " .. hours .. ":" .. minutes .. ":" .. seconds
 		end
@@ -155,17 +156,11 @@ local function PlayOpenStoreAnimation(category: string)
 		StoreGui.Enabled = true
 		MainFrame:TweenPosition(UDim2.fromScale(0, 0), Enum.EasingDirection.InOut, Enum.EasingStyle.Linear, 0.13)
 	end
-	if category == "DailyItems" then
+	if category == StoreConfig.Categories.DailyItems then
 		HideItemsScrollingFrame()
 		ShowDailyItems()
 		HideSubcategoriesFrame()
-	end
-	if
-		category == "Crates"
-		or category == "BattleGems"
-		or category == "BattleCoins"
-		or category == StoreConfig.Categories.Prestige
-	then
+	else
 		HideDailyItems()
 		ShowItemsScrollingFrame()
 	end
@@ -188,7 +183,7 @@ end
 local function CreatePurchasableSkinFrame(skin: table, prestigeNeeded: number?)
 	WidgetController:CreateSkinFrame(skin.data, ItemsScrollingFrame):andThen(function(skinFrame)
 		--Check if the player owns the skin
-		DataService:GetKeyValue("Skins"):andThen(function(skins: table)
+		DataService:GetKeyValue("skins"):andThen(function(skins: table)
 			if skins[skin.data.name] then
 				CreateOwnedText(skinFrame)
 				return
@@ -209,6 +204,7 @@ local function CreatePurchasableSkinFrame(skin: table, prestigeNeeded: number?)
 						--Assign the price text
 						buyButton.LabelImageButton.PriceText.Text = FormatText.To_comma_value(skin.data.price)
 						--Assign the currency icon
+						warn(skin.data.currency, CurrenciesEnum.Icons, CurrenciesEnum.Icons[skin.data.currency])
 						buyButton.LabelImageButton.CurrencyIcon.Image = CurrenciesEnum.Icons[skin.data.currency]
 						--Create the buy button
 						ButtonWidget.new(skinFrame.BuyButton, function()
@@ -227,11 +223,51 @@ local function CreatePurchasableSkinFrame(skin: table, prestigeNeeded: number?)
 	end)
 end
 
+local function CreatePrestigePurchasableWeaponFrame(weapon: table, prestigeNeeded: number?)
+	local weaponFrame: Frame = WidgetController:CreateWeaponFrame(weapon.data.name, ItemsScrollingFrame)
+	--Check if the player owns the weapon
+	DataService:GetKeyValue("weapons"):andThen(function(weapons: table)
+		if weapons[weapon.data.name] then
+			CreateOwnedText(weaponFrame)
+			return
+		else
+			if prestigeNeeded then
+				--Get the prestige needed frame
+				local prestigeNeededFrame = Assets.GuiObjects.Frames.PrestigeNeededFrame:Clone()
+				prestigeNeededFrame.Parent = weaponFrame
+				--Assign the prestige needed text
+				prestigeNeededFrame.PrestigeTextLabel.Text = prestigeNeeded
+				--Assign the icon for the prestige needed
+				prestigeNeededFrame.PrestigeIcon.Image = Prestiges[prestigeNeeded].icon
+				--Check if the player has the required prestige
+				if player:GetAttribute("Prestige") >= prestigeNeeded then
+					--Create the buy button frame
+					local buyButton = BuyButton:Clone()
+					buyButton.Parent = weaponFrame
+					--Assign the price text
+					buyButton.LabelImageButton.PriceText.Text = FormatText.To_comma_value(weapon.data.price)
+					--Assign the currency icon
+					buyButton.LabelImageButton.CurrencyIcon.Image = CurrenciesEnum.Icons[weapon.data.currency]
+					--Create the buy button
+					ButtonWidget.new(weaponFrame.BuyButton, function()
+						Knit.GetService("LoadoutService"):PurchasePrestigeWeapon(weapon.data.name):andThen(function(result)
+							if result then
+								CreateOwnedText(weaponFrame)
+								weaponFrame.BuyButton:Destroy()
+							end
+						end)
+					end)
+				end
+			end
+		end
+	end)
+end
+
 local function CreatePurchaseableEmoteFrame(emote: table, prestigeNeeded: number?)
 	local emoteFrame = WidgetController:CreateEmoteFrame(emote.data, ItemsScrollingFrame)
 	--Check if the player owns the emote
-	DataService:GetKeyValue("Emotes"):andThen(function(emotes: table)
-		if emotes.EmotesOwned[emote.data.name] then
+	DataService:GetKeyValue("emotes"):andThen(function(emotes: table)
+		if emotes.emotesOwned[emote.data.name] then
 			CreateOwnedText(emoteFrame)
 			return
 		else
@@ -290,10 +326,10 @@ local function CreateItemFramesForItems(items: table, parentFrame: Frame, aspect
 			local emoteFrame = WidgetController:CreateEmoteFrame(itemData.data, parentFrame)
 			emoteFrame.UIAspectRatioConstraint.AspectRatio = aspectRatio or 1
 			--Check if the player owns the emote
-			DataService:GetKeyValue("Emotes"):andThen(function(emotes: table)
+			DataService:GetKeyValue("emotes"):andThen(function(emotes: table)
 				--Change spaces to underscores (for the emote ID)
 				local emoteID = itemData.data.name:gsub(" ", "_")
-				if emotes.EmotesOwned[emoteID] then
+				if emotes.emotesOwned[emoteID] then
 					CreateOwnedText(emoteFrame)
 					return
 				else
@@ -319,7 +355,7 @@ local function CreateItemFramesForItems(items: table, parentFrame: Frame, aspect
 			WidgetController:CreateSkinFrame(itemData.data, parentFrame):andThen(function(skinFrame: Frame)
 				skinFrame.UIAspectRatioConstraint.AspectRatio = aspectRatio or 1
 				--Check if the player owns the skin
-				DataService:GetKeyValue("Skins"):andThen(function(skins: table)
+				DataService:GetKeyValue("skins"):andThen(function(skins: table)
 					if skins[itemData.data.name] then
 						CreateOwnedText(skinFrame)
 						return
@@ -347,8 +383,8 @@ local function CreateItemFramesForItems(items: table, parentFrame: Frame, aspect
 			local emoteIconFrame = WidgetController:CreateEmoteIconFrame(itemData.data, parentFrame)
 			emoteIconFrame.UIAspectRatioConstraint.AspectRatio = aspectRatio or 1
 			--Check if the player owns the emote icon
-			DataService:GetKeyValue("Emotes"):andThen(function(emotes: table)
-				if emotes.EmotesOwned[itemData.data.name] then
+			DataService:GetKeyValue("emotes"):andThen(function(emotes: table)
+				if emotes.emotesOwned[itemData.data.name] then
 					CreateOwnedText(emoteIconFrame)
 					return
 				else
@@ -416,7 +452,7 @@ function StoreWidget:Initialize()
 	if not self._dailyItemsCache then
 		StoreService:GetDailyItems():andThen(function(dailyItems)
 			self._dailyItemsCache = dailyItems
-			-- warn("Daily items cache: ", self._dailyItemsCache)
+			-- warn("daily items cache: ", self._dailyItemsCache)
 		end)
 	end
 
@@ -577,7 +613,7 @@ function StoreWidget:GenerateCratesFrames(crates: table)
 	for crateName: string, crateData: table in crates do
 		--clone the crate template frame
 		local crateFrame = Assets.GuiObjects.Frames.CrateFrame:Clone()
-		Knit.GetService("DataService"):GetKeyValue("Crates"):andThen(function(crates)
+		Knit.GetService("DataService"):GetKeyValue("crates"):andThen(function(crates)
 			if crates[crateName] and crates[crateName] > 0 then
 				crateFrame.OpenButton.Visible = true
 				--set the openButton text to add the amount of crates
@@ -603,13 +639,13 @@ function StoreWidget:GenerateCratesFrames(crates: table)
 		local cratePriceFormatted = FormatText.To_comma_value(crateData.Price)
 		crateFrame.Price.Text = cratePriceFormatted
 		--Assign the crate cost currency icon
-		if crateData.Currency == "BattleCoins" then
+		if crateData.Currency == CurrenciesEnum.BattleCoins then
 			crateFrame.Price.CurrencyIcon.Image = "rbxassetid://10835882861"
 		end
-		if crateData.Currency == "BattleGems" then
+		if crateData.Currency == CurrenciesEnum.BattleGems then
 			crateFrame.Price.CurrencyIcon.Image = "rbxassetid://10835980573"
 		end
-		if crateData.Currency == "Robux" then
+		if crateData.Currency == CurrenciesEnum.Robux then
 			crateFrame.Price.CurrencyIcon.Image = "rbxassetid://13259812339"
 		end
 		--Assign custom color if any
@@ -657,6 +693,7 @@ function StoreWidget:GenerateCratesFrames(crates: table)
 end
 
 function StoreWidget:OpenStore(category: string, _backButtonCallback: Function?)
+	warn(category, StoreConfig.Categories)
 	--Disable the chat gui so that it doesn't overlap with other buttons
 	StarterGui:SetCoreGuiEnabled(Enum.CoreGuiType.Chat, false)
 	StarterGui:SetCoreGuiEnabled(Enum.CoreGuiType.PlayerList, false)
@@ -692,6 +729,7 @@ function StoreWidget:OpenStore(category: string, _backButtonCallback: Function?)
 	end
 
 	if category == StoreConfig.Categories.BattleCoins then
+		warn("BattleCoins category")
 		ItemsScrollingFrame.UIGridLayout.HorizontalAlignment = Enum.HorizontalAlignment.Left
 		StoreService:GetBundles(BUNDLE_CATEGORIES.BattleCoins):andThen(function(battleCoinBundles: table)
 			--Create the crate frames
@@ -743,6 +781,12 @@ function StoreWidget:ChangeSubcategory(subcategory: string)
 		if subcategory == StoreConfig.Subcategoires.Prestige.Emotes then
 			for index, emote: table in prestigeItems.Emotes do
 				CreatePurchaseableEmoteFrame(emote, emote.prestigeNeeded)
+			end
+		end
+
+		if subcategory == StoreConfig.Subcategoires.Prestige.Weapons then
+			for index, weapon: table in prestigeItems.Weapons do
+				CreatePrestigePurchasableWeaponFrame(weapon, weapon.prestigeNeeded)
 			end
 		end
 	end)

@@ -315,12 +315,12 @@ function MainMenuWidget:Initialize()
 	playerPreviewViewportFrame = PlayerGui.MainMenuGui.CharacterCanvas.ViewportFrame
 	--Set up currencies
 	local currencyService = Knit.GetService("CurrencyService")
-	currencyService:GetCurrencyValue("BattleCoins"):andThen(function(currencyValue)
+	currencyService:GetCurrencyValue("battleCoins"):andThen(function(currencyValue)
 		--format currency value
 		currencyValue = FormatText.To_comma_value(currencyValue)
 		battleCoinsFrame.AmountLabel.Text = currencyValue
 	end)
-	currencyService:GetCurrencyValue("BattleGems"):andThen(function(currencyValue)
+	currencyService:GetCurrencyValue("battleGems"):andThen(function(currencyValue)
 		--format currency value
 		currencyValue = FormatText.To_comma_value(currencyValue)
 		battleGemsFrame.AmountLabel.Text = currencyValue

@@ -32,12 +32,14 @@ function PlayerPreviewController:SpawnWeaponInCharacterMenu()
 	longWeaponAnimation.Name = "longWeapon"
 	local longWeaponAnimationTrack = playerCharacter.Humanoid.Animator:LoadAnimation(longWeaponAnimation)
 	longWeaponAnimationTrack:Play()
+	
 	--Spawn equipped weapon / power
 	--Get equipped weapon
-	DataService:GetKeyValue("Loadout"):andThen(function(loadout : table)
-		if loadout.WeaponEquipped then
-			weaponEquipped = ReplicatedStorage.Weapons[loadout.WeaponEquipped]:Clone()
-			WeaponCustomWidget:ApplySavedCustomization(loadout.WeaponEquipped, weaponEquipped:FindFirstChildOfClass("Model"))
+	DataService:GetKeyValue("loadout"):andThen(function(loadout : table)
+		warn(loadout)
+		if loadout.weaponEquipped then
+			weaponEquipped = ReplicatedStorage.Weapons[loadout.weaponEquipped]:Clone()
+			WeaponCustomWidget:ApplySavedCustomization(loadout.weaponEquipped, weaponEquipped:FindFirstChildOfClass("Model"))
 			weaponEquipped.Parent = playerCharacter.Parent
 			weaponEquipped:FindFirstChildWhichIsA("Model", true).PrimaryPart.CFrame = playerCharacter.PrimaryPart.CFrame
 			--Weld
@@ -67,7 +69,7 @@ function PlayerPreviewController:SpawnWeaponInCharacterMenu()
 			IKController.Parent = playerCharacter.Humanoid
 			IKController.ChainRoot = playerCharacter.LeftUpperArm
 			IKController.EndEffector = playerCharacter.LeftHand
-			IKController.Target = weaponEquipped.Handle.SecondHandleAttachment
+			IKController.Target = weaponEquipped.Handle.CP_SecondHandleAttachment
 		end
 	end)
 end

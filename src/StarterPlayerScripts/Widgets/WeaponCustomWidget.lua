@@ -6,7 +6,6 @@ local Assets = ReplicatedStorage.Assets
 local Knit = require(ReplicatedStorage.Packages.Knit)
 --Knit Services
 local DataService
-local CustomizationItemsFrame
 --Modules
 local ViewportModel = require(ReplicatedStorage.Source.Modules.Util.ViewportModel)
 --Config
@@ -19,16 +18,10 @@ local WeaponCustomizationWidget = {}
 local weaponCustomizationGui
 local customizationItemsFrame
 local partsFrame
-local removeSkinButtonFrame
 --Variables
 local backButtonCallback
-local RARITIES_COLORS = {
-	Common = Color3.fromRGB(39, 180, 126),
-	Rare = Color3.fromRGB(0, 132, 255),
-	Epic = Color3.fromRGB(223, 226, 37),
-	Legendary = Color3.fromRGB(174, 56, 204),
-	Mythic = Color3.fromRGB(184, 17, 17),
-}
+--Assets
+local Skins = require(ReplicatedStorage.Source.Assets.Skins)
 
 WeaponCustomizationWidget.weaponPartsFrames = {}
 WeaponCustomizationWidget.customParts = {}
@@ -116,10 +109,23 @@ function WeaponCustomizationWidget:SetModification(customizationValue, customPar
 				WeaponCustomizationWidget.currentEditingPart
 				and WeaponCustomizationWidget.currentEditingPart:FindFirstChild("Skin")
 			then
+				--Clean the textures tweens
+				Knit.GetController("WeaponCustomizationController")
+					:CleanUpSkinAnimationForPart(WeaponCustomizationWidget.currentEditingPart)
 				--loop to apply the texture to all the faces
 				for index, child in WeaponCustomizationWidget.currentEditingPart:GetChildren() do
 					if child:IsA("Texture") then
 						child.Texture = customizationValue
+					end
+				end
+				--Get skin data from the customization value to check if it should animate
+				for skinID, skinData in Skins do
+					if skinData.skinID == customizationValue then
+						if skinData.shouldAnimate then
+							Knit.GetController("WeaponCustomizationController")
+								:AnimateWeaponSkinPart(WeaponCustomizationWidget.currentEditingPart)
+							break
+						end
 					end
 				end
 			else
@@ -139,6 +145,16 @@ function WeaponCustomizationWidget:SetModification(customizationValue, customPar
 				textures[4].Face = Enum.NormalId.Left
 				textures[5].Face = Enum.NormalId.Right
 				textures[6].Face = Enum.NormalId.Top
+				--Get skin data from the customization value to check if it should animate
+				for skinID, skinData in Skins do
+					if skinData.skinID == customizationValue then
+						if skinData.shouldAnimate then
+							Knit.GetController("WeaponCustomizationController")
+								:AnimateWeaponSkinPart(WeaponCustomizationWidget.currentEditingPart)
+							break
+						end
+					end
+				end
 			end
 		end
 		--Assign the customization selected
@@ -196,7 +212,7 @@ local function GenerateSkinsButtons()
 	if not DataService then
 		DataService = Knit.GetService("DataService")
 	end
-	DataService:GetKeyValue("Skins"):andThen(function(skins: table)
+	DataService:GetKeyValue("skins"):andThen(function(skins: table)
 		for skinName, skinAmount in skins do
 			local skinName = string.gsub(skinName, "-", "")
 			skinName = string.gsub(skinName, " ", "")
@@ -217,7 +233,7 @@ local function GenerateSkinsButtons()
 				if not WeaponCustomizationWidget.currentSkinSelected then
 					WeaponCustomizationWidget.currentSkinSelected = customizationButtonFrame
 				else
-					WeaponCustomizationWidget.currentSkinSelected["Frame"].SelectionImage.Visible = false
+					-- WeaponCustomizationWidget.currentSkinSelected["Frame"].SelectionImage.Visible = false
 					WeaponCustomizationWidget.currentSkinSelected = customizationButtonFrame
 				end
 			end)
@@ -262,12 +278,7 @@ local function GenerateWeaponPartsFrames()
 	end
 end
 
-function WeaponCustomizationWidget:OpenCustomization(
-	itemID: string,
-	itemModel: Model,
-	category: string,
-	callback: any
-)
+function WeaponCustomizationWidget:OpenCustomization(itemID: string, itemModel: Model, category: string, callback: any)
 	assert(itemID, "itemID is nil")
 	assert(itemModel, "itemModel is nil")
 	assert(category, "category is nil")
@@ -280,7 +291,7 @@ function WeaponCustomizationWidget:OpenCustomization(
 	WeaponCustomizationWidget.customizationCategory = category
 	backButtonCallback = callback
 	weaponCustomizationGui.Enabled = true
-	if category == "Skins" then
+	if category == "skins" then
 		GenerateSkinsButtons()
 	end
 	--Open part selector
@@ -345,12 +356,12 @@ end
 function WeaponCustomizationWidget:ApplyCustomization(weaponCustomization: table)
 	for partNumber, customizationValueTable in weaponCustomization do
 		--Check if the part has a color
-		if customizationValueTable.Color then
-			WeaponCustomizationWidget:SetModification(customizationValueTable.Color, partNumber)
+		if customizationValueTable.color then
+			WeaponCustomizationWidget:SetModification(customizationValueTable.color, partNumber)
 		end
 		--Check if the part has a skin
-		if customizationValueTable.Skin then
-			WeaponCustomizationWidget:SetModification(customizationValueTable.Skin, partNumber)
+		if customizationValueTable.skin then
+			WeaponCustomizationWidget:SetModification(customizationValueTable.skin, partNumber)
 		end
 	end
 end

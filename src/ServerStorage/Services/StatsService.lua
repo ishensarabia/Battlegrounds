@@ -18,7 +18,7 @@ function StatsService:KnitStart()
 	local dataService = Knit.GetService("DataService")
 	Players.PlayerAdded:Connect(function(player)
 		self._GlobalStats[player] = {}
-		self._GlobalStats[player].Knockouts = dataService:GetKeyValue(player, "Knockouts")
+		self._GlobalStats[player].Knockouts = dataService:GetKeyValue(player, "knockouts")
 		player.CharacterAdded:Connect(function(character)
 			--Register stats related to the character
 			--Register stamina
@@ -37,7 +37,7 @@ function StatsService:KnitStart()
 		end)
 	end)
 	Players.PlayerRemoving:Connect(function(player)
-		dataService:SetKeyValue(player, "Knockouts", self._GlobalStats[player].Knockouts)
+		dataService:SetKeyValue(player, "knockouts", self._GlobalStats[player].Knockouts)
 		self._GlobalStats[player] = nil
 	end)
 end

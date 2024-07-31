@@ -1,10 +1,13 @@
+
 return {
-	BattleCoins = "BattleCoins",
-	BattleGems = "BattleGems",
+	BattleCoins = "battleCoins",
+	BattleGems = "battleGems",
+	Robux = "robux",
 
 	Icons = {
-		BattleCoins = "rbxassetid://10835882861",
-		BattleGems = "rbxassetid://10835980573",
+		battleCoins = "rbxassetid://10835882861",
+		battleGems = "rbxassetid://10835980573",
+		robux = "rbxassetid://13259812339",
 	},
 
 	Bundles = {

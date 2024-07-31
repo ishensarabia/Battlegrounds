@@ -11,21 +11,16 @@ local FormatText = require(ReplicatedStorage.Source.Modules.Util.FormatText)
 local ChallengesService = Knit.GetService("ChallengesService")
 --Widgets
 local ButtonWidget = require(game.StarterPlayer.StarterPlayerScripts.Source.Widgets.ButtonWidget)
+--Enums
+local ChallengesEnum = require(ReplicatedStorage.Source.Enums.ChallengesEnum)
+local RewardTypesEnum = require(ReplicatedStorage.Source.Enums.RewardTypesEnum)
 --Main
 local ChallengesWidget = {}
 --Constants
-local REWARD_TYPE_ICONS = {
-	BattleCoins = "rbxassetid://10835882861",
-	BattleGems = "rbxassetid://10835980573",
-	BattlepassExp = "rbxassetid://13474525765",
-	Exp = "rbxassetid://15229974173",
-}
 --Screen guis
 local ChallengesGui
 --Gui objects
 local challengesFrame
-
-local buttonTweenInfo = TweenInfo.new(0.15, Enum.EasingStyle.Linear, Enum.EasingDirection.InOut, 0, true, 0)
 
 local function CreateChallengeFrame(challenge: table, challengeType: string, index: number)
 	local challengeFrame = Assets.GuiObjects.Frames.ChallengeFrame:Clone()
@@ -36,7 +31,7 @@ local function CreateChallengeFrame(challenge: table, challengeType: string, ind
 	--Generate the rewards
 	for i, reward: table in challenge.rewards do
 		local rewardFrame = Assets.GuiObjects.Frames.ChallengeRewardFrame:Clone()
-		rewardFrame.RewardImage.Image = REWARD_TYPE_ICONS[reward.rewardType]
+		rewardFrame.RewardImage.Image = RewardTypesEnum.Icons[reward.rewardType]
 		rewardFrame.RewardAmount.Text = FormatText.To_comma_value(reward.rewardAmount)
 		rewardFrame.LayoutOrder = i
 		rewardFrame.Parent = challengeFrame.RewardsFrame
@@ -49,7 +44,7 @@ local function CreateChallengeFrame(challenge: table, challengeType: string, ind
 	challengeFrame.BarFrame.ProgressBar.Size = UDim2.fromScale((challenge.progression / challenge.goal) * 1, 0.9)
 
 	--Create the claim button
-	local claimButton = ButtonWidget.new(challengeFrame.ClaimFrame.ClaimButton, function()
+	ButtonWidget.new(challengeFrame.ClaimFrame.ClaimButton, function()
 		local success = ChallengesService:ClaimChallenge(challenge, challengeType)
 		if success then
 			challengeFrame.ClaimFrame.Visible = false
@@ -57,7 +52,7 @@ local function CreateChallengeFrame(challenge: table, challengeType: string, ind
 	end)
 
 	--Create the discard button
-	local discardButton = ButtonWidget.new(challengeFrame.DiscardButton, function()
+	ButtonWidget.new(challengeFrame.DiscardButton, function()
 		ChallengesService:ReplaceChallenge(challenge, challengeType)
 	end)
 	return challengeFrame
@@ -131,12 +126,12 @@ function ChallengesWidget:CloseChallenges()
 		end
 	)
 	--Clear challenges frame
-	for index, value in challengesFrame.DailyChallengesFrame:GetChildren() do
+	for index, value in challengesFrame.dailyChallengesFrame:GetChildren() do
 		if value:IsA("Frame") then
 			value:Destroy()
 		end
 	end
-	for index, value in challengesFrame.WeeklyChallengesFrame:GetChildren() do
+	for index, value in challengesFrame.weeklyChallengesFrame:GetChildren() do
 		if value:IsA("Frame") then
 			value:Destroy()
 		end
@@ -178,21 +173,21 @@ function ChallengesWidget:ReplaceChallengeFrame(
 end
 
 function ChallengesWidget:GenerateChallengesFrames(challengesData)
-	--Generate the daily challenges
-	for index, challenge: table in challengesData.Daily do
-		local challengeFrame = CreateChallengeFrame(challenge, "Daily", index)
-		challengeFrame.Parent = challengesFrame.DailyChallengesFrame
+	--Generate the Daily challenges
+	for index, challenge: table in challengesData.daily do
+		local challengeFrame = CreateChallengeFrame(challenge, ChallengesEnum.Types.Daily, index)
+		challengeFrame.Parent = challengesFrame.dailyChallengesFrame
 		--if the challenge is completed display the completed frame
 		if challenge.isCompleted then
-			ChallengesWidget:ChallengeCompleted(challengeFrame, "Daily")
+			ChallengesWidget:ChallengeCompleted(challengeFrame, ChallengesEnum.Types.Daily)
 		end
 	end
-	for index, challenge: table in challengesData.Weekly do
-		local challengeFrame = CreateChallengeFrame(challenge, "Weekly", index)
-		challengeFrame.Parent = challengesFrame.WeeklyChallengesFrame
+	for index, challenge: table in challengesData.weekly do
+		local challengeFrame = CreateChallengeFrame(challenge, ChallengesEnum.Types.Weekly, index)
+		challengeFrame.Parent = challengesFrame.weeklyChallengesFrame
 		--if the challenge is completed display the completed frame
 		if challenge.isCompleted then
-			ChallengesWidget:ChallengeCompleted(challengeFrame, "Weekly")
+			ChallengesWidget:ChallengeCompleted(challengeFrame, ChallengesEnum.Types.Weekly)
 		end
 	end
 end

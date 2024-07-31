@@ -53,7 +53,7 @@ end
 function DataService:KnitStart()
 	-- Initialize profiles table0 to store
 	self.profiles = {}
-	self.profileStore = ProfileService.GetProfileStore("Development_Alpha_05", DataConfig.profileTemplate)
+	self.profileStore = ProfileService.GetProfileStore("Development_Alpha_11", DataConfig.profileTemplate)
 	Players.PlayerRemoving:Connect(function(player)
 		self:onPlayerRemoving(player)
 	end)
@@ -97,80 +97,80 @@ function DataService.Client:SaveWeaponCustomization(
 	customizationCategory: string
 )
 	if customizationValue then
-		local weaponData = self.Server:GetKeyValue(player, "Weapons")
+		local weaponData = self.Server:GetKeyValue(player, "weapons")
 
 		if customizationCategory == "Color" then
 			--Check if the player removed the color
 			if customizationValue == "RemoveColor" then
-				weaponData[weaponID].Customization[customPartName].Color = nil
+				weaponData[weaponID].customization[customPartName].Color = nil
 			else
 				--Check if the customization has a skin to not overwrite it
-				if weaponData[weaponID].Customization[customPartName] then
-					if weaponData[weaponID].Customization[customPartName].Skin then
-						weaponData[weaponID].Customization[customPartName] = {
+				if weaponData[weaponID].customization[customPartName] then
+					if weaponData[weaponID].customization[customPartName].skin then
+						weaponData[weaponID].customization[customPartName] = {
 							Color = customizationValue,
-							Skin = weaponData[weaponID].Customization[customPartName].Skin,
+							skin = weaponData[weaponID].customization[customPartName].skin,
 						}
 					else
-						weaponData[weaponID].Customization[customPartName] = {
+						weaponData[weaponID].customization[customPartName] = {
 							Color = customizationValue,
 						}
 					end
 				else
-					weaponData[weaponID].Customization[customPartName] = {
+					weaponData[weaponID].customization[customPartName] = {
 						Color = customizationValue,
 					}
 				end
 			end
 		end
 
-		if customizationCategory == "Skins" then
+		if customizationCategory == "skins" then
 			--Check if the player removed the skin
 			if customizationValue == "RemoveSkin" then
-				weaponData[weaponID].Customization[customPartName].Skin = nil
+				weaponData[weaponID].customization[customPartName].skin = nil
 			else
 				--Check if the customization has a color to not overwrite it
-				if weaponData[weaponID].Customization[customPartName] then
-					if weaponData[weaponID].Customization[customPartName].Color then
-						weaponData[weaponID].Customization[customPartName] = {
-							Color = weaponData[weaponID].Customization[customPartName].Color,
-							Skin = customizationValue,
+				if weaponData[weaponID].customization[customPartName] then
+					if weaponData[weaponID].customization[customPartName].Color then
+						weaponData[weaponID].customization[customPartName] = {
+							Color = weaponData[weaponID].customization[customPartName].Color,
+							skin = customizationValue,
 						}
 					else
-						weaponData[weaponID].Customization[customPartName] = {
-							Skin = customizationValue,
+						weaponData[weaponID].customization[customPartName] = {
+							skin = customizationValue,
 						}
 					end
 				else
-					weaponData[weaponID].Customization[customPartName] = {
-						Skin = customizationValue,
+					weaponData[weaponID].customization[customPartName] = {}
+					weaponData[weaponID].customization[customPartName] = {
+						skin = customizationValue,
 					}
 				end
 			end
 		end
-
-		self.Server:SetKeyValue(player, "Weapons", weaponData)
+		self.Server:SetKeyValue(player, "weapons", weaponData)
 	end
 end
 
 function DataService:GetWeaponCustomization(player, weaponID: string)
-	local weaponData = self:GetKeyValue(player, "Weapons")
+	local weaponData = self:GetKeyValue(player, "weapons")
 	local weaponCustomization = {}
-	local dictionaryLength = getDictionaryLegnth(weaponData[weaponID].Customization)
-	if weaponData[weaponID].Customization and dictionaryLength > 0 then
-		for partName, customizationData: table in weaponData[weaponID].Customization do
+	local dictionaryLength = getDictionaryLegnth(weaponData[weaponID].customization)
+	if weaponData[weaponID].customization and dictionaryLength > 0 then
+		for partName, customizationData: table in weaponData[weaponID].customization do
 			if customizationData.Color then
 				weaponCustomization[partName] = {
-					Color = Color3.new(
+					color = Color3.new(
 						customizationData.Color.Red,
 						customizationData.Color.Green,
 						customizationData.Color.Blue
 					),
 				}
 			end
-			if customizationData.Skin then
+			if customizationData.skin then
 				weaponCustomization[partName] = {
-					Skin = customizationData.Skin,
+					skin = customizationData.skin,
 				}
 			end
 		end
@@ -179,23 +179,24 @@ function DataService:GetWeaponCustomization(player, weaponID: string)
 end
 
 function DataService.Client:GetWeaponCustomization(player, weaponID: string)
-	local weaponData = self.Server:GetKeyValue(player, "Weapons")
+	local weaponData = self.Server:GetKeyValue(player, "weapons")
+	warn(weaponData, weaponID)
 	local weaponCustomization = {}
-	local dictionaryLength = getDictionaryLegnth(weaponData[weaponID].Customization)
-	if weaponData[weaponID].Customization and dictionaryLength > 0 then
-		for partName, customizationData: table in weaponData[weaponID].Customization do
-			if customizationData.Color then
+	local dictionaryLength = getDictionaryLegnth(weaponData[weaponID].customization)
+	if weaponData[weaponID].customization and dictionaryLength > 0 then
+		for partName, customizationData: table in weaponData[weaponID].customization do
+			if customizationData.color then
 				weaponCustomization[partName] = {
-					Color = Color3.new(
+					color = Color3.new(
 						customizationData.Color.Red,
 						customizationData.Color.Green,
 						customizationData.Color.Blue
 					),
 				}
 			end
-			if customizationData.Skin then
+			if customizationData.skin then
 				weaponCustomization[partName] = {
-					Skin = customizationData.Skin,
+					skin = customizationData.skin,
 				}
 			end
 		end
@@ -206,7 +207,7 @@ end
 function DataService:GetLoadout(player)
 	local profile = self.profiles[player]
 	if profile then
-		return profile.Data.Loadout
+		return profile.Data.loadout
 	end
 end
 
@@ -216,10 +217,10 @@ end
 
 function DataService:SetWeaponEquipped(player, weapon: string, loadoutSlot: string)
 	local profile = self.profiles[player]
-	-- warn(profile.Data.Weapons[weapon] )
-	if profile and profile.Data.Weapons[weapon] and profile.Data.Weapons[weapon].Owned then
-		profile.Data.Loadout.WeaponEquipped = weapon
-		profile.Data.Loadout[loadoutSlot] = weapon
+	-- warn(profile.Data.weapons[weapon] )
+	if profile and profile.Data.weapons[weapon] and profile.Data.weapons[weapon].owned then
+		profile.Data.loadout.weaponEquipped = weapon
+		profile.Data.loadout[loadoutSlot] = weapon
 	end
 end
 
@@ -227,15 +228,13 @@ end
 function DataService:GetWeaponEquipped(player)
 	local profile = self.profiles[player]
 	if profile then
-		return profile.Data.Loadout.WeaponEquipped
+		return profile.Data.Loadout.weaponEquipped
 	end
 end
 --Get weapon equipped function
 function DataService.Client:GetWeaponEquipped(player)
 	return self.Server:GetWeaponEquipped(player)
 end
-
-
 
 function DataService:onPlayerAdded(player)
 	local profile = self.profileStore:LoadProfileAsync("Player_" .. player.UserId, "ForceLoad")
@@ -281,11 +280,10 @@ function DataService:SetKeyValue(player, key: string, newValue: any)
 	-- warn(profile.Data)
 end
 
-
 function DataService:GetEmotes(player)
 	local profile = self.profiles[player]
 	if profile then
-		return profile.Data.Emotes
+		return profile.Data.emotes
 	end
 end
 
@@ -297,7 +295,7 @@ end
 function DataService:HasCrate(player, crateName: string)
 	local profile = self.profiles[player]
 	if profile then
-		if profile.Data.Crates[crateName] > 0 then
+		if profile.Data.crates[crateName] > 0 then
 			return true
 		else
 			return false
@@ -307,88 +305,85 @@ end
 
 function DataService:IsWeaponOwned(player, weaponName)
 	local profile = self.profiles[player]
-    if profile then
-        if profile.Data.Weapons[weaponName] then
-            return profile.Data.Weapons[weaponName].Owned
+	if profile then
+		if profile.Data.weapons[weaponName] then
+			return profile.Data.weapons[weaponName].owned
 		end
-    end
+	end
 end
 
---Client 
+--Client
 function DataService.Client:IsWeaponOwned(player, weaponName)
 	return self.Server:IsWeaponOwned(player, weaponName)
 end
 
-
-
 function DataService:AddWeapon(player, weaponName: string)
-    local profile = self.profiles[player]
-    if profile then
-        if profile.Data.Weapons[weaponName] then
-            profile.Data.Weapons[weaponName].Owned = true
-        else
-            profile.Data.Weapons[weaponName] = {Owned = true, Customization = {}}
-        end
-    end
+	local profile = self.profiles[player]
+	if profile then
+		if profile.Data.weapons[weaponName] then
+			profile.Data.weapons[weaponName].owned = true
+		else
+			profile.Data.weapons[weaponName] = table.clone(DataConfig.weaponTemplate)
+		end
+	end
 end
 
 function DataService:AddCrate(player, crateName: string, needsValue: boolean?)
 	local profile = self.profiles[player]
 	if profile then
-		if profile.Data.Crates[crateName] then
-			profile.Data.Crates[crateName] += 1
+		if profile.Data.crates[crateName] then
+			profile.Data.crates[crateName] += 1
 		else
-			profile.Data.Crates[crateName] = 1
+			profile.Data.crates[crateName] = 1
 		end
 	end
 
 	if needsValue then
-		return profile.Data.Crates[crateName]
+		return profile.Data.crates[crateName]
 	end
 end
 
 function DataService:AddSkin(player, skinName: string)
 	local profile = self.profiles[player]
 	if profile then
-		if profile.Data.Skins[skinName] then
-			profile.Data.Skins[skinName] += 1
+		if profile.Data.skins[skinName] then
+			profile.Data.skins[skinName] += 1
 		else
-			profile.Data.Skins[skinName] = 1
+			profile.Data.skins[skinName] = 1
 		end
 	end
 end
-
 
 function DataService:AddEmote(player, emoteName: string, emoteType: string)
 	local profile = self.profiles[player]
-	if profile then
-		if profile.Data.Emotes.EmotesOwned[emoteName] then
-			-- profile.Data.Emotes.EmotesOwned[emoteName] += 1
+if profile then
+		if profile.Data.emotes.emotesOwned[emoteName] then
+			-- profile.Data.emotes.emotesOwned[emoteName] += 1
 		else
-			profile.Data.Emotes.EmotesOwned[emoteName] = {}
-			profile.Data.Emotes.EmotesOwned[emoteName].Amount = 1
-			profile.Data.Emotes.EmotesOwned[emoteName].Type = emoteType
+			profile.Data.emotes.emotesOwned[emoteName] = {}
+			profile.Data.emotes.emotesOwned[emoteName].Amount = 1
+			profile.Data.emotes.emotesOwned[emoteName].Type = emoteType
 		end
 	end
-	warn(profile.Data.Emotes)
-	-- warn(profile.Data.Emotes.EmotesOwned)
+	warn(profile.Data.emotes)
+	-- warn(profile.Data.emotes.emotesOwned)
 end
 
 function DataService:UnlockWeapon(player, weaponName)
-    local profile = self.profiles[player]
-    if profile then
-        -- Check if the weapon is already unlocked
-        if profile.Data.Weapons[weaponName].Owned == true then
-            return false, "Weapon is already unlocked"
-        end
+	local profile = self.profiles[player]
+	if profile then
+		-- Check if the weapon is already unlocked
+		if profile.Data.weapons[weaponName].owned == true then
+			return false, "Weapon is already unlocked"
+		end
 
-        -- Unlock the weapon
-        profile.Data.Weapons[weaponName].Owned = true
+		-- Unlock the weapon
+		profile.Data.weapons[weaponName].owned = true
 
-        return true, "Weapon unlocked successfully"
-    else
-        return false, "Player profile does not exist"
-    end
+		return true, "Weapon unlocked successfully"
+	else
+		return false, "Player profile does not exist"
+	end
 end
 
 --Function to save emotes (animation and icon) and other emote data and so
@@ -400,15 +395,15 @@ function DataService:SaveEmote(player, emoteIndex, emoteName, emoteType: string)
 		emoteName = emoteName:gsub(" ", "_")
 		emoteName = emoteName:gsub("'", "")
 		--Check if there's any emote equipped in the emote index
-		if not playerEmotes.EmotesEquipped[emoteIndex] then		
-			playerEmotes.EmotesEquipped[emoteIndex] = {}
+		if not playerEmotes.emotesEquipped[emoteIndex] then
+			playerEmotes.emotesEquipped[emoteIndex] = {}
 		end
 		--Identify the emote type
 		if emoteType == "Animation" then
-			playerEmotes.EmotesEquipped[emoteIndex].animationEmote = emoteName
+			playerEmotes.emotesEquipped[emoteIndex].animationEmote = emoteName
 		end
 		if emoteType == "Icon" then
-			playerEmotes.EmotesEquipped[emoteIndex].iconEmote = emoteName
+			playerEmotes.emotesEquipped[emoteIndex].iconEmote = emoteName
 		end
 	end
 	warn(playerEmotes)
@@ -417,22 +412,22 @@ end
 function DataService:RemoveEmote(player, emoteIndex, emoteType: string)
 	local emotes = self:GetEmotes(player)
 	if emotes then
-		emotes.EmotesEquipped[emoteIndex][emoteType] = nil
+		emotes.emotesEquipped[emoteIndex][emoteType] = nil
 	end
 end
 
 function DataService:RemoveCrate(player, crateName: string, needsValue: boolean?)
 	local profile = self.profiles[player]
 	if profile then
-		if profile.Data.Crates[crateName] then
-			profile.Data.Crates[crateName] -= 1
+		if profile.Data.crates[crateName] then
+			profile.Data.crates[crateName] -= 1
 		else
-			profile.Data.Crates[crateName] = 0
+			profile.Data.crates[crateName] = 0
 		end
 	end
 
 	if needsValue then
-		return profile.Data.Crates[crateName]
+		return profile.Data.crates[crateName]
 	end
 end
 
@@ -446,12 +441,12 @@ end
 --Check if the player has enough experience to level up
 function DataService:CheckLevelUp(player: Player)
 	local dataService = Knit.GetService("DataService")
-	local experience =  dataService:GetKeyValue(player, "Experience")
-	local level = dataService:GetKeyValue(player, "Level")
+	local experience = dataService:GetKeyValue(player, "experience")
+	local level = dataService:GetKeyValue(player, "level")
 	local experienceToLevelUp = 100 + (level * 50)
 	if experience >= experienceToLevelUp then
-		dataService:incrementIntValue(player, "Level")
-		dataService:incrementIntValue(player, "Experience", -experienceToLevelUp)
+		dataService:incrementIntValue(player, "level")
+		dataService:incrementIntValue(player, "experience", -experienceToLevelUp)
 		self:CheckLevelUp(player)
 	end
 end
@@ -469,6 +464,7 @@ function DataService:incrementIntValue(player, key: string, amount: number?)
 		profile.Data[key] += 1
 	end
 end
+
 
 function DataService:KnitInit() end
 

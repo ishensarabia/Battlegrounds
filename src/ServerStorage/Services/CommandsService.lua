@@ -12,7 +12,6 @@ local CommandsService = Knit.CreateService({
 function CommandsService:KnitStart()
 	--Create the text chat commands
 	for commandName: string, commandData: table in CommandsConfig.commands do
-		warn("Registering command: " .. commandName, commandData.alias)
 		local textChatCommand = Instance.new("TextChatCommand")
 		textChatCommand.Name = commandName
 		textChatCommand.PrimaryAlias = commandData.alias
@@ -29,15 +28,38 @@ function CommandsService:KnitStart()
 			if commandData == CommandsConfig.commands.AddExperience then
 				self:AddExperienceCommand(player, message)
 			end
+			if commandData == CommandsConfig.commands.AddBattlepassExperience then
+				self:AddBattlepassExperienceCommand(player, message)
+			end
 			if commandData == CommandsConfig.commands.WipeData then
 				self:WipeDataCommand(player, message)
 			end
 			if commandData == CommandsConfig.commands.ApplyDamage then
 				self:ApplyDamageCommand(player, message)
 			end
+			if commandData == CommandsConfig.commands.AddSkin then
+				self:AddSkinCommand(player, message)
+			end
+			if commandData == CommandsConfig.commands.UpdateChallengeProgresion then
+				self:UpdateChallengeProgresionCommand(player, message)
+			end
 
 		end)
 	end
+end
+
+function CommandsService:UpdateChallengeProgresionCommand(player, message)
+	local splitMessage = string.split(message, " ")
+	local targetPlayer = player
+	local challengeName = splitMessage[2]
+	local progressionToAdd = tonumber(splitMessage[3])
+
+	-- Check if the second parameter is a username
+	if splitMessage[4] then
+		local playerID = Players:GetUserIdFromNameAsync(splitMessage[4])
+		targetPlayer = Players:GetPlayerByUserId(playerID)
+	end
+	Knit.GetService("ChallengesService"):UpdateChallengeProgression(targetPlayer, challengeName, progressionToAdd)
 end
 
 function CommandsService:AddExperienceCommand(player, message)
@@ -62,6 +84,41 @@ function CommandsService:AddExperienceCommand(player, message)
 	Knit.GetService("LevelService"):AddExperience(targetPlayer, experienceToAdd)
 end
 
+function CommandsService:AddBattlepassExperienceCommand(player, message)
+	local splitMessage = string.split(message, " ")
+	local targetPlayer = player
+	local experienceToAdd
+
+	-- Check if the second parameter is a number (experience to add)
+	if tonumber(splitMessage[2]) then
+		experienceToAdd = tonumber(splitMessage[2])
+	else
+		-- If it's not a number, assume it's a username
+		local playerID = Players:GetUserIdFromNameAsync(splitMessage[2])
+		targetPlayer = Players:GetPlayerByUserId(playerID)
+
+		-- Check if the third parameter is a number (experience to add)
+		if not tonumber(splitMessage[3]) then
+			return
+		end
+		experienceToAdd = tonumber(splitMessage[3])
+	end
+	Knit.GetService("BattlepassService"):AddBattlepassExperience(targetPlayer, experienceToAdd)
+end
+
+function CommandsService:AddSkinCommand(player, message)
+	local splitMessage = string.split(message, " ")
+	local targetPlayer = player
+	local skinName = splitMessage[2]
+
+	-- Check if the second parameter is a username
+	if splitMessage[3] then
+		local playerID = Players:GetUserIdFromNameAsync(splitMessage[3])
+		targetPlayer = Players:GetPlayerByUserId(playerID)
+	end
+	Knit.GetService("DataService"):AddSkin(targetPlayer, skinName)
+end
+
 function CommandsService:WipeDataCommand(player, message)
 	local splitMessage = string.split(message, " ")
 	local targetPlayer = player
@@ -71,7 +128,7 @@ function CommandsService:WipeDataCommand(player, message)
 		local playerID = Players:GetUserIdFromNameAsync(splitMessage[2])
 		targetPlayer = Players:GetPlayerByUserId(playerID)
 	end
-	warn(player, message)
+	
 	Knit.GetService("DataService"):WipeData(targetPlayer)
 end
 

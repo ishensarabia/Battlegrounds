@@ -28,7 +28,7 @@ function ChallengesService:KnitStart()
 end
 
 function ChallengesService:GenerateChallenges(player, typeOfChallenge: string, challengesData: table)
-	while #challengesData < ChallengesConfig.MaxChallengesPerType[typeOfChallenge] do
+	while #challengesData < ChallengesConfig.maxChallengesPerType[typeOfChallenge] do
 		local randomChallengeSelected =
 			ChallengesConfig.challenges[typeOfChallenge][math.random(1, #ChallengesConfig.challenges[typeOfChallenge])]
 		--Make sure the challenge isn't already in the challengesData
@@ -41,42 +41,42 @@ end
 
 function ChallengesService:InitializePlayer(player)
 	--Check for active challenges
-	local challengesData = self._dataService:GetKeyValue(player, "Challenges")
-	local dailyStringToFormat = "Daily challenges generated at: %x, which is a %A, and the time is %X."
-	local weeklyStringToFormat = "Weekly challenges generated at: %x, which is a %A, and the time is %X."
+	local challengesData = self._dataService:GetKeyValue(player, "challenges")
+	local dailyStringToFormat = "daily challenges generated at: %x, which is a %A, and the time is %X."
+	local weeklyStringToFormat = "weekly challenges generated at: %x, which is a %A, and the time is %X."
 
-	local dailyChallengesGeneratedAt = os.date(dailyStringToFormat, challengesData.DailyGeneratedAt)
-	local weeklyChallengesGeneratedAt = os.date(weeklyStringToFormat, challengesData.WeeklyGeneratedAt)
+	local dailyChallengesGeneratedAt = os.date(dailyStringToFormat, challengesData.dailyGeneratedAt)
+	local weeklyChallengesGeneratedAt = os.date(weeklyStringToFormat, challengesData.weeklyGeneratedAt)
 
 	--If there's no weekly or daily challenges, generate them
 	if
-		(#challengesData.Weekly == 0 and not challengesData.WeeklyGeneratedAt)
+		(#challengesData.weekly == 0 and not challengesData.weeklyGeneratedAt)
 		or (
-			#challengesData.Weekly < ChallengesConfig.MaxChallengesPerType.Weekly
-			and (os.time() - challengesData.WeeklyGeneratedAt) / 3600 >= 168
+			#challengesData.weekly < ChallengesConfig.maxChallengesPerType.weekly
+			and (os.time() - challengesData.weeklyGeneratedAt) / 3600 >= 168
 		)
 	then
-		challengesData.Weekly =
-			self:GenerateChallenges(player, ChallengesConfig.ChallengesTypes.Weekly, challengesData.Weekly)
+		challengesData.weekly =
+			self:GenerateChallenges(player, ChallengesConfig.challengesTypes.weekly, challengesData.weekly)
 		--Register the challenges generation time
-		challengesData.WeeklyGeneratedAt = os.time()
+		challengesData.weeklyGeneratedAt = os.time()
 	else
-		-- warn("Weekly challenges already exist")
+		-- warn("weekly challenges already exist")
 	end
 	
 	if
-		(#challengesData.Daily == 0 and not challengesData.DailyGeneratedAt)
+		(#challengesData.daily == 0 and not challengesData.dailyGeneratedAt)
 		or (
-			#challengesData.Daily < ChallengesConfig.MaxChallengesPerType.Daily
-			and (os.time() - challengesData.DailyGeneratedAt or 0) / 3600 >= 24
+			#challengesData.daily < ChallengesConfig.maxChallengesPerType.daily
+			and (os.time() - challengesData.dailyGeneratedAt or 0) / 3600 >= 24
 		)
 	then
-		challengesData.Daily =
-			self:GenerateChallenges(player, ChallengesConfig.ChallengesTypes.Daily, challengesData.Daily)
+		challengesData.daily =
+			self:GenerateChallenges(player, ChallengesConfig.challengesTypes.daily, challengesData.daily)
 		--Register the challenges generation time
-		challengesData.DailyGeneratedAt = os.time()
+		challengesData.dailyGeneratedAt = os.time()
 	else
-		-- warn("Daily challenges already exist")
+		-- warn("daily challenges already exist")
 	end
 	--Fire the signal to the client
 	self.Client.ChallengesInitialized:Fire(player, challengesData)
@@ -96,7 +96,7 @@ end
 
 function ChallengesService:UpdateChallengeProgression(player: Player, typeOfProgression: string, amount: number)
 	--Make sure the player has a challenge that requires destroying objects
-	local challengesData = self._dataService:GetKeyValue(player, "Challenges")
+	local challengesData = self._dataService:GetKeyValue(player, "challenges")
 	local function UpdateChallengeProgression(challenge, typeOfChallenge: string)
 		if challenge.typeOfProgression == typeOfProgression then
 			--Check if the challenge has progress if not, set it to 0
@@ -120,22 +120,22 @@ function ChallengesService:UpdateChallengeProgression(player: Player, typeOfProg
 			return
 		end
 	end
-	--Daily challenges
-	for _, challenge in challengesData.Daily do
+	--daily challenges
+	for _, challenge in challengesData.daily do
 		if challenge.typeOfProgression == typeOfProgression then
-			UpdateChallengeProgression(challenge, ChallengesConfig.ChallengesTypes.Daily)
+			UpdateChallengeProgression(challenge, ChallengesConfig.challengesTypes.daily)
 		end
 	end
-	--Weekly challenges
-	for _, challenge in challengesData.Weekly do
+	--weekly challenges
+	for _, challenge in challengesData.weekly do
 		if challenge.typeOfProgression == typeOfProgression then
-			UpdateChallengeProgression(challenge, ChallengesConfig.ChallengesTypes.Weekly)
+			UpdateChallengeProgression(challenge, ChallengesConfig.challengesTypes.weekly)
 		end
 	end
 end
 
 function ChallengesService:ClaimChallenge(player, challenge: table, challengeType: string)
-	local challengesData = self._dataService:GetKeyValue(player, "Challenges")
+	local challengesData = self._dataService:GetKeyValue(player, "challenges")
 	--Get the challenge from the challengesData
 	for index, _challenge: table in challengesData[challengeType] do
 		if _challenge.name == challenge.name then
@@ -157,7 +157,7 @@ function ChallengesService:ClaimChallenge(player, challenge: table, challengeTyp
 				--Fire the signal to the client
 				self.Client.ChallengeClaimed:Fire(player, challenge, challengeType)
 				--Set the new challengesData
-				self._dataService:SetKeyValue(player, "Challenges", challengesData)
+				self._dataService:SetKeyValue(player, "challenges", challengesData)
 				return true
 			end
 		end
@@ -169,7 +169,7 @@ function ChallengesService.Client:ClaimChallenge(player, challenge, challengeTyp
 end
 
 function ChallengesService:ReplaceChallenge(player, challengeToReplace: table, challengeType: string)
-	local challengesData = self._dataService:GetKeyValue(player, "Challenges")
+	local challengesData = self._dataService:GetKeyValue(player, "challenges")
 	-- Generate a new challenge
 	local randomChallengeSelected =
 		ChallengesConfig.challenges[challengeType][math.random(1, #ChallengesConfig.challenges[challengeType])]
@@ -202,7 +202,7 @@ function ChallengesService.Client:ReplaceChallenge(player, challenge: table, cha
 end
 
 function ChallengesService:GetChallengesForPlayer(player: Player, typeOfChallenges: string)
-	local challengesData = self._dataService:GetKeyValue(player, "Challenges")
+	local challengesData = self._dataService:GetKeyValue(player, "challenges")
 	return challengesData[typeOfChallenges]
 end
 

@@ -57,6 +57,7 @@ function EmoteController:DisplayEmotePreview(emoteName: string, viewportFrame: V
 	--format the emote name to be the same as the emote name in the emotes table
 	emoteName = emoteName:gsub(" ", "_")
 	emoteName = emoteName:gsub("'", "")
+	emoteName = emoteName:gsub("-", "_")
 	emoteAnimation.AnimationId = Emotes[emoteName].animation
 	emoteAnimation.Name = Emotes[emoteName].name
 	local emoteAnimationTrack = playerCharacter.Humanoid.Animator:LoadAnimation(emoteAnimation)
@@ -121,6 +122,11 @@ function EmoteController:PlayEmote(emoteName: string)
 			emoteAnimationTrack:Stop()
 		end
 		local emoteAnimation = Instance.new("Animation")
+		--Format the emote name
+		emoteName = emoteName:gsub(" ", "_")
+		emoteName = emoteName:gsub("'", "")
+		emoteName = emoteName:gsub("-", "_")
+		
 		emoteAnimation.AnimationId = Emotes[emoteName].animation
 		emoteAnimationTrack = playerPreviewCharacter.Humanoid.Animator:LoadAnimation(emoteAnimation)
 		emoteAnimationTrack:Play()

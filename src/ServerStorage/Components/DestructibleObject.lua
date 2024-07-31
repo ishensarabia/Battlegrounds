@@ -35,7 +35,7 @@ function DestructibleObject:DestroyObject(player)
 	self.isConstructed = false
 	local DataService = Knit.GetService("DataService")
 	if player then
-		DataService:incrementIntValue(player, "DestroyedObjects")
+		DataService:incrementIntValue(player, "destroyedObjects")
 		Knit.GetService("ChallengesService"):UpdateChallengeProgression(player, "DestroyObjects", 1)
 	end
 	--Setup proximity prompts

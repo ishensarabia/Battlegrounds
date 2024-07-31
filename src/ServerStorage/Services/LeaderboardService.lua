@@ -15,12 +15,12 @@ function LeaderboardService:KnitStart()
 
 		local level = Instance.new("IntValue")
 		level.Name = "Level"
-		level.Value = Knit.GetService("DataService"):GetKeyValue(player, "Level")
+		level.Value = Knit.GetService("DataService"):GetKeyValue(player, "level")
 		player:SetAttribute("Level", level.Value)
 
 		local prestige = Instance.new("IntValue")
 		prestige.Name = "Prestige"
-		prestige.Value = Knit.GetService("DataService"):GetKeyValue(player, "Prestige")
+		prestige.Value = Knit.GetService("DataService"):GetKeyValue(player, "prestige")
 		player:SetAttribute("Prestige", prestige.Value)
 		--Listen to the level attribute
 		player:GetAttributeChangedSignal("Level"):Connect(function()
@@ -32,7 +32,7 @@ function LeaderboardService:KnitStart()
 		end)
 
 		--Listen to the Experience attribute
-		local experience = Knit.GetService("DataService"):GetKeyValue(player, "Experience")
+		local experience = Knit.GetService("DataService"):GetKeyValue(player, "experience")
 		local experienceToLevelUp = Knit.GetService("LevelService"):GetExperienceForNextLevel(player)
 
 		player:SetAttribute("ExperienceToLevelUp", experienceToLevelUp)

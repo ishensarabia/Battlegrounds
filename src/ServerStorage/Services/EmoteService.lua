@@ -14,14 +14,14 @@ function EmoteService:KnitStart()
 end
 
 function EmoteService:GetPlayerEmotes(player)
-	return self._dataService:GetKeyValue(player, "Emotes")
+	return self._dataService:GetKeyValue(player, "emotes")
 end
 
 --Get equipped emotes from player
 function EmoteService:GetPlayerEquippedEmotes(player)
 	local emotes = self:GetPlayerEmotes(player)
 	if emotes then
-		return emotes.EmotesEquipped
+		return emotes.emotesEquipped
 	end
 end
 
@@ -98,7 +98,7 @@ end
 --Save emote
 function EmoteService:SaveEmote(player, emoteIndex, emoteName, emoteType: string)
 	--Check if the emote is owned by the player
-	local emote = self:GetPlayerEmotes(player).EmotesOwned[emoteName]
+	local emote = self:GetPlayerEmotes(player).emotesOwned[emoteName]
 	if emote then
 		warn("Emote owned")
 		self._dataService:SaveEmote(player, emoteIndex, emoteName, emoteType)

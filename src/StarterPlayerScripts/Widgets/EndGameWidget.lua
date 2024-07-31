@@ -37,7 +37,7 @@ function EndGameWidget:Initialize()
 end
 
 function EndGameWidget:ShowEndGameResults(leaderboard: table)
-	warn(leaderboard)
+	-- warn(leaderboard)
 	if not EndGameGui.Enabled then
 		EndGameGui.Enabled = true
 	end

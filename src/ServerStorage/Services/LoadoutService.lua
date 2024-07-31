@@ -1,6 +1,9 @@
+local CollectionService = game:GetService("CollectionService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Knit = require(ReplicatedStorage.Packages.Knit)
-local Assets = ReplicatedStorage.Assets
+local Skins = require(ReplicatedStorage.Source.Assets.Skins)
+--Enums
+local CurrenciesEnum = require(ReplicatedStorage.Source.Enums.CurrenciesEnum)
 
 local LoadoutService = Knit.CreateService({
 	Name = "LoadoutService",
@@ -24,7 +27,7 @@ function LoadoutService:GenerateWeaponParts(weaponModel: Model)
 end
 
 function LoadoutService.Client:GenerateWeaponParts(weaponModel: Model, unknown, uknown2)
-	local customParts = {}
+	local customParts = {} 
 	for index, value in weaponModel:GetDescendants() do
 		if value:GetAttribute("CustomPart") then
 			customParts[value:GetAttribute("CustomPart")] = value
@@ -60,14 +63,36 @@ function LoadoutService.Client:SetWeaponEquipped(player, weaponName, loadoutSlot
 	return self.Server:SetWeaponEquipped(player, weaponName, loadoutSlot)
 end
 
+function LoadoutService:PurchasePrestigeWeapon(player, weaponName)
+	local CurrencyService = Knit.GetService("CurrencyService")
+	local playerCurrency = CurrencyService:GetCurrencyValue(player, CurrenciesEnum.BattleGems)
+	local weapon = ReplicatedStorage.Weapons[weaponName]
+	if not weapon then
+		error("Weapon does not exist")
+	end
+
+	assert(weapon:GetAttribute("RequiredPrestige"), "Weapon does not require prestige")
+	assert(player:GetAttribute("Prestige"), "Player does not have prestige")
+
+	if player:GetAttribute("Prestige") >= weapon:GetAttribute("RequiredPrestige") then
+		return CurrencyService:PurchasePrestigeWeapon(player, weaponName)
+	else
+		return false, "Not enough currency to purchase weapon"
+	end
+end
+
+function LoadoutService.Client:PurchasePrestigeWeapon(player, weaponName)
+	return self.Server:PurchasePrestigeWeapon(player, weaponName)
+end
+
 function LoadoutService:PurchaseWeapon(player, weaponName)
 	local CurrencyService = Knit.GetService("CurrencyService")
-	local playerCurrency = CurrencyService:GetCurrencyValue(player, "BattleCoins")
+	local playerCurrency = CurrencyService:GetCurrencyValue(player, CurrenciesEnum.BattleGems)
 	local playerLevel = player:GetAttribute("Level")
 
 	local weapon = ReplicatedStorage.Weapons[weaponName]
 	if not weapon then
-		return false, "Weapon does not exist"
+		error("Weapon does not exist")
 	end
 
 	local originalPrice = weapon:GetAttribute("Price")
@@ -107,13 +132,13 @@ function LoadoutService:LoadWeaponCustomization(player, weaponName)
 		if customization then
 			local customParts = self:GenerateWeaponParts(weapon:FindFirstChildOfClass("Model"))
 
-			for partName, customizationValueTable in pairs(customization) do
-				if customizationValueTable.Color then
-					self:ApplyCustomizationValue(customizationValueTable.Color, partName, customParts)
+			for partName, customizationValueTable in (customization) do
+				if customizationValueTable.color then
+					self:ApplyCustomizationValue(customizationValueTable.color, partName, customParts)
 				end
 
-				if customizationValueTable.Skin then
-					self:ApplyCustomizationValue(customizationValueTable.Skin, partName, customParts)
+				if customizationValueTable.skin then
+					self:ApplyCustomizationValue(customizationValueTable.skin, partName, customParts)
 				end
 			end
 		end
@@ -149,6 +174,15 @@ function LoadoutService:ApplyCustomizationValue(customizationValue, customPartNa
 		textures[4].Face = Enum.NormalId.Left
 		textures[5].Face = Enum.NormalId.Right
 		textures[6].Face = Enum.NormalId.Top
+		--Get skin data from the customization value to check if it should animate
+		for skinID, skinData in (Skins) do
+			if skinData.skinID == customizationValue then
+				if skinData.shouldAnimate then
+					CollectionService:AddTag(customPart.Parent.Parent, "AnimatedWeaponSkin")
+					break
+				end
+			end
+		end
 	end
 end
 

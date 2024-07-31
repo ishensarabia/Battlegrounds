@@ -11,7 +11,7 @@ local prestiges = {
         name = "Prestige 3",
         icon = "rbxassetid://18340059134",
     }
-
+    
 }
 
 return prestiges

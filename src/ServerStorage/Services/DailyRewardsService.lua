@@ -25,7 +25,7 @@ end
 
 
 function DailyRewardsService:CanClaimReward(player)
-    local LastDailyReward = self._dataService:GetKeyValue(player, "LastDailyReward")
+    local LastDailyReward = self._dataService:GetKeyValue(player, "lastDailyReward")
     
     local now = os.time()
     return os.difftime(now, LastDailyReward   ) >= (24 * 60 * 60) -- 24 hours

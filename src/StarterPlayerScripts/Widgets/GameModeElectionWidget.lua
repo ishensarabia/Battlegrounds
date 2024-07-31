@@ -19,19 +19,21 @@ local gamemodesFrame
 local mapsFrame
 local closeButton
 local hideMinimizedFrameTween
+local mainFrame
 
 function GameModeElectionWidget:Initialize()
 	--Mount inventory widget
 	local player = game.Players.LocalPlayer
 	gameModeElectionGui = Assets.GuiObjects.ScreenGuis.GameModeElectionGui
-	gamemodesFrame = gameModeElectionGui.MainFrame.GamemodesFrame
-	mapsFrame = gameModeElectionGui.MainFrame.MapsFrame
-	closeButton = gameModeElectionGui.MainFrame.CloseButton
+	mainFrame = gameModeElectionGui.MainFrame
+	gamemodesFrame = mainFrame.GamemodesFrame
+	mapsFrame = mainFrame.MapsFrame
+	closeButton = mainFrame.CloseButton
 	gameModeElectionGui.Enabled = false
 	gameModeElectionGui.Parent = player.PlayerGui
 	--Hide components by group transparency
 
-	timeLeftTextLabel = gameModeElectionGui.MainFrame.TimeLeftTextLabel
+	timeLeftTextLabel = mainFrame.TimeLeftTextLabel
 	--Connect the close button
 	hideMinimizedFrameTween =
 		TweenService:Create(gameModeElectionGui.MinimizedFrame, TweenInfo.new(0.69), { GroupTransparency = 1 })
@@ -52,14 +54,16 @@ function GameModeElectionWidget:hideMinimizedFrame() end
 
 function GameModeElectionWidget:ShowElectionFrame()
 	self.isActive = true
+	mainFrame.Interactable = true
 	StarterGui:SetCoreGuiEnabled(Enum.CoreGuiType.PlayerList, false)
-	TweenService:Create(gameModeElectionGui.MainFrame, TweenInfo.new(0.69), { GroupTransparency = 0 }):Play()
+	TweenService:Create(mainFrame, TweenInfo.new(0.69), { GroupTransparency = 0 }):Play()
 end
 
 function GameModeElectionWidget:HideElectionFrame()
 	self.isActive = false
+	mainFrame.Interactable = false
 	StarterGui:SetCoreGuiEnabled(Enum.CoreGuiType.PlayerList, true)
-	TweenService:Create(gameModeElectionGui.MainFrame, TweenInfo.new(0.69), { GroupTransparency = 1 }):Play()
+	TweenService:Create(mainFrame, TweenInfo.new(0.69), { GroupTransparency = 1 }):Play()
 end
 
 function GameModeElectionWidget:MinimizeElectionFrame()
@@ -72,7 +76,7 @@ function GameModeElectionWidget:OpenElectionFrame(timeToVote)
 	gameModeElectionGui.Enabled = true
 
 	--Initialize the main frame group transparency
-	gameModeElectionGui.MainFrame.GroupTransparency = 1
+	mainFrame.GroupTransparency = 1
 
 	if not self.GamemodeService then
 		--Get services and controllers needed

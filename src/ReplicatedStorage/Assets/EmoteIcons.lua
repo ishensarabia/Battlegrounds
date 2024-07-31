@@ -7,7 +7,7 @@ return {
 		name = "Why So Afraid",
 		price = 200,
 		currency = CurrenciesEnum.BattleCoins,
-		forSale = false
+		forSale = false,
 	},
 	Ghost = {
 		imageID = "rbxassetid://14066775703",
@@ -22,7 +22,7 @@ return {
 		name = "I'm Fine Skull",
 		price = 200,
 		currency = CurrenciesEnum.BattleCoins,
-		forSale = false
+		forSale = false,
 	},
 	Angry_Skull = {
 		imageID = "rbxassetid://18433350306",
@@ -30,7 +30,7 @@ return {
 		name = "Angry Skull",
 		price = 200,
 		currency = CurrenciesEnum.BattleCoins,
-		forSale = true
+		forSale = true,
 	},
 	GG = {
 		imageID = "rbxassetid://18437018119",
@@ -38,7 +38,7 @@ return {
 		name = "GG",
 		price = 200,
 		currency = CurrenciesEnum.BattleCoins,
-		forSale = true
+		forSale = true,
 	},
 	White_Flag = {
 		imageID = "rbxassetid://18445514865",
@@ -46,8 +46,8 @@ return {
 		name = "White Flag",
 		price = 200,
 		currency = CurrenciesEnum.BattleCoins,
-		forSale = true
-	},	
+		forSale = true,
+	},
 	Vengance = {
 		imageID = "rbxassetid://14067235050",
 		rarity = "Legendary",
@@ -67,6 +67,62 @@ return {
 		name = "Death",
 		price = 200,
 		currency = CurrenciesEnum.BattleCoins,
-		forSale = false
+		forSale = false,
+	},
+	Savage_Claws = {
+		imageID = "rbxassetid://18624009647",
+		rarity = "Legendary",
+		name = "Savage Claws",
+		price = 200,
+		currency = CurrenciesEnum.BattleCoins,
+		forSale = false,
+	},
+	Heart_Sign = {
+		imageID = "rbxassetid://18624277058",
+		rarity = "Epic",
+		name = "Heart Sign",
+		price = 200,
+		currency = CurrenciesEnum.BattleCoins,
+		forSale = false,
+	},
+	Wondering_Star = {
+		imageID = "rbxassetid://18624727173",
+		rarity = "Rare",
+		name = "Wondering Star",
+		price = 200,
+		currency = CurrenciesEnum.BattleCoins,
+		forSale = false,
+	},
+	Alien = {
+		imageID = "rbxassetid://18626282483",
+		rarity = "Rare",
+		name = "Alien",
+		price = 200,
+		currency = CurrenciesEnum.BattleCoins,
+		forSale = false,
+	},
+	Detective = {
+		imageID = "rbxassetid://18627120341",
+		rarity = "Legendary",
+		name = "Detective",
+		price = 200,
+		currency = CurrenciesEnum.BattleCoins,
+		forSale = false,
+	},
+	Flame = {
+		imageID = "rbxassetid://18627435903",
+		rarity = "Legendary",
+		name = "Flame",
+		price = 200,
+		currency = CurrenciesEnum.BattleCoins,
+		forSale = false,
+	},
+	Pirate_Flag = {
+		imageID = "rbxassetid://18651546504",
+		rarity = "Legendary",
+		name = "Pirate Flag",
+		price = 200,
+		currency = CurrenciesEnum.BattleCoins,
+		forSale = false,
 	},
 }

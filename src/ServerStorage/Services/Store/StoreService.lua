@@ -8,21 +8,24 @@ local Knit = require(ReplicatedStorage.Packages.Knit)
 local Skins = require(ReplicatedStorage.Source.Assets.Skins)
 local Emotes = require(ReplicatedStorage.Source.Assets.Emotes)
 local EmoteIcons = require(ReplicatedStorage.Source.Assets.EmoteIcons)
+local Weapons = ReplicatedStorage.Weapons
 --Modules
 local TableUtil = require(ReplicatedStorage.Source.Modules.Util.TableUtil)
 --Enums
 local RaritiesEnum = require(ReplicatedStorage.Source.Enums.RaritiesEnum)
 local ItemTypesEnum = require(ReplicatedStorage.Source.Enums.ItemTypesEnum)
+local CurrenciesEnum = require(ReplicatedStorage.Source.Enums.CurrenciesEnum)
+local WeaponsEnum = require(ReplicatedStorage.Source.Enums.WeaponsEnum)
 
 --Config
 local StoreConfig = require(ReplicatedStorage.Source.Configurations.StoreConfig)
+local BattlepassConfig = require(ReplicatedStorage.Source.Configurations.BattlepassConfig)
 
 local StoreService = Knit.CreateService({
 	Name = "StoreService",
 	Client = {
 		CrateAddedSignal = Knit.CreateSignal(),
 		OpenCrateSignal = Knit.CreateSignal(),
-		BattlepassBoughtSignal = Knit.CreateSignal(),
 		UpdateFeaturedItemsSignal = Knit.CreateSignal(),
 		UpdateDailyItemsSignal = Knit.CreateSignal(),
 		InsufficientFundsSignal = Knit.CreateSignal(),
@@ -119,7 +122,7 @@ StoreService.bundles = {
 StoreService.crates = {
 	["Skins_Crate"] = {
 		Price = 350,
-		Currency = "BattleGems",
+		Currency = CurrenciesEnum.BattleGems,
 		Type = "Skin",
 		Contents = {
 			[1] = Skins.AlterEgo,
@@ -153,6 +156,15 @@ StoreService.crates = {
 			[29] = Skins.MonkeyRage,
 			[30] = Skins.Dragonfruits,
 			[31] = Skins.SpiderSense,
+			[32] = Skins.Frost,
+			[33] = Skins.SkullsGuns,
+			[34] = Skins.Firy,
+			[35] = Skins.Explosive,
+			[36] = Skins.Radioactive,
+			[37] = Skins.Wooden,
+			[38] = Skins.Urban,
+			[39] = Skins.Moon,
+			[40] = Skins.Undead,
 		},
 		RaritiesPercentages = {
 			Common = 70,
@@ -164,7 +176,7 @@ StoreService.crates = {
 	},
 	["Starter_Crate"] = {
 		Price = 160,
-		Currency = "Robux",
+		Currency = CurrenciesEnum.Robux,
 		Color = Color3.fromRGB(165, 30, 30),
 		rewards = {
 			BattleCoins = 3500,
@@ -174,7 +186,7 @@ StoreService.crates = {
 	},
 	["Emotes_Crate"] = {
 		Price = 100,
-		Currency = "BattleGems",
+		Currency = CurrenciesEnum.BattleGems,
 		Type = "Emote",
 		Color = Color3.fromRGB(30, 138, 165),
 		Contents = {
@@ -190,7 +202,25 @@ StoreService.crates = {
 			[10] = Emotes.Hype,
 			[11] = Emotes.Fresh,
 			[12] = Emotes.Bandit_Dance,
-			[13] = Emotes.Eagling
+			[13] = Emotes.Eagling,
+			[14] = Emotes.Sprinkling,
+			[15] = Emotes["Flipping_&_Flexing"],
+			[16] = Emotes.Citrus_Grove,
+			[17] = Emotes.Macarena,
+			[18] = Emotes.Head_Banger,
+			[19] = Emotes.Pumped,
+			[20] = Emotes.Shuffle,
+			[21] = Emotes.Bring_It,
+			[22] = Emotes.Tear_Up,
+			[23] = Emotes.Wild_Feet,
+			[24] = Emotes.Showslopper,
+			[25] = Emotes.Yeet,
+			[26] = Emotes.Flowing,
+			[27] = Emotes.Classic_Dance,
+			[28] = Emotes.Side_To_Side,
+			[29] = Emotes.Lock_It,
+			[30] = Emotes.Infinite_Dab,
+			[31] = Emotes.Friendly_Dance,
 		},
 		RaritiesPercentages = {
 			Common = 70,
@@ -206,24 +236,41 @@ StoreService.prestigeItems = {
 	Skins = {
 		[1] = {
 			price = 200,
-			currency = "BattleGems",
+			currency = CurrenciesEnum.BattleGems,
 			prestigeNeeded = 1,
 			data = Skins.AllSeeingEye,
 		},
 		[2] = {
 			price = 2_000,
-			currency = "BattleGems",
+			currency = CurrenciesEnum.BattleGems,
 			prestigeNeeded = 2,
 			data = Skins.MayanFigures,
 		},
+		[3] = {
+			price = 10_000,
+			currency = CurrenciesEnum.BattleGems,
+			prestigeNeeded = 3,
+			data = Skins.Gold,
+		},
 	},
-	
+
 	Emotes = {
 		[1] = {
 			price = 200,
-			currency = "BattleGems",
+			currency = CurrenciesEnum.BattleGems,
 			prestigeNeeded = 3,
 			data = Emotes.Club_Dance,
+		},
+	},
+
+	Weapons = {
+		[1] = {
+			prestigeNeeded = 3,
+			data = {
+				name = WeaponsEnum.WeaponNames.XM8,
+				price = Weapons[WeaponsEnum.WeaponNames.XM8]:GetAttribute("Price"),
+				currency = Weapons[WeaponsEnum.WeaponNames.XM8]:GetAttribute("Currency"),
+			}
 		},
 	},
 }
@@ -244,68 +291,67 @@ function StoreService:KnitStart()
 
 	-- ProductId 1554784963 small
 	productFunctions[1554784963] = function(receipt, player)
-		return self._currencyService:AddCurrency(player, "BattleCoins", 1500)
+		return self._currencyService:AddCurrency(player, CurrenciesEnum.BattleCoins, 1500)
 	end
 
 	--ProductId 1554789006 medium (3k)
 	productFunctions[1554789006] = function(receipt, player)
-		return self._currencyService:AddCurrency(player, "BattleCoins", 3000)
+		return self._currencyService:AddCurrency(player, CurrenciesEnum.BattleCoins, 3000)
 	end
 
 	--ProductId 1554789422 large (6k)
 	productFunctions[1554789422] = function(receipt, player)
-		return self._currencyService:AddCurrency(player, "BattleCoins", 6000)
+		return self._currencyService:AddCurrency(player, CurrenciesEnum.BattleCoins, 6000)
 	end
 
 	--ProductId 1554789640 huge (12k)
 	productFunctions[1554789640] = function(receipt, player)
-		return self._currencyService:AddCurrency(player, "BattleCoins", 12000)
+		return self._currencyService:AddCurrency(player, CurrenciesEnum.BattleCoins, 12000)
 	end
 
 	--ProductId 1554789904 gigantic (24k)
 	productFunctions[1554789904] = function(receipt, player)
-		return self._currencyService:AddCurrency(player, "BattleCoins", 24000)
+		return self._currencyService:AddCurrency(player, CurrenciesEnum.BattleCoins, 24000)
 	end
 
 	--ProductId 1554790086 astronomic (48k)
 	productFunctions[1554790086] = function(receipt, player)
-		return self._currencyService:AddCurrency(player, "BattleCoins", 48000)
+		return self._currencyService:AddCurrency(player, CurrenciesEnum.BattleCoins, 48000)
 	end
 
 	--BattleGems
 	--ProductId 1555198702 small (500)
 	productFunctions[1555198702] = function(receipt, player)
-		return self._currencyService:AddCurrency(player, "BattleGems", 500)
+		return self._currencyService:AddCurrency(player, CurrenciesEnum.BattleGems, 500)
 	end
 	--ProductId 1555199480 medium (1k)
 	productFunctions[1555199480] = function(receipt, player)
-		return self._currencyService:AddCurrency(player, "BattleGems", 1000)
+		return self._currencyService:AddCurrency(player, CurrenciesEnum.BattleGems, 1000)
 	end
 	--ProductId 1555200039 large (2k)
 	productFunctions[1555200039] = function(receipt, player)
-		return self._currencyService:AddCurrency(player, "BattleGems", 2000)
+		return self._currencyService:AddCurrency(player, CurrenciesEnum.BattleGems, 2000)
 	end
 	--ProductId 1555200879 huge (4k)
 	productFunctions[1555200879] = function(receipt, player)
-		return self._currencyService:AddCurrency(player, "BattleGems", 4000)
+		return self._currencyService:AddCurrency(player, CurrenciesEnum.BattleGems, 4000)
 	end
 	--ProductId 1555201413 gigantic (8k)
 	productFunctions[1555201413] = function(receipt, player)
-		return self._currencyService:AddCurrency(player, "BattleGems", 8000)
+		return self._currencyService:AddCurrency(player, CurrenciesEnum.BattleGems, 8000)
 	end
 	--ProductId 1555202235 astronomic (16k)
 	productFunctions[1555202235] = function(receipt, player)
-		return self._currencyService:AddCurrency(player, "BattleGems", 16000)
+		return self._currencyService:AddCurrency(player, CurrenciesEnum.BattleGems, 16000)
 	end
 
 	--Battlepass seasons
 	--ProductId 1532101515 Season 1
-	productFunctions[1532101515] = function(receipt, player)
-		local battlepassData = self._dataService:GetKeyValue(player, "Battlepass")
-		battlepassData.Season_1.Owned = true
-		self._dataService:SetKeyValue(player, "Battlepass", battlepassData)
+	productFunctions[BattlepassConfig.seasonDevProdctsDictionary.season_1] = function(receipt, player)
+		local battlepassData = self._dataService:GetKeyValue(player, "battlepass")
+		battlepassData.season_1.owned = true
+		self._dataService:SetKeyValue(player, "battlepass", battlepassData)
 		self._battlepassService.Client.BattlepassObtained:Fire(player)
-		self.Client.BattlepassBoughtSignal:Fire(player)
 		return true
 	end
 
@@ -557,7 +603,7 @@ function StoreService:GiftBattlepass(gifter, recipientId, season)
 		return false
 	end
 	-- Check if the recipient already owns the battlepass for the specified season
-	local recipientBattlepassData = self._dataService:GetKeyValue(recipient, "Battlepass")
+	local recipientBattlepassData = self._dataService:GetKeyValue(recipient, "battlepass")
 	if recipientBattlepassData[season].Owned then
 		warn("Recipient already owns the battlepass for this season")
 		return false
@@ -565,7 +611,7 @@ function StoreService:GiftBattlepass(gifter, recipientId, season)
 
 	-- Gift the battlepass
 	recipientBattlepassData[season].Owned = true
-	self._dataService:SetKeyValue(recipient, "Battlepass", recipientBattlepassData)
+	self._dataService:SetKeyValue(recipient, "battlepass", recipientBattlepassData)
 	self._battlepassService.Client.BattlepassObtained:Fire(recipient)
 	self.Client.BattlepassGiftedSignal:Fire(gifter, recipient)
 

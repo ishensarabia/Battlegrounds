@@ -4,6 +4,12 @@ local Players = game:GetService("Players")
 local Knit = require(ReplicatedStorage.Packages.Knit)
 --Assets
 local Weapons = ReplicatedStorage.Weapons
+--Enums
+local CurrenciesEnum = require(ReplicatedStorage.Source.Enums.CurrenciesEnum)
+-- Currency types
+export type Currency = "battleCoins" | "battleGems" | "robux";
+
+
 
 local CurrencyService = Knit.CreateService({
 	Name = "CurrencyService",
@@ -18,7 +24,8 @@ function CurrencyService:GetCurrencyValue(player: Player, currency: string): num
 	return currencyValueFetched
 end
 
-function CurrencyService:AddCurrency(player: Player, currencyType: string, amount: number)
+function CurrencyService:AddCurrency(player: Player, currencyType: Currency, amount: number)
+	warn()
 	local currentCurrency = self._dataService:GetKeyValue(player, currencyType)
 	if amount > 0 then
 		currentCurrency += amount
@@ -38,27 +45,48 @@ function CurrencyService:RemoveCurrency(player: Player, currencyType: string, am
 		return true
 	end
 end
+
+function CurrencyService:PurchasePrestigeWeapon(player: Player, weaponName: string)
+	local weaponInstance = Weapons[weaponName]
+	local price = weaponInstance:GetAttribute("Price")
+	local currency = weaponInstance:GetAttribute("Currency")
+	local playerCurrency = self:GetCurrency(player, currency)
+	if playerCurrency >= price then
+		self:RemoveCurrency(player, currency, price)
+		self._dataService:AddWeapon(player, weaponName)
+		return true, "Weapon purchased successfully"
+	else
+		return false, "Not enough Battlecoins to purchase this weapon"
+	end
+end
+
 --PurchaseWeapon 
 function CurrencyService:PurchaseWeapon(player: Player, weaponName: string, isEarlyBuy: boolean)
     local weaponInstance = Weapons[weaponName]
 	
     local price = weaponInstance:GetAttribute("Price")
     local earlyPrice = weaponInstance:GetAttribute("EarlyPrice")
+	local currency = weaponInstance:GetAttribute("Currency")
+	local earlyCurrency = weaponInstance:GetAttribute("EarlyCurrency")
 
 
     if weaponInstance then
-        local playerCurrency = self:GetCurrency(player, "BattleCoins")
+		--Note: Implement later on different currencies
 		if isEarlyBuy then
+			local playerCurrency = self:GetCurrency(player, earlyCurrency)
 			if playerCurrency >= earlyPrice then
-				self:RemoveCurrency(player, "BattleCoins", earlyPrice)
+				warn("Early buy successful")
+				self:RemoveCurrency(player, earlyCurrency, earlyPrice)
 				self._dataService:UnlockWeapon(player, weaponName)
 				return true, "Weapon purchased successfully"
 			else
 				return false, "Not enough Battlecoins to purchase this weapon"
 			end
 		else
+			local playerCurrency = self:GetCurrency(player, currency)
 			if playerCurrency >= price then
-				self:RemoveCurrency(player, "BattleCoins", price)
+				warn("Buy successful")
+				self:RemoveCurrency(player, currency, price)
 				self._dataService:UnlockWeapon(player, weaponName)
 				return true, "Weapon purchased successfully"
 			else
@@ -75,9 +103,8 @@ function CurrencyService.Client:PurchaseWeapon(player: Player, weaponName: strin
 end
 
 --Get currency
-function CurrencyService:GetCurrency(player: Player, currencyType: string)
+function CurrencyService:GetCurrency(player: Player, currencyType: Currency)
 	local currentCurrency = self._dataService:GetKeyValue(player, currencyType)
-	warn(currentCurrency)
 	return currentCurrency
 end
 
@@ -88,7 +115,7 @@ end
 
 
 --Client
-function CurrencyService.Client:GetCurrencyValue(player: Player, currency: string): number
+function CurrencyService.Client:GetCurrencyValue(player: Player, currency: Currency): number
 	return self.Server:GetCurrencyValue(player, currency)
 end
 

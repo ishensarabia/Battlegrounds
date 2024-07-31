@@ -9,14 +9,9 @@ local Assets = ReplicatedStorage.Assets
 --Modules
 local ViewportModel = require(ReplicatedStorage.Source.Modules.Util.ViewportModel)
 local FormatText = require(ReplicatedStorage.Source.Modules.Util.FormatText)
+--Enum
+local RaritiesEnum = require(ReplicatedStorage.Source.Enums.RaritiesEnum)
 
-local RARITIES_COLORS = {
-	Common = Color3.fromRGB(39, 180, 126),
-	Rare = Color3.fromRGB(0, 132, 255),
-	Epic = Color3.fromRGB(223, 226, 37),
-	Legendary = Color3.fromRGB(174, 56, 204),
-	Mythic = Color3.fromRGB(184, 17, 17),
-}
 function WidgetController:KnitStart()
 	for key, child in (Widgets:GetChildren()) do
 		if child:IsA("ModuleScript") then
@@ -36,17 +31,17 @@ function WidgetController:CreateSkinFrame(skinData: table, parent: GuiObject?, l
 	--Assign the skin rarity
 	skinItemFrame.RarityTextLabel.Text = skinData.rarity
 	--Assign the color of the rarity
-	skinItemFrame.RarityTextLabel.TextColor3 = RARITIES_COLORS[skinData.rarity]
-	skinItemFrame.ItemFrame.ImageColor3 = RARITIES_COLORS[skinData.rarity]
+	skinItemFrame.RarityTextLabel.TextColor3 = RaritiesEnum.Colors[skinData.rarity]
+	skinItemFrame.ItemFrame.ImageColor3 = RaritiesEnum.Colors[skinData.rarity]
 	--Assing the skin to the image
 	skinItemFrame.SkinBackground.Image = skinData.skinID
 	--Get the weapon equipped
 	local DataService = Knit.GetService("DataService")
-	return DataService:GetKeyValue("Loadout"):andThen(function(loadout)
-		local weaponModel = ReplicatedStorage.Weapons[loadout.WeaponEquipped]:FindFirstChildWhichIsA("Model"):Clone()
+	return DataService:GetKeyValue("loadout"):andThen(function(loadout)
+		local weaponModel = ReplicatedStorage.Weapons[loadout.weaponEquipped]:FindFirstChildWhichIsA("Model"):Clone()
 
 		--apply the skin
-		WidgetController._WeaponCustomizationController:ApplySkinForPreview(weaponModel, skinData.skinID)
+		WidgetController._WeaponCustomizationController:ApplySkinForPreview(weaponModel, skinData)
 		--get the viewport from the skin item template frame
 		local viewportFrame = skinItemFrame.ViewportFrame
 		--Create the viewport camera
@@ -82,6 +77,28 @@ function WidgetController:CreateSkinFrame(skinData: table, parent: GuiObject?, l
 		end
 		return skinItemFrame
 	end)
+end
+
+function WidgetController:CreateWeaponFrame(weaponName : string, parent: GuiObject?, layoutOrder: number?)
+	local weapon : Tool = ReplicatedStorage.Weapons[weaponName]
+	local weaponFrame = Assets.GuiObjects.Frames.WeaponTemplateFrame:Clone()
+	--Assign the name
+	weaponFrame.Name = weapon.name
+	--Assign the weapon name
+	weaponFrame.Frame.WeaponNameTextLabel.Text = weapon.name
+	--Assign the color of the rarity
+	weaponFrame.Frame.BackgroundLabel.ImageColor3 = RaritiesEnum.Colors[weapon:GetAttribute("Rarity")]
+	--Assing the weapon to the image
+	weaponFrame.Frame.WeaponImageLabel.Image = weapon.TextureId
+
+	if parent then
+		weaponFrame.Parent = parent
+	end
+
+	if layoutOrder then
+		weaponFrame.LayoutOrder = layoutOrder
+	end
+	return weaponFrame
 end
 
 function WidgetController:CreateCrateFrame(crateName: string, parent: GuiObject, rarityColor: Color3)
@@ -128,8 +145,8 @@ function WidgetController:CreateEmoteFrame(emoteData: table, parent: GuiObject?,
 	emoteFrame.NameTextLabel.Text = emoteData.name
 	emoteFrame.RarityTextLabel.Text = emoteData.rarity
 	--set rarity color
-	emoteFrame.RarityTextLabel.TextColor3 = RARITIES_COLORS[emoteData.rarity]
-	emoteFrame.ItemFrame.ImageColor3 = RARITIES_COLORS[emoteData.rarity]
+	emoteFrame.RarityTextLabel.TextColor3 = RaritiesEnum.Colors[emoteData.rarity]
+	emoteFrame.ItemFrame.ImageColor3 = RaritiesEnum.Colors[emoteData.rarity]
 	task.spawn(function()
 		Knit.GetController("EmoteController")
 			:DisplayEmotePreview(emoteData.Name or emoteData.name, emoteFrame.ViewportFrame, true)
@@ -159,14 +176,20 @@ function WidgetController:AnimateDigitsForTextLabel(textLabel: TextLabel, target
 
 	local connection
 	connection = game:GetService("RunService").RenderStepped:Connect(function()
-		if currentValue < targetValue then
-			currentValue = currentValue + incrementValue
+		local difference = targetValue - currentValue
+		-- Adjust incrementValue if it's larger than the difference
+		local adjustedIncrementValue = math.min(math.abs(difference), incrementValue) * math.sign(difference)
+		if math.abs(difference) > 0.01 then -- Use a small threshold to avoid floating-point issues
+			currentValue = currentValue + adjustedIncrementValue
+			-- Round currentValue to avoid floating-point issues, adjust as needed
+			currentValue = math.round(currentValue)
 			textLabel.Text = FormatText.To_comma_value(currentValue)
-			textLabel.Size = textLabelInitalScaleSize + UDim2.new(0.05, 0, 0.1, 0)
-		elseif currentValue > targetValue then
-			currentValue = currentValue - incrementValue
-			textLabel.Text = FormatText.To_comma_value(currentValue)
-			textLabel.Size = textLabelInitalScaleSize - UDim2.new(0.05, 0, 0.1, 0)
+			-- Adjust size based on direction
+			if difference > 0 then
+				textLabel.Size = textLabelInitalScaleSize + UDim2.new(0.05, 0, 0.1, 0)
+			else
+				textLabel.Size = textLabelInitalScaleSize - UDim2.new(0.05, 0, 0.1, 0)
+			end
 		else
 			textLabel.Text = FormatText.To_comma_value(targetValue) -- Ensure the final value is set correctly
 			textLabel.Size = textLabelInitalScaleSize
@@ -220,8 +243,8 @@ function WidgetController:CreateEmoteIconFrame(emoteIcon: table, parent: GuiObje
 	emoteIconFrame.NameTextLabel.Text = emoteIcon.name
 	emoteIconFrame.RarityTextLabel.Text = emoteIcon.rarity
 	--set rarity color
-	emoteIconFrame.RarityTextLabel.TextColor3 = RARITIES_COLORS[emoteIcon.rarity]
-	emoteIconFrame.ItemFrame.ImageColor3 = RARITIES_COLORS[emoteIcon.rarity]
+	emoteIconFrame.RarityTextLabel.TextColor3 = RaritiesEnum.Colors[emoteIcon.rarity]
+	emoteIconFrame.ItemFrame.ImageColor3 = RaritiesEnum.Colors[emoteIcon.rarity]
 	emoteIconFrame.EmoteIcon.Image = emoteIcon.imageID
 	if parent then
 		emoteIconFrame.Parent = parent
@@ -260,7 +283,7 @@ function WidgetController:AnimateShineForFrame(frame: Frame, transitionTranspare
 		self._ShineLoops[shineTween] = Promise.new(function(resolve, reject, onCancel)
 			local canceled = false
 			while not canceled do
-				warn("Spawn function running")
+				-- warn("Spawn function running")
 				shineTween:Play()
 				shineTween.Completed:Connect(function()
 					gradient.Offset = startingPos --reset offset

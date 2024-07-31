@@ -34,20 +34,20 @@ end
 function LevelService:AddExperience(player, amount)
 	--Check if the player is at the max level
 	if player:GetAttribute("Level") == LevelsConfig.LEVEL_TO_PRESTIGE then
-		self._dataService:SetKeyValue(player, "Experience", 0)
+		self._dataService:SetKeyValue(player, "experience", 0)
 		player:SetAttribute("Experience", 0)
 	else
 		self.Client.ExperienceAddedSignal:Fire(player, amount)
-		local currentExperience = self._dataService:GetKeyValue(player, "Experience") or 0
+		local currentExperience = self._dataService:GetKeyValue(player, "experience") or 0
 		currentExperience = currentExperience + amount
-		self._dataService:SetKeyValue(player, "Experience", currentExperience)
+		self._dataService:SetKeyValue(player, "experience", currentExperience)
 		player:SetAttribute("Experience", currentExperience)
 		self:CheckLevelUp(player)
 	end
 end
 
 function LevelService:GetLevel(player)
-	local level = self._dataService:GetKeyValue(player, "Level")
+	local level = self._dataService:GetKeyValue(player, "level")
 	return level
 end
 
@@ -57,7 +57,7 @@ end
 
 -- Server-side function
 function LevelService:GetExperienceForNextLevel(player)
-	local level = self._dataService:GetKeyValue(player, "Level")
+	local level = self._dataService:GetKeyValue(player, "level")
 	local experienceToLevelUp = 100 + (level * 50)
 	return experienceToLevelUp
 end
@@ -69,7 +69,7 @@ end
 
 -- Server-side function
 function LevelService:GetExperience(player)
-	return self._dataService:GetKeyValue(player, "Experience")
+	return self._dataService:GetKeyValue(player, "experience")
 end
 
 -- Client-side function
@@ -83,15 +83,15 @@ function LevelService:CheckLevelUp(player)
 	if level < LevelsConfig.LEVEL_TO_PRESTIGE then
 		local experienceToLevelUp = 100 + (level * 50)
 		if experience >= experienceToLevelUp then
-			self._dataService:incrementIntValue(player, "Level")
-			player:SetAttribute("Level", self._dataService:GetKeyValue(player, "Level"))
+			self._dataService:incrementIntValue(player, "level")
+			player:SetAttribute("Level", self._dataService:GetKeyValue(player, "level"))
 			if player:GetAttribute("Level") == LevelsConfig.LEVEL_TO_PRESTIGE then
 				player:SetAttribute("Experience", 0) -- Reset experience
 				player:SetAttribute("ExperienceToLevelUp", nil) -- Set ExperienceToLevelUp to nil
-				self._dataService:SetKeyValue(player, "Experience", 0)
+				self._dataService:SetKeyValue(player, "experience", 0)
 			else
-				self._dataService:incrementIntValue(player, "Experience", -experienceToLevelUp)
-				player:SetAttribute("Experience", self._dataService:GetKeyValue(player, "Experience"))
+				self._dataService:incrementIntValue(player, "experience", -experienceToLevelUp)
+				player:SetAttribute("Experience", self._dataService:GetKeyValue(player, "experience"))
 				experienceToLevelUp = 100 + (player:GetAttribute("Level") * 50) -- Recalculate experienceToLevelUp after leveling up
 				player:SetAttribute("ExperienceToLevelUp", experienceToLevelUp)
 				self:CheckLevelUp(player)
@@ -107,14 +107,14 @@ end
 function LevelService:Prestige(player)
 	local level = player:GetAttribute("Level")
 	if level == LevelsConfig.LEVEL_TO_PRESTIGE then
-		self._dataService:SetKeyValue(player, "Level", 0)
+		self._dataService:SetKeyValue(player, "level", 0)
 		player:SetAttribute("Level", 0)
-		self._dataService:SetKeyValue(player, "Experience", 0)
+		self._dataService:SetKeyValue(player, "experience", 0)
 		player:SetAttribute("Experience", 0)
-		self._dataService:SetKeyValue(player, "ExperienceToLevelUp", nil)
+		self._dataService:SetKeyValue(player, "experienceToLevelUp", nil)
 		player:SetAttribute("ExperienceToLevelUp", nil)
-		self._dataService:incrementIntValue(player, "Prestige")
-		player:SetAttribute("Prestige", self._dataService:GetKeyValue(player, "Prestige"))
+		self._dataService:incrementIntValue(player, "prestige")
+		player:SetAttribute("Prestige", self._dataService:GetKeyValue(player, "prestige"))
 		self.Client.PrestigeSignal:Fire(player)
 	end
 end

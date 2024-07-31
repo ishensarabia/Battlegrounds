@@ -9,7 +9,7 @@ local emotes = require(ReplicatedStorage.Source.Assets.Emotes)
 
 function AnimationController:KnitStart() end
 
-function AnimationController:InitAnimation(character : Model, animationName: string, animationID: string)
+function AnimationController:InitAnimation(character: Model, animationName: string, animationID: string)
 	local animationTrack = Instance.new("Animation")
 	animationTrack.Name = animationName
 	animationTrack.AnimationId = animationID
@@ -20,6 +20,8 @@ end
 function AnimationController:PlayAnimation(animationName: string, playbackSpeed: number)
 	--Format the animation name
 	animationName = animationName:gsub(" ", "_")
+	animationName = animationName:gsub("-", "_")
+	animationName = animationName:gsub("'", "")
 	self._animationTracks[animationName]:Play()
 	if playbackSpeed then
 		self._animationTracks[animationName]:AdjustSpeed(playbackSpeed)
@@ -27,12 +29,12 @@ function AnimationController:PlayAnimation(animationName: string, playbackSpeed:
 	return self._animationTracks[animationName]
 end
 
-
-
---Stop animation function
+--Stop animation function -0.165, 0.3, -0.3
 function AnimationController:StopAnimation(animationName: string)
 	--Format the animation name
 	animationName = animationName:gsub(" ", "_")
+	animationName = animationName:gsub("-", "_")
+	animationName = animationName:gsub("'", "")
 	self._animationTracks[animationName]:Stop()
 end
 
@@ -64,6 +66,9 @@ function AnimationController:KnitInit()
 			for animationName, animationID in animationCategoryTable do
 				self:InitAnimation(character, animationName, animationID)
 			end
+		end
+		for emoteName, emoteTable in emotes do
+			self:InitAnimation(character, emoteName, emoteTable.animation)
 		end
 		DisableHandOut(character)
 	end)

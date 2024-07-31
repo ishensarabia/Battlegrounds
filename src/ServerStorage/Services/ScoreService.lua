@@ -5,6 +5,7 @@ local ServerStorage = game:GetService("ServerStorage")
 local Knit = require(ReplicatedStorage.Packages.Knit)
 local Signal = require(ReplicatedStorage.Packages.Signal)
 --Module dependencies
+local CurrenciesEnum = require(ReplicatedStorage.Source.Enums.CurrenciesEnum)
 --Main
 local Knit = require(ReplicatedStorage.Packages.Knit)
 
@@ -32,6 +33,7 @@ function ScoreService:KnitStart()
 	self.WipeoutStreaks = {}
 	self._leaderboardService = Knit.GetService("LeaderboardService")
 	self._challengesService = Knit.GetService("ChallengesService")
+	self._currencyService = Knit.GetService("CurrencyService")
 end
 
 function ScoreService:RegisterDamageDealt(dealer: Player, taker: Player, amount: number, hitInfo, damageData)
@@ -66,7 +68,7 @@ end
 
 --damage to experience
 local function damageToExperience(damage: number)
-	local convertedNumber = damage * .75
+	local convertedNumber = damage * 0.75
 	return convertedNumber
 end
 
@@ -103,8 +105,11 @@ function ScoreService:RewardHitSession(taker: Player)
 					--Notify the leaderboard service to update the player's score
 					self._leaderboardService:UpdatePlayerScore(rewardPlayer, amount)
 					local damageDealerDataProfile = dataService:GetProfileData(rewardPlayer)
-					damageDealerDataProfile.BattleCoins += damageToBattleCoins(amount)
-					--Reward experience
+					self._currencyService:AddCurrency(
+						rewardPlayer,
+						CurrenciesEnum.BattleCoins,
+						damageToBattleCoins(amount)
+					)
 					-- Reward experience
 					self:AddExperience(rewardPlayer, damageToExperience(amount))
 					self._challengesService:UpdateChallengeProgression(

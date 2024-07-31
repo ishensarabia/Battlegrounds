@@ -16,6 +16,11 @@ return {
 				{ name = "amount", type = "number" },
 			},
 		},
+		["AddBattlepassExperience"] = {
+			accessLevel = "Owner",
+			alias = "/addBattlepassExperience",
+			secondaryAlias = "/addBpExp",
+		},
 		["WipeData"] = {
 			accessLevel = "Owner",
 			alias = "/wipeData",
@@ -28,6 +33,16 @@ return {
 			accessLevel = "Owner",
 			alias = "/applyDamage",
 			secondaryAlias = "/damage",
+		},
+		["AddSkin"] = {
+			accessLevel = "Owner",
+			alias = "/addSkin",
+			secondaryAlias = "/skin",
+		},
+		["UpdateChallengeProgresion"] = {
+			accessLevel = "Owner",
+			alias = "/updateChallengeProgression",
+			secondaryAlias = "/updateChallenge",
 		}
 	},
 }

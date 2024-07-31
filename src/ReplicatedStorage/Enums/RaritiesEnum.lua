@@ -6,7 +6,7 @@ local RARITIES = {
 	Mythic = "Mythic",
 
 	Colors = {
-		Common = Color3.fromRGB(39, 180, 126),
+		Common = Color3.fromRGB(189, 189, 189),
 		Rare= Color3.fromRGB(0, 132, 255),
 		Epic = Color3.fromRGB(223, 226, 37),
 		Legendary = Color3.fromRGB(133, 56, 204),

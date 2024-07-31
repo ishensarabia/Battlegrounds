@@ -17,7 +17,8 @@ local storeConfig = {
     Subcategoires = {
         Prestige = {
             Skins = "Skins",
-            Emotes = "Emotes"
+            Emotes = "Emotes",
+            Weapons = "Weapons",
         }
     },
 

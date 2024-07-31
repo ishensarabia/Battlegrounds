@@ -170,7 +170,6 @@ function EmoteWheelWidget:Initialize()
 			):Play()
 		end)
 		self.emoteFramesConnections[emoteFrame.Name].mouseLeave = emoteFrame.MouseLeave:Connect(function()
-			warn("Mouse left")
 			TweenService:Create(
 				emoteFrame.SelectionHoverImage,
 				buttonTweenInfo,
@@ -181,9 +180,8 @@ function EmoteWheelWidget:Initialize()
 
 	--Get the player's emotes
 	EmoteController:GetPlayerEmotes():andThen(function(emotes)
-		warn(emotes)
 		if emotes then
-			self:AssignSavedEmotes(emotes.EmotesEquipped)
+			self:AssignSavedEmotes(emotes.emotesEquipped)
 		end
 	end)
 	self.isInitialized = true
@@ -307,7 +305,7 @@ function EmoteWheelWidget:UpdatePlayerEmotes()
 	--Check if the player emotes scroll frame has any children (Note that the first child is grid layoutt)
 	if #playerEmotesScrollingFrame:GetChildren() < 2 then
 		EmoteController:GetPlayerEmotes():andThen(function(emotes)
-			local emotesOwned = emotes.EmotesOwned
+			local emotesOwned = emotes.emotesOwned
 			if emotesOwned then
 				for emoteName, emoteInfo: table in emotesOwned do
 					--format the emote name to be the same as the emote name in the emotes table
@@ -317,8 +315,14 @@ function EmoteWheelWidget:UpdatePlayerEmotes()
 
 					if EmoteWheelWidget.currentEmotesDisplaying == "Animations" then
 						if emoteInfo.Type == "Animation" then
+							--format the emote name to be the same as the emote name in the emotes table
+							emoteName = emoteName:gsub(" ", "_")
+							emoteName = emoteName:gsub("-", "_")
+							emoteName = emoteName:gsub("'", "")
+
 							local emote: table = Emotes[emoteName]
-							emoteFrame = WidgetController:CreateEmoteFrame(emote)
+							warn(emoteName)
+							emoteFrame = WidgetController:CreateEmoteFrame(emote, playerEmotesScrollingFrame)
 							--Create the emote frame
 							ButtonWidget.new(emoteFrame, function()
 								--Assign the emote to the emote frame slot
@@ -331,8 +335,12 @@ function EmoteWheelWidget:UpdatePlayerEmotes()
 
 					if EmoteWheelWidget.currentEmotesDisplaying == "Icons" then
 						if emoteInfo.Type == "Icon" then
+							--format the emote name to be the same as the emote name in the emotes table
+							emoteName = emoteName:gsub(" ", "_")
+							emoteName = emoteName:gsub("'", "")
 							local emoteIcon = EmoteIcons[emoteName]
-							emoteFrame = WidgetController:CreateEmoteIconFrame(emoteIcon)
+							emoteFrame = WidgetController:CreateEmoteIconFrame(emoteIcon, playerEmotesScrollingFrame)
+							warn(emoteFrame)
 							--Create the emote icon frame
 							ButtonWidget.new(emoteFrame, function()
 								--Assign the emote to the emote frame slot
@@ -342,10 +350,6 @@ function EmoteWheelWidget:UpdatePlayerEmotes()
 								-- self:Close()
 							end)
 						end
-					end
-
-					if emoteFrame then
-						emoteFrame.Parent = playerEmotesScrollingFrame
 					end
 				end
 			end
@@ -437,8 +441,7 @@ function EmoteWheelWidget:AssignSavedEmotes(emotes: table)
 	--Assign the player emotes to the emotes frame
 	for emoteIndex, emoteInfo: table in emotes do
 		if emoteInfo.animationEmote then
-			local emote = Emotes[emoteInfo.animationEmote]
-			emotesFrame[emoteIndex]:SetAttribute("Emote", emote.name)
+			emotesFrame[emoteIndex]:SetAttribute("Emote", emoteInfo.animationEmote)
 		end
 		if emoteInfo.iconEmote then
 			local emoteIcon = EmoteIcons[emoteInfo.iconEmote]

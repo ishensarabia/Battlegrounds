@@ -7,6 +7,8 @@ local SCALING_FACTOR = 1.05
 local BASE_LEVEL_UP_XP = 1000
 --Config
 local BattlepassConfig = require(ReplicatedStorage.Source.Configurations.BattlepassConfig)
+--Enum
+local RewardsEnum = require(ReplicatedStorage.Source.Enums.RewardTypesEnum)
 
 local BattlepassService = Knit.CreateService({
 	Name = "BattlepassService",
@@ -26,7 +28,7 @@ end
 function BattlepassService:KnitInit() end
 
 function BattlepassService:GetBattlepassData(player: Player)
-	local battlepassData = self._dataService:GetKeyValue(player, "Battlepass")
+	local battlepassData = self._dataService:GetKeyValue(player, "battlepass")
 	return battlepassData
 end
 
@@ -47,7 +49,7 @@ end
 
 function BattlepassService:GetSeasonExperience(player: Player)
 	local battlepassData = self:GetBattlepassData(player)
-	local seasonExperience = battlepassData.Experience
+	local seasonExperience = battlepassData.experience
 	return seasonExperience
 end
 
@@ -62,29 +64,31 @@ function BattlepassService:ClaimBattlepassReward(player, rewardLevel: number, re
 	local levelRewards: table = seasonRewards[rewardLevel]
 	--Check if the player owns the battlepass season
 	--Check if the player hasn't already claimed the reward
-	warn(seasonData.ClaimedLevels, rewardLevel, rewardType)
 	--if it's premium reward check if the player has the battlepass
-	if rewardType == "Battlepass" then
-		if not seasonData.ClaimedLevels.Battlepass[rewardLevel] then
+	if rewardType == "battlepass" then
+		warn(rewardLevel)
+		warn(table.find(seasonData.claimedLevels.battlepass, rewardLevel))
+
+		if not table.find(seasonData.claimedLevels.battlepass, rewardLevel) then
 			--Check if the player owns the battlepass
-			if seasonData.Owned then
+			if seasonData.owned then
 				warn("Owns the battlepass")
 				--Give the player the rewards
 				for index, rewardData: table in levelRewards.battlepass do
 					warn(rewardData)
 					if
-						rewardData.rewardType == BattlepassConfig.RewardTypes.BattleCoins
-						or rewardData.rewardType == BattlepassConfig.RewardTypes.BattleGems
+						rewardData.rewardType == RewardsEnum.RewardTypes.BattleCoins
+						or rewardData.rewardType == RewardsEnum.RewardTypes.BattleGems
 					then
 						--Add currency
 						warn("Adding currency")
 						self._currencyService:AddCurrency(player, rewardData.rewardType, rewardData.rewardAmount)
 					end
-					if rewardData.rewardType == BattlepassConfig.RewardTypes.Skin then
+					if rewardData.rewardType == RewardsEnum.RewardTypes.Skin then
 						--Add skin
 						self._dataService:AddSkin(player, rewardData.rewardSkin.name)
 					end
-					if rewardData.rewardType == BattlepassConfig.RewardTypes.Crate then
+					if rewardData.rewardType == RewardsEnum.RewardTypes.Crate then
 						--Add crate
 						local totalAmountOfCrates = self._dataService:AddCrate(player, rewardData.crateName)
 						--Fire the signal
@@ -94,28 +98,31 @@ function BattlepassService:ClaimBattlepassReward(player, rewardLevel: number, re
 							totalAmountOfCrates
 						)
 					end
-					if rewardData.rewardType == BattlepassConfig.RewardTypes.Emote then
+					if rewardData.rewardType == RewardsEnum.RewardTypes.Emote then
 						self._dataService:AddEmote(player, rewardData.rewardEmote.name, "Animation")
 					end
-					if rewardData.rewardType == BattlepassConfig.RewardTypes.Emote_Icon then
+					if rewardData.rewardType == RewardsEnum.RewardTypes.Emote_Icon then
 						self._dataService:AddEmote(player, rewardData.rewardEmoteIcon.name, "Icon")
+					end
+					if rewardData.rewardType == RewardsEnum.RewardTypes.Weapon then
+						self._dataService:AddWeapon(player, rewardData.weaponName)
 					end
 				end
 				--If it hasn't been claimed the free reward claim it as well
-				if not seasonData.ClaimedLevels.Freepass[rewardLevel] then
+				if not table.find(seasonData.claimedLevels.freepass, rewardLevel) then
 					for index, rewardData in levelRewards.freepass do
 						if
-							rewardData.rewardType == BattlepassConfig.RewardTypes.BattleCoins
-							or rewardData.rewardType == BattlepassConfig.RewardTypes.BattleGems
+							rewardData.rewardType == RewardsEnum.RewardTypes.BattleCoins
+							or rewardData.rewardType == RewardsEnum.RewardTypes.BattleGems
 						then
 							--Add currency
 							self._currencyService:AddCurrency(player, rewardData.rewardType, rewardData.rewardAmount)
 						end
-						if rewardData.rewardType == BattlepassConfig.RewardTypes.Skin then
+						if rewardData.rewardType == RewardsEnum.RewardTypes.Skin then
 							--Add skin
 							self._dataService:AddSkin(player, rewardData.rewardSkin.name)
 						end
-						if rewardData.rewardType == BattlepassConfig.RewardTypes.Crate then
+						if rewardData.rewardType == RewardsEnum.RewardTypes.Crate then
 							--Add crate
 							local totalAmountOfCrates = self._dataService:AddCrate(player, rewardData.crateName)
 							--Fire the signal
@@ -125,16 +132,19 @@ function BattlepassService:ClaimBattlepassReward(player, rewardLevel: number, re
 								totalAmountOfCrates
 							)
 						end
-						if rewardData.rewardType == BattlepassConfig.RewardTypes.Emote then
+						if rewardData.rewardType == RewardsEnum.RewardTypes.Emote then
 							self._dataService:AddEmote(player, rewardData.rewardEmote.name, "Animation")
 						end
-						if rewardData.rewardType == BattlepassConfig.RewardTypes.Emote_Icon then
+						if rewardData.rewardType == RewardsEnum.RewardTypes.Emote_Icon then
 							self._dataService:AddEmote(player, rewardData.rewardEmoteIcon.name, "Icon")
+						end
+						if rewardData.rewardType == RewardsEnum.RewardTypes.Weapon then
+							self._dataService:AddWeapon(player, rewardData.weaponName)
 						end
 					end
 				end
-				table.insert(seasonData.ClaimedLevels.Battlepass, rewardLevel)
-				table.insert(seasonData.ClaimedLevels.Freepass, rewardLevel)
+				table.insert(seasonData.claimedLevels.battlepass, rewardLevel)
+				table.insert(seasonData.claimedLevels.freepass, rewardLevel)
 			else
 				warn("Doesn't own the battlepass")
 				player:Kick(
@@ -144,23 +154,23 @@ function BattlepassService:ClaimBattlepassReward(player, rewardLevel: number, re
 		end
 	end
 
-	if rewardType == "Freepass" then
+	if rewardType == "freepass" then
 		warn("Claiming freepass reward")
-		if not seasonData.ClaimedLevels.Freepass[rewardLevel] then
+		if not table.find(seasonData.claimedLevels.freepass, rewardLevel) then
 			if #levelRewards.freepass > 0 then
 				for index, rewardData in levelRewards.freepass do
 					if
-						rewardData.rewardType == BattlepassConfig.RewardTypes.BattleCoins
-						or rewardData.rewardType == BattlepassConfig.RewardTypes.BattleGems
+						rewardData.rewardType == RewardsEnum.RewardTypes.BattleCoins
+						or rewardData.rewardType == RewardsEnum.RewardTypes.BattleGems
 					then
 						--Add currency
 						self._currencyService:AddCurrency(player, rewardData.rewardType, rewardData.rewardAmount)
 					end
-					if rewardData.rewardType == BattlepassConfig.RewardTypes.Skin then
+					if rewardData.rewardType == RewardsEnum.RewardTypes.Skin then
 						--Add skin
 						self._dataService:AddSkin(player, rewardData.rewardSkin.name)
 					end
-					if rewardData.rewardType == BattlepassConfig.RewardTypes.Crate then
+					if rewardData.rewardType == RewardsEnum.RewardTypes.Crate then
 						--Add crate
 						local totalAmountOfCrates = self._dataService:AddCrate(player, rewardData.crateName)
 						--Fire the signal
@@ -170,19 +180,19 @@ function BattlepassService:ClaimBattlepassReward(player, rewardLevel: number, re
 							totalAmountOfCrates
 						)
 					end
-					if rewardData.rewardType == BattlepassConfig.RewardTypes.Emote then
+					if rewardData.rewardType == RewardsEnum.RewardTypes.Emote then
 						self._dataService:AddEmote(player, rewardData.rewardEmote.name, "Animation")
 					end
-					if rewardData.rewardType == BattlepassConfig.RewardTypes.Emote_Icon then
+					if rewardData.rewardType == RewardsEnum.RewardTypes.Emote_Icon then
 						self._dataService:AddEmote(player, rewardData.rewardEmoteIcon.name, "Icon")
 					end
 				end
-				table.insert(seasonData.ClaimedLevels.Freepass, rewardLevel)
+				table.insert(seasonData.claimedLevels.freepass, rewardLevel)
 			end
 		end
 	end
 
-	self._dataService:SetKeyValue(player, "Battlepass", battlepassData)
+	self._dataService:SetKeyValue(player, "battlepass", battlepassData)
 end
 
 --client claim reward function
@@ -192,19 +202,34 @@ function BattlepassService.Client:ClaimBattlepassReward(player: Player, rewardLe
 end
 
 function BattlepassService:AddBattlepassExperience(player, amount: number)
-	local battlepassData = self._dataService:GetKeyValue(player, "Battlepass")
+	local battlepassData = self._dataService:GetKeyValue(player, "battlepass")
 	local currentSeasonData = battlepassData[battlepassData.currentSeason]
+	local maxLevel = BattlepassConfig.seasons[battlepassData.currentSeason].maxLevel
 	local experienceToAdd = amount
-	while experienceToAdd > 0 do
+
+	if currentSeasonData.level >= maxLevel then
+		-- Player has reached max level, so we don't add more experience
+		return
+	end
+
+	while experienceToAdd > 0 and currentSeasonData.level < maxLevel do
 		local xpNeeded = self:GetExperienceNeededForNextLevel(player)
-		local experienceGap = xpNeeded - currentSeasonData.Experience
+		local experienceGap = xpNeeded - currentSeasonData.experience
 		if experienceToAdd >= experienceGap then
-			currentSeasonData.Level += 1
-			experienceToAdd -= experienceGap
-			currentSeasonData.Experience = 0
-			self.Client.LevelUp:Fire(player, currentSeasonData.Level)
+			currentSeasonData.level += 1
+			-- Prevent leveling up beyond max level
+			if currentSeasonData.level >= maxLevel then
+				currentSeasonData.level = maxLevel
+				currentSeasonData.experience = 0 -- Assuming we reset experience at max level
+				self.Client.LevelUp:Fire(player, currentSeasonData.level)
+				break -- Stop processing as we've reached max level
+			else
+				experienceToAdd -= experienceGap
+				currentSeasonData.experience = 0
+				self.Client.LevelUp:Fire(player, currentSeasonData.level)
+			end
 		else
-			currentSeasonData.Experience += experienceToAdd
+			currentSeasonData.experience += experienceToAdd
 			experienceToAdd = 0
 		end
 		self.Client.BattlepassExperienceAdded:Fire(player, currentSeasonData)
@@ -212,21 +237,21 @@ function BattlepassService:AddBattlepassExperience(player, amount: number)
 end
 
 function BattlepassService:GetExperienceNeededForNextLevel(player)
-	local battlepassData = self._dataService:GetKeyValue(player, "Battlepass")
+	local battlepassData = self._dataService:GetKeyValue(player, "battlepass")
 	local currentSeasonData = battlepassData[battlepassData.currentSeason]
-	local xpNeeded = BASE_LEVEL_UP_XP + (BASE_LEVEL_UP_XP * SCALING_FACTOR * (currentSeasonData.Level - 1))
+	local xpNeeded = BASE_LEVEL_UP_XP + (BASE_LEVEL_UP_XP * SCALING_FACTOR * (currentSeasonData.level - 1))
 	return xpNeeded
 end
 
 function BattlepassService:CheckLevelUp(player)
-	local battlepassData = self._dataService:GetKeyValue(player, "Battlepass")
+	local battlepassData = self._dataService:GetKeyValue(player, "battlepass")
 	local currentSeasonData = battlepassData[battlepassData.currentSeason]
 	local xpNeeded = self:GetExperienceNeededForNextLevel(player)
-	warn("experience needed", xpNeeded, "current experience", battlepassData.Experience)
-	if currentSeasonData.Experience >= xpNeeded then
-		currentSeasonData.Level += 1
-		currentSeasonData.Experience = 0
-		self.Client.LevelUp:Fire(player, currentSeasonData.Level)
+	warn("experience needed", xpNeeded, "current experience", battlepassData.experience)
+	if currentSeasonData.experience >= xpNeeded then
+		currentSeasonData.level += 1
+		currentSeasonData.experience = 0
+		self.Client.LevelUp:Fire(player, currentSeasonData.level)
 	end
 end
 
@@ -248,11 +273,10 @@ function BattlepassService:GiftBattlepass(gifter, recipientId, season)
 
 	-- Return the result
 	return success
-end  
+end
 
 function BattlepassService.Client:GiftBattlepass(gifter: Player, recipientId: string, season: number)
 	self.Server:GiftBattlepass(gifter, recipientId, season)
 end
-
 
 return BattlepassService
