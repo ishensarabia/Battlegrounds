@@ -66,7 +66,8 @@ function PrestigeWidget:OpenPrestige()
 	prestigeIcon.Image = Prestiges[Players.LocalPlayer:GetAttribute("Prestige") + 1].icon
 	prestigeTextLabel.Text = string.format("PRESTIGE %d", Players.LocalPlayer:GetAttribute("Prestige") + 1)
     benefitsTextLabel.Text = string.format(
-        "● Prestige %d skins <br/> ● Prestige %d emotes <br/>",
+        "● Prestige %d weapons <br/>● Prestige %d skins <br/>● Prestige %d emotes <br/>",
+		Players.LocalPlayer:GetAttribute("Prestige") + 1,
         Players.LocalPlayer:GetAttribute("Prestige") + 1,
         Players.LocalPlayer:GetAttribute("Prestige") + 1
     )
