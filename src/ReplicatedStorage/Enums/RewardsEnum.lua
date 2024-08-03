@@ -1,4 +1,4 @@
-local RewardTypesEnum = {
+local RewardsEnum = {
 }
 local CurrenciesEnum = require(game.ReplicatedStorage.Source.Enums.CurrenciesEnum)
 --Reward types
@@ -36,8 +36,8 @@ local Icons = {
     [RewardTypes.Experience] = "rbxassetid://15229974173",
 }
 
-RewardTypesEnum.RewardTypes = RewardTypes
-RewardTypesEnum.RewardDescriptions = RewardDescriptions
-RewardTypesEnum.Icons = Icons
+RewardsEnum.RewardTypes = RewardTypes
+RewardsEnum.RewardDescriptions = RewardDescriptions
+RewardsEnum.Icons = Icons
 
-return RewardTypesEnum
+return RewardsEnum
