@@ -23,7 +23,7 @@ local skins = {
 		rarity = RaritiesEnum.Mythic,
 		name = "All-Seeing Eye",
 		price = 3_300,
-		currency = "BattleGems",
+		currency = CurrenciesEnum.BattleGems,
 		forSale = true,
 	},
 	AbstractPeach = {
