@@ -1,5 +1,6 @@
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
 local TextChatService = game:GetService("TextChatService")
 local CommandsConfig = require(ReplicatedStorage.Source.Configurations.CommandsConfig)
 local Knit = require(ReplicatedStorage.Packages.Knit)
@@ -21,9 +22,11 @@ function CommandsService:KnitStart()
 
 		textChatCommand.Triggered:Connect(function(textSource : TextSource, message : string)
 			local player = Players:GetPlayerByUserId(textSource.UserId)
-			local canExecuteCommand = self:CheckAccessLevel(textSource, commandData)
-			if not canExecuteCommand then
-				return
+			if not RunService:IsStudio() then
+				local canExecuteCommand = self:CheckAccessLevel(textSource, commandData)
+				if not canExecuteCommand then
+					return
+				end
 			end
 			if commandData == CommandsConfig.commands.AddExperience then
 				self:AddExperienceCommand(player, message)
@@ -43,9 +46,26 @@ function CommandsService:KnitStart()
 			if commandData == CommandsConfig.commands.UpdateChallengeProgresion then
 				self:UpdateChallengeProgresionCommand(player, message)
 			end
+			if commandData == CommandsConfig.commands.AddCurrency then
+				self:AddCurrencyCommand(player, message)
+			end
 
 		end)
 	end
+end
+
+function CommandsService:AddCurrencyCommand(player, message)
+	local splitMessage = string.split(message, " ")
+	local targetPlayer = player
+	local currencyType = splitMessage[2]
+	local currencyToAdd = tonumber(splitMessage[3])
+
+	-- Check if the second parameter is a username
+	if splitMessage[4] then
+		local playerID = Players:GetUserIdFromNameAsync(splitMessage[4])
+		targetPlayer = Players:GetPlayerByUserId(playerID)
+	end
+	Knit.GetService("CurrencyService"):AddCurrency(targetPlayer, currencyType, currencyToAdd)
 end
 
 function CommandsService:UpdateChallengeProgresionCommand(player, message)
@@ -130,6 +150,7 @@ function CommandsService:WipeDataCommand(player, message)
 	end
 	
 	Knit.GetService("DataService"):WipeData(targetPlayer)
+
 end
 
 function CommandsService:ApplyDamageCommand(player, message)

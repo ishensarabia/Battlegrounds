@@ -43,6 +43,11 @@ return {
 			accessLevel = "Owner",
 			alias = "/updateChallengeProgression",
 			secondaryAlias = "/updateChallenge",
-		}
+		},
+		["AddCurrency"] ={
+			accessLevel = "Owner",
+			alias = "/addCurrency",
+			secondaryAlias = "/currency",
+		},
 	},
 }
