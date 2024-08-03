@@ -5,7 +5,7 @@ local Knit = require(ReplicatedStorage.Packages.Knit)
 
 local IsServer = RunService:IsServer()
 
-local WeaponsSystemFolder = script.Parent.Parent
+local WeaponsSystemFolder = ReplicatedStorage.Source.Systems.WeaponsSystem
 local AnimationsFolder = WeaponsSystemFolder:WaitForChild("Assets"):WaitForChild("Animations")
 
 local localRandom = Random.new()

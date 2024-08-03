@@ -1,4 +1,5 @@
 local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 local UserInputService = game:GetService("UserInputService")
 local ContentProvider = game:GetService("ContentProvider")
@@ -7,9 +8,9 @@ local TweenService = game:GetService("TweenService")
 local LocalPlayer = Players.LocalPlayer
 
 --Module dependencies
-local WeaponsSystemFolder = script.Parent.Parent
+local WeaponsSystemFolder = ReplicatedStorage.Source.Systems:WaitForChild("WeaponsSystem")
 local WeaponData = WeaponsSystemFolder:WaitForChild("WeaponData")
-local Libraries = WeaponsSystemFolder:WaitForChild("Libraries")
+local Libraries = ReplicatedStorage.Source.Systems:WaitForChild("Libraries")
 local SpringService = require(Libraries:WaitForChild("SpringService"))
 
 local DirectionalIndicatorGuiManager = require(Libraries:WaitForChild("DirectionalIndicatorGuiManager"))
