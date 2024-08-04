@@ -234,44 +234,48 @@ StoreService.crates = {
 
 StoreService.prestigeItems = {
 	Skins = {
-		[1] = {
+		{
 			price = 200,
-			currency = CurrenciesEnum.BattleGems,
 			prestigeNeeded = 1,
 			data = Skins.AllSeeingEye,
 		},
-		[2] = {
+		{
 			price = 2_000,
-			currency = CurrenciesEnum.BattleGems,
 			prestigeNeeded = 2,
 			data = Skins.MayanFigures,
 		},
-		[3] = {
+		{
 			price = 10_000,
-			currency = CurrenciesEnum.BattleGems,
 			prestigeNeeded = 3,
 			data = Skins.Gold,
 		},
 	},
 
 	Emotes = {
-		[1] = {
+		{
 			price = 200,
-			currency = CurrenciesEnum.BattleGems,
 			prestigeNeeded = 3,
 			data = Emotes.Club_Dance,
 		},
 	},
 
 	Weapons = {
-		[1] = {
-			prestigeNeeded = 3,
+		{
+			prestigeNeeded = Weapons[WeaponsEnum.WeaponNames.XM8]:GetAttribute("RequiredPrestige"),
 			data = {
 				name = WeaponsEnum.WeaponNames.XM8,
 				price = Weapons[WeaponsEnum.WeaponNames.XM8]:GetAttribute("Price"),
 				currency = Weapons[WeaponsEnum.WeaponNames.XM8]:GetAttribute("Currency"),
-			}
+			},
 		},
+		{
+			prestigeNeeded = Weapons[WeaponsEnum.WeaponNames.MK3A1]:GetAttribute("RequiredPrestige"),
+			data = {
+				name = WeaponsEnum.WeaponNames.MK3A1,
+				price = Weapons[WeaponsEnum.WeaponNames.MK3A1]:GetAttribute("Price"),
+				currency = Weapons[WeaponsEnum.WeaponNames.MK3A1]:GetAttribute("Currency"),
+			},
+		}
 	},
 }
 
@@ -415,9 +419,10 @@ function StoreService:InitializeTimedItems()
 end
 
 function StoreService:UpdateFeaturedItems()
-	self._featuredItems = self:GetFeaturedItems()
-	-- warn(self._featuredItems)
-	self.Client.UpdateFeaturedItemsSignal:FireAll(self._featuredItems)
+	if self._featuredItems ~= self:GetFeaturedItems() or not self._featuredItems then		
+		self._featuredItems = self:GetFeaturedItems()
+		self.Client.UpdateFeaturedItemsSignal:FireAll(self._featuredItems)
+	end
 end
 
 function StoreService:GetFeaturedItems()
