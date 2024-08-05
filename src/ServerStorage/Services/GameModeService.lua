@@ -44,10 +44,11 @@ end
 function GameModeService:InitializeElection()
 	self._gameModeVotes = {}
 	self._mapsVotes = {}
-	self.Client.InitializeElectionSignal:FireAll(TIME_TO_VOTE)
-	task.delay(TIME_TO_VOTE, function()
-		self:StartGameMode()
-	end)
+	for i = TIME_TO_VOTE, 0, -1 do
+		self.Client.InitializeElectionSignal:FireAll(i)
+		task.wait(1)
+	end
+	self:StartGameMode()
 end
 
 --TODO: set up the type of vote

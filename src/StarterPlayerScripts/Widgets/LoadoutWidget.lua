@@ -236,13 +236,11 @@ function LoadoutWidget:OpenLoadout(callback)
 	showMainMenuCallback = callback
 	--Generate items frame
 	Knit.GetService("DataService"):GetKeyValue("weapons"):andThen(function(weapons: table)
-		warn(weapons)
 		for weaponID, weaponData: table in weapons do
 			--Filter the category
 			--Get the tool to identify if it has texture
 			local weapon: Tool = Weapons[weaponID]
-
-			if weapon.TextureId and weapon:GetAttribute("Slot") == self.slot then
+			if weapon.TextureId and weapon:GetAttribute("Slot"):lower() == self.slot then
 				local weaponFrame = WidgetController:CreateWeaponFrame(weaponID, itemsFrame)
 				--Assign the weaon attribute
 				weaponFrame:SetAttribute("Weapon", weaponID)

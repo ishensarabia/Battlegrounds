@@ -16,6 +16,7 @@ function LoadoutService:KnitStart()
 	self._dataService = Knit.GetService("DataService")
 end
 
+
 function LoadoutService:GenerateWeaponParts(weaponModel: Model)
 	local customParts = {}
 	for index, value in weaponModel:GetDescendants() do
@@ -40,18 +41,24 @@ function LoadoutService:SpawnLoadout(player)
 	local DataService = Knit.GetService("DataService")
 	local loadout = DataService:GetLoadout(player)
 
-	if loadout.Primary then
-		local primaryWeapon = ReplicatedStorage.Weapons[loadout.Primary]:Clone()
+	if loadout.primary then
+		local primaryWeapon = ReplicatedStorage.Weapons[loadout.primary]:Clone()
 		primaryWeapon.Parent = player.Backpack
 
 		-- Load customization for primary and secondary weapons
-		self:LoadWeaponCustomization(player, loadout.Primary)
+		self:LoadWeaponCustomization(player, loadout.primary)
 	end
 
-	if loadout.Secondary then
-		local secondaryWeapon = ReplicatedStorage.Weapons[loadout.Secondary]:Clone()
+	if loadout.secondary then
+		local secondaryWeapon = ReplicatedStorage.Weapons[loadout.secondary]:Clone()
 		secondaryWeapon.Parent = player.Backpack
-		self:LoadWeaponCustomization(player, loadout.Secondary)
+		self:LoadWeaponCustomization(player, loadout.secondary)
+	end
+
+	--Assign the widgets properties to the player
+	if loadout.gadget1 then
+		
+		
 	end
 end
 

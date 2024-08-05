@@ -1,4 +1,5 @@
 local CollectionService = game:GetService("CollectionService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
 local Players = game:GetService("Players")
 local StarterPlayer = game:GetService("StarterPlayer")
@@ -12,10 +13,10 @@ local Knit = require(game.ReplicatedStorage.Packages.Knit)
 local WeaponData = script.Parent:FindFirstChild("WeaponData") or Instance.new("RemoteEvent")
 WeaponData.Name = "WeaponData"
 WeaponData.Parent = script.Parent
-local WeaponsSystemFolder = script.Parent
-local WeaponTypes = WeaponsSystemFolder:WaitForChild("WeaponTypes")
-local Libraries = WeaponsSystemFolder:WaitForChild("Libraries")
-local ShoulderCamera = require(Libraries:WaitForChild("ShoulderCamera"))
+local WeaponsSystemFolder = ReplicatedStorage.Source.Systems.WeaponsSystem
+local WeaponTypes = WeaponsSystemFolder.WeaponTypes
+local Libraries = ReplicatedStorage.Source.Systems:WaitForChild("Libraries")
+local ShoulderCamera = require(Libraries.ShoulderCamera)
 local WeaponsGui = require(Libraries:WaitForChild("WeaponsGui"))
 local SpringService = require(Libraries:WaitForChild("SpringService"))
 local ancestorHasTag = require(Libraries:WaitForChild("ancestorHasTag"))
@@ -55,7 +56,7 @@ do
 			warn(debug.traceback())
 		end)
 	end
-	for _, child in pairs(WeaponTypes:GetChildren()) do
+	for _, child in (WeaponTypes:GetChildren()) do
 		onNewWeaponType(child)
 	end
 	WeaponTypes.ChildAdded:Connect(onNewWeaponType)
@@ -64,7 +65,7 @@ end
 local WeaponsSystem = {}
 WeaponsSystem.didSetup = false
 WeaponsSystem.knownWeapons = {}
-WeaponsSystem.connections = {}
+WeaponsSystem._connections = {}
 WeaponsSystem.networkFolder = nil
 WeaponsSystem.remoteEvents = {}
 WeaponsSystem.remoteFunctions = {}
@@ -113,12 +114,12 @@ function WeaponsSystem.setup()
 				warn("A default no-op function will be implemented so that the queue cannot be abused.")
 				callback = function() end
 			end
-			WeaponsSystem.connections[remoteEventName .. "Remote"] = remoteEvent.OnServerEvent:Connect(function(...)
+			WeaponsSystem._connections[remoteEventName .. "Remote"] = remoteEvent.OnServerEvent:Connect(function(...)
 				callback(...)
 			end)
 			WeaponsSystem.remoteEvents[remoteEventName] = remoteEvent
 		end
-		for _, remoteFuncName in pairs(REMOTE_FUNCTION_NAMES) do
+		for _, remoteFuncName in REMOTE_FUNCTION_NAMES do
 			local remoteFunc = Instance.new("RemoteEvent")
 			remoteFunc.Name = remoteFuncName
 			remoteFunc.Parent = networkFolder
@@ -155,7 +156,7 @@ function WeaponsSystem.setup()
 				local remoteEvent = networkFolder:WaitForChild(remoteEventName, math.huge)
 				local callback = NetworkingCallbacks[remoteEventName]
 				if callback then
-					WeaponsSystem.connections[remoteEventName .. "Remote"] = remoteEvent.OnClientEvent:Connect(
+					WeaponsSystem._connections[remoteEventName .. "Remote"] = remoteEvent.OnClientEvent:Connect(
 						function(...)
 							callback(...)
 						end
@@ -186,9 +187,9 @@ function WeaponsSystem.setup()
 	end
 
 	--Setup weapon tools and listening
-	WeaponsSystem.connections.weaponAdded = CollectionService:GetInstanceAddedSignal(WEAPON_TAG)
+	WeaponsSystem._connections.weaponAdded = CollectionService:GetInstanceAddedSignal(WEAPON_TAG)
 		:Connect(WeaponsSystem.onWeaponAdded)
-	WeaponsSystem.connections.weaponRemoved = CollectionService:GetInstanceRemovedSignal(WEAPON_TAG)
+	WeaponsSystem._connections.weaponRemoved = CollectionService:GetInstanceRemovedSignal(WEAPON_TAG)
 		:Connect(WeaponsSystem.onWeaponRemoved)
 
 	for _, instance in (CollectionService:GetTagged(WEAPON_TAG)) do
@@ -202,7 +203,7 @@ end
 function WeaponsSystem.onCharacterAdded(character)
 	-- Make it so players unequip weapons while seated, then reequip weapons when they become unseated
 	local humanoid = character:WaitForChild("Humanoid")
-	WeaponsSystem.connections.seated = humanoid.Seated:Connect(function(isSeated)
+	WeaponsSystem._connections.seated = humanoid.Seated:Connect(function(isSeated)
 		if isSeated then
 			WeaponsSystem.seatedWeapon = character:FindFirstChildOfClass("Tool")
 			humanoid:UnequipTools()
@@ -231,16 +232,16 @@ function WeaponsSystem.shutdown()
 	WeaponsSystem.remoteEvents = {}
 	WeaponsSystem.remoteFunctions = {}
 
-	for _, connection in WeaponsSystem.connections do
+	for _, connection in WeaponsSystem._connections do
 		if typeof(connection) == "RBXScriptConnection" then
 			connection:Disconnect()
 		end
 	end
-	WeaponsSystem.connections = {}
+	WeaponsSystem._connections = {}
 end
 
-function WeaponsSystem.getWeaponTypeFromTags(instance)
-	for _, tag in pairs(CollectionService:GetTags(instance)) do
+function WeaponsSystem.getWeaponTypeFromTags(instance) : ModuleScript?
+	for _, tag in (CollectionService:GetTags(instance)) do
 		local weaponTypeFound = WEAPON_TYPES_LOOKUP[tag]
 		if weaponTypeFound then
 			return weaponTypeFound
@@ -415,7 +416,9 @@ function WeaponsSystem.setWeaponEquipped(weapon, equipped)
 		WeaponsSystem.gui:setEnabled(hasWeapon)
 
 		if WeaponsSystem.currentWeapon then
-			WeaponsSystem.gui:setCrosshairWeaponScale(WeaponsSystem.currentWeapon.instance:GetAttribute("CrosshairScale") or 1)
+			WeaponsSystem.gui:setCrosshairWeaponScale(
+				WeaponsSystem.currentWeapon.instance:GetAttribute("CrosshairScale") or 1
+			)
 		else
 			WeaponsSystem.gui:setCrosshairWeaponScale(1)
 		end

@@ -4,6 +4,8 @@ local Knit = require(ReplicatedStorage.Packages.Knit)
 
 local ChallengesConfig = require(script.Parent.ChallengesConfig)
 
+local RewardsEnum = require(ReplicatedStorage.Source.Enums.RewardsEnum)
+
 local ChallengesService = Knit.CreateService({
 	Name = "ChallengesService",
 	Client = {
@@ -143,13 +145,14 @@ function ChallengesService:ClaimChallenge(player, challenge: table, challengeTyp
 			if _challenge.isCompleted then
 				--Reward the player with the challenge reward
 				for index, reward: table in _challenge.rewards do
-					if reward.rewardType == "BattleCoins" or reward.rewardType == "BattleGems" then
+					warn(reward)
+					if reward.rewardType == RewardsEnum.RewardTypes.BattleCoins or reward.rewardType == RewardsEnum.RewardTypes.BattleGems then
 						self._currencyService:AddCurrency(player, reward.rewardType, reward.rewardAmount)
 					end
-					if reward.rewardType == "BattlepassExp" then
+					if reward.rewardType == RewardsEnum.RewardTypes.BattlepassExp then
 						self._battlepassService:AddBattlepassExperience(player, reward.rewardAmount)
 					end
-					if reward.rewardType == "Exp" then
+					if reward.rewardType == RewardsEnum.RewardTypes.Experience then
 						self._levelService:AddExperience(player, reward.rewardAmount)
 					end
 				end

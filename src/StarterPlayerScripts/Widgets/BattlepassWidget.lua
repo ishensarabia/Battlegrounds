@@ -26,7 +26,7 @@ local BattlepassConfig = require(ReplicatedStorage.Source.Configurations.Battlep
 local currentRewardFrameInPreview
 --Enums
 local RaritiesEnum = require(ReplicatedStorage.Source.Enums.RaritiesEnum)
-local RewardsEnum = require(ReplicatedStorage.Source.Enums.RewardTypesEnum)
+local RewardsEnum = require(ReplicatedStorage.Source.Enums.RewardsEnum)
 --Screen guis
 local BattlepassGui
 local BattlepassPreviewGui

@@ -10,9 +10,9 @@ local ContentProvider = game:GetService("ContentProvider")
 
 local IsServer = RunService:IsServer()
 --Dependencies
-local WeaponsSystemFolder = script.Parent.Parent
+local GadgetsSystemFolder = ReplicatedStorage.Source.Systems.GadgetsSystem
 local Libraries = ReplicatedStorage.Source.Systems:WaitForChild("Libraries")
-local BaseWeapon = require(WeaponsSystemFolder:WaitForChild("BaseWeapon"))
+local BaseGadget = require(GadgetsSystemFolder:WaitForChild("BaseGadget"))
 local Parabola = require(Libraries:WaitForChild("Parabola"))
 local Roblox = require(Libraries:WaitForChild("Roblox"))
 local ancestorHasTag = require(Libraries:WaitForChild("ancestorHasTag"))
@@ -36,18 +36,19 @@ local MAX_BULLET_TIME = 10
 local localRandom = Random.new()
 local localPlayer = not IsServer and Players.LocalPlayer
 
-local BulletWeapon = {}
-BulletWeapon.__index = BulletWeapon
-setmetatable(BulletWeapon, BaseWeapon)
+local GrenadeGadget = {}
+GrenadeGadget.__index = GrenadeGadget
+setmetatable(GrenadeGadget, BaseGadget)
 
-BulletWeapon.CanAimDownSights = true
-BulletWeapon.CanBeFired = true
-BulletWeapon.CanBeReloaded = true
-BulletWeapon.CanHit = true
+GrenadeGadget.CanAimDownSights = true
+GrenadeGadget.CanBeFired = true
+GrenadeGadget.CanBeReloaded = true
+GrenadeGadget.CanHit = true
 
-function BulletWeapon.new(weaponsSystem, instance)
-	local self = BaseWeapon.new(weaponsSystem, instance)
-	setmetatable(self, BulletWeapon)
+function GrenadeGadget.new(gadgetSystem : table, instance : Instance)
+	local self = BaseGadget.new(gadgetSystem, instance)
+	setmetatable(self, GrenadeGadget)
+	
 
 	self.usesCharging = false
 	self.charge = 0
@@ -63,40 +64,40 @@ function BulletWeapon.new(weaponsSystem, instance)
 	self.recoilIntensity = 0
 	self.aimPoint = Vector3.new()
 
-	self:addOptionalDescendant("tipAttach", "TipAttachment")
+	-- self:addOptionalDescendant("tipAttach", "TipAttachment")
 
-	self:addOptionalDescendant("boltMotor", "BoltMotor")
-	self:addOptionalDescendant("boltMotorStart", "BoltMotorStart")
-	self:addOptionalDescendant("boltMotorTarget", "BoltMotorTarget")
+	-- self:addOptionalDescendant("boltMotor", "BoltMotor")
+	-- self:addOptionalDescendant("boltMotorStart", "BoltMotorStart")
+	-- self:addOptionalDescendant("boltMotorTarget", "BoltMotorTarget")
 
-	self:addOptionalDescendant("chargeGlowPart", "ChargeGlow")
-	self:addOptionalDescendant("chargeCompleteParticles", "ChargeCompleteParticles")
-	self:addOptionalDescendant("dischargeCompleteParticles", "DischargeCompleteParticles")
+	-- self:addOptionalDescendant("chargeGlowPart", "ChargeGlow")
+	-- self:addOptionalDescendant("chargeCompleteParticles", "ChargeCompleteParticles")
+	-- self:addOptionalDescendant("dischargeCompleteParticles", "DischargeCompleteParticles")
 
-	self:addOptionalDescendant("muzzleFlash0", "MuzzleFlash0")
-	self:addOptionalDescendant("muzzleFlash1", "MuzzleFlash1")
-	self:addOptionalDescendant("muzzleFlashBeam", "MuzzleFlash")
+	-- self:addOptionalDescendant("muzzleFlash0", "MuzzleFlash0")
+	-- self:addOptionalDescendant("muzzleFlash1", "MuzzleFlash1")
+	-- self:addOptionalDescendant("muzzleFlashBeam", "MuzzleFlash")
 
-	self.hitMarkTemplate = HitMarksFolder:FindFirstChild(self:getConfigValue("HitMarkEffect", "BulletHole"))
+	-- self.hitMarkTemplate = HitMarksFolder:FindFirstChild(self:getConfigValue("HitMarkEffect", "BulletHole"))
 
-	self.casingTemplate = CasingsFolder:FindFirstChild(self.instance:GetAttribute("CasingEffect"))
-	self.bulletEffectTemplate = ShotsFolder:FindFirstChild(self.instance:GetAttribute("ShotEffect"))
+	-- self.casingTemplate = CasingsFolder:FindFirstChild(self.instance:GetAttribute("CasingEffect"))
+	-- self.bulletEffectTemplate = ShotsFolder:FindFirstChild(self.instance:GetAttribute("ShotEffect"))
 	--Preload the bullet effect
-	local beam0 = self.bulletEffectTemplate:FindFirstChild("Beam0")
-	if beam0 then
-		coroutine.wrap(function()
-			ContentProvider:PreloadAsync({ beam0 })
-		end)()
-	end
+	-- local beam0 = self.bulletEffectTemplate:FindFirstChild("Beam0")
+	-- if beam0 then
+	-- 	coroutine.wrap(function()
+	-- 		ContentProvider:PreloadAsync({ beam0 })
+	-- 	end)()
+	-- end
 
-	self:addOptionalDescendant("casingEjectPoint", "CasingEjectPoint")
+	-- self:addOptionalDescendant("casingEjectPoint", "CasingEjectPoint")
 
-	self.ignoreList = {}
-	self.ignoreListRefreshTime = 0
+	-- self.ignoreList = {}
+	-- self.ignoreListRefreshTime = 0
 
-	self:addOptionalDescendant("handAttach", "LeftHandAttachment")
-	self.handAlignPos = nil
-	self.handAlignRot = nil
+	-- self:addOptionalDescendant("handAttach", "LeftHandAttachment")
+	-- self.handAlignPos = nil
+	-- self.handAlignRot = nil
 
 	self.chargingParticles = {}
 	self.instance.DescendantAdded:Connect(function(descendant)
@@ -104,7 +105,7 @@ function BulletWeapon.new(weaponsSystem, instance)
 			table.insert(self.chargingParticles, descendant)
 		end
 	end)
-	for _, v in pairs(self.instance:GetDescendants()) do
+	for _, v in (self.instance:GetDescendants()) do
 		if v.Name == "ChargingParticles" and v:IsA("ParticleEmitter") then
 			table.insert(self.chargingParticles, v)
 		end
@@ -115,11 +116,11 @@ function BulletWeapon.new(weaponsSystem, instance)
 	return self
 end
 
-function BulletWeapon:onEquippedChanged()
-	BaseWeapon.onEquippedChanged(self)
+function GrenadeGadget:onEquippedChanged()
+	BaseGadget.onEquippedChanged(self)
 
 	if not IsServer then
-		if self.weaponsSystem.camera then
+		if self.gadgetsSystem.camera then
 			if self.equipped then
 				self.startupFinished = false
 			end
@@ -147,13 +148,13 @@ function BulletWeapon:onEquippedChanged()
 	end
 end
 
-function BulletWeapon:onReloadAction(actionName, inputState, inputObj)
+function GrenadeGadget:onReloadAction(actionName, inputState, inputObj)
 	if inputState == Enum.UserInputState.Begin and not self.reloading then
 		self:reload()
 	end
 end
 
-function BulletWeapon:animateBoltAction(isOpen)
+function GrenadeGadget:animateBoltAction(isOpen)
 	if not self.boltMotor or not self.boltMotorStart or not self.boltMotorTarget then
 		return
 	end
@@ -177,13 +178,13 @@ function BulletWeapon:animateBoltAction(isOpen)
 	boltTween.Completed:Wait()
 end
 
-function BulletWeapon:getRandomSeedForId(id)
+function GrenadeGadget:getRandomSeedForId(id)
 	return id
 end
 
 -- This function is only called on clients
-function BulletWeapon:simulateFire(firingPlayer, fireInfo)
-	BaseWeapon.simulateFire(self, fireInfo)
+function GrenadeGadget:simulateFire(firingPlayer, fireInfo)
+	BaseGadget.simulateFire(self, fireInfo)
 
 	-- Play "Fired" sound
 	if self.lastFireSound then
@@ -223,7 +224,7 @@ function BulletWeapon:simulateFire(firingPlayer, fireInfo)
 				)
 			)
 		casing.Parent = workspace.CurrentCamera
-		CollectionService:AddTag(casing, "WeaponsSystemIgnore")
+		CollectionService:AddTag(casing, "gadgetsSystemIgnore")
 
 		local casingHitSound = casing:FindFirstChild("CasingHitSound")
 		if casingHitSound then
@@ -255,14 +256,14 @@ function BulletWeapon:simulateFire(firingPlayer, fireInfo)
 			local intensityToAdd = randomGenerator:NextNumber(recoilMin, recoilMax)
 			local xIntensity = math.sin(tick() * 2) * intensityToAdd * math.rad(0.05)
 			local yIntensity = intensityToAdd * 0.025
-			self.weaponsSystem.camera:addRecoil(Vector2.new(xIntensity, yIntensity))
+			self.gadgetsSystem.camera:addRecoil(Vector2.new(xIntensity, yIntensity))
 
-			if not (self.weaponsSystem.camera:isZoomed() and self.instance:GetAttribute("HasScope")) then
+			if not (self.gadgetsSystem.camera:isZoomed() and self.instance:GetAttribute("HasScope")) then
 				self.recoilIntensity = math.clamp(self.recoilIntensity * 1 + (intensityToAdd / 10), 0.005, 1)
 			end
 
 			-- Make crosshair reflect recoil/spread amount
-			local weaponsGui = self.weaponsSystem.gui
+			local weaponsGui = self.gadgetsSystem.gui
 			if weaponsGui then
 				weaponsGui:setCrosshairScale(1 + intensityToAdd)
 			end
@@ -270,7 +271,7 @@ function BulletWeapon:simulateFire(firingPlayer, fireInfo)
 	end
 end
 
-function BulletWeapon:getIgnoreList(includeLocalPlayer)
+function GrenadeGadget:getIgnoreList(includeLocalPlayer)
 	local now = tick()
 	local ignoreList = self.ignoreList
 	if not ignoreList or now - self.ignoreListRefreshTime > IGNORE_LIST_LIFETIME then
@@ -289,7 +290,7 @@ function BulletWeapon:getIgnoreList(includeLocalPlayer)
 end
 
 -- This function is only called on clients
-function BulletWeapon:simulateProjectile(firingPlayer, fireInfo, projectileIdx, randomGenerator)
+function GrenadeGadget:simulateProjectile(firingPlayer, fireInfo, projectileIdx, randomGenerator)
 	local localPlayerInitiatedShot = self.player == Players.LocalPlayer
 
 	-- Retrieve config values
@@ -327,7 +328,7 @@ function BulletWeapon:simulateProjectile(firingPlayer, fireInfo, projectileIdx, 
 	local bulletEffect = self.bulletEffectTemplate:Clone()
 	bulletEffect.CFrame = CFrame.new(origin, origin + dir)
 	bulletEffect.Parent = workspace.CurrentCamera
-	CollectionService:AddTag(bulletEffect, "WeaponsSystemIgnore")
+	CollectionService:AddTag(bulletEffect, "gadgetsSystemIgnore")
 
 	local leadingParticles = bulletEffect:FindFirstChild("LeadingParticles", true)
 	local attachment0 = bulletEffect:FindFirstChild("Attachment0")
@@ -491,7 +492,7 @@ function BulletWeapon:simulateProjectile(firingPlayer, fireInfo, projectileIdx, 
 					for hitInfoKey, value in pairs(hitInfo) do
 						hitInfoClone[hitInfoKey] = value
 					end
-					self.weaponsSystem.getRemoteEvent("WeaponHit"):FireServer(self.instance, hitInfoClone)
+					self.gadgetsSystem.getRemoteEvent("WeaponHit"):FireServer(self.instance, hitInfoClone)
 				end
 
 				-- Deal with all effects that start/stop/change on hit
@@ -528,20 +529,20 @@ function BulletWeapon:simulateProjectile(firingPlayer, fireInfo, projectileIdx, 
 					if localPlayerInitiatedShot then
 						-- Trigger hit indicators on client that initiated the shot if the explosion hit another player/humanoid
 						explosion.Hit:Connect(function(explodedPart, hitDist)
-							local humanoid = self.weaponsSystem.getHumanoid(explodedPart)
+							local humanoid = self.gadgetsSystem.getHumanoid(explodedPart)
 							--Ragdoll player hit by explosion
 							if
 								humanoid
 								and explodedPart.Name == "UpperTorso"
 								and humanoid:GetState() ~= Enum.HumanoidStateType.Dead
-								and self.weaponsSystem.gui
+								and self.gadgetsSystem.gui
 								and explodedPart.Parent ~= self.player.Character
-								and self.weaponsSystem.playersOnDifferentTeams(
-									self.weaponsSystem.getPlayerFromHumanoid(humanoid),
+								and self.gadgetsSystem.playersOnDifferentTeams(
+									self.gadgetsSystem.getPlayerFromHumanoid(humanoid),
 									self.player
 								)
 							then
-								self.weaponsSystem.gui:OnHitOtherPlayer(
+								self.gadgetsSystem.gui:OnHitOtherPlayer(
 									self:calculateDamage(hitInfo.d, hitInfo.part),
 									humanoid
 								)
@@ -607,7 +608,7 @@ function BulletWeapon:simulateProjectile(firingPlayer, fireInfo, projectileIdx, 
 					-- Clone hitMark (this contains all the decals/billboards/models to show on the hit surface)
 					local hitMark = self.hitMarkTemplate:Clone()
 					hitMark.Parent = hitPart
-					CollectionService:AddTag(hitMark, "WeaponsSystemIgnore")
+					CollectionService:AddTag(hitMark, "gadgetsSystemIgnore")
 
 					-- Move/align hitMark to the hit surface
 					local incomingVec = parabola:sampleVelocity(1).Unit
@@ -768,7 +769,7 @@ function BulletWeapon:simulateProjectile(firingPlayer, fireInfo, projectileIdx, 
 	end
 end
 
-function BulletWeapon:calculateDamage(travelDistance, hitPart)
+function GrenadeGadget:calculateDamage(travelDistance, hitPart)
 	local zeroDamageDistance = self.instance:GetAttribute("ZeroDamageDistance") or 10000
 	local fullDamageDistance = self.instance:GetAttribute("FullDamageDistance") or 1000
 	local distRange = zeroDamageDistance - fullDamageDistance
@@ -781,31 +782,31 @@ function BulletWeapon:calculateDamage(travelDistance, hitPart)
 	return math.max(damage * falloff, 0)
 end
 
-function BulletWeapon:applyDamage(hitInfo)
+function GrenadeGadget:applyDamage(hitInfo)
 	local damage = self:calculateDamage(hitInfo.d, hitInfo.part)
 
 	if damage <= 0 then
 		return
 	end
 
-	self.weaponsSystem.doDamage(hitInfo.h, damage, nil, self.player, hitInfo, self.instance.Name)
+	self.gadgetsSystem.doDamage(hitInfo.h, damage, nil, self.player, hitInfo, self.instance.Name)
 end
 
-function BulletWeapon:onHit(hitInfo)
+function GrenadeGadget:onHit(hitInfo)
 	local hitPoint = hitInfo.p
 	local hitNormal = hitInfo.n
 	local hitPart = hitInfo.part
 
 	if hitPart and hitPart.Parent then
-		local humanoid = self.weaponsSystem.getHumanoid(hitPart)
+		local humanoid = self.gadgetsSystem.getHumanoid(hitPart)
 		hitInfo.h = humanoid or hitPart
 
 		if
 			IsServer
 			and (
 				not hitInfo.h:IsA("Humanoid")
-				or self.weaponsSystem.playersOnDifferentTeams(
-					self.weaponsSystem.getPlayerFromHumanoid(hitInfo.h),
+				or self.gadgetsSystem.playersOnDifferentTeams(
+					self.gadgetsSystem.getPlayerFromHumanoid(hitInfo.h),
 					self.player
 				)
 			)
@@ -814,19 +815,19 @@ function BulletWeapon:onHit(hitInfo)
 		elseif
 			hitInfo.h:IsA("Humanoid")
 			and hitInfo.h:GetState() ~= Enum.HumanoidStateType.Dead
-			and self.weaponsSystem.gui
+			and self.gadgetsSystem.gui
 			and self.player == Players.LocalPlayer
-			and self.weaponsSystem.playersOnDifferentTeams(
-				self.weaponsSystem.getPlayerFromHumanoid(hitInfo.h),
+			and self.gadgetsSystem.playersOnDifferentTeams(
+				self.gadgetsSystem.getPlayerFromHumanoid(hitInfo.h),
 				self.player
 			)
 		then
 			-- Show hit indicators on gui of client that shot projectile if players are not on same team
 			local damage, isHeadshot = self:calculateDamage(hitInfo.d, hitInfo.part)
 			if isHeadshot then
-				self.weaponsSystem.gui:OnHitOtherPlayer(damage, hitInfo.h, isHeadshot)
+				self.gadgetsSystem.gui:OnHitOtherPlayer(damage, hitInfo.h, isHeadshot)
 			else
-				self.weaponsSystem.gui:OnHitOtherPlayer(damage, hitInfo.h)
+				self.gadgetsSystem.gui:OnHitOtherPlayer(damage, hitInfo.h)
 			end
 		end
 	end
@@ -857,13 +858,13 @@ function BulletWeapon:onHit(hitInfo)
 					:DestroyObject(self.player)
 			end
 
-			local humanoid = self.weaponsSystem.getHumanoid(explodedPart)
+			local humanoid = self.gadgetsSystem.getHumanoid(explodedPart)
 			if humanoid then
 				if
 					explodedPart.Name == "UpperTorso"
 					and humanoid:GetState() ~= Enum.HumanoidStateType.Dead
-					and self.weaponsSystem.playersOnDifferentTeams(
-						self.weaponsSystem.getPlayerFromHumanoid(humanoid),
+					and self.gadgetsSystem.playersOnDifferentTeams(
+						self.gadgetsSystem.getPlayerFromHumanoid(humanoid),
 						self.player
 					)
 				then
@@ -885,27 +886,27 @@ function BulletWeapon:onHit(hitInfo)
 						angularVelocity.Parent = hitPlayer.Character.HumanoidRootPart
 						Debris:AddItem(angularVelocity, 2)
 					end
-					self.weaponsSystem.doDamage(humanoid, damageToDeal, nil, self.player)
+					self.gadgetsSystem.doDamage(humanoid, damageToDeal, nil, self.player)
 				end
 
-			elseif not CollectionService:HasTag(explodedPart, "WeaponsSystemIgnore") then
+			elseif not CollectionService:HasTag(explodedPart, "gadgetsSystemIgnore") then
 				-- Do damage to a part (sends damage to breaking system)
-				self.weaponsSystem.doDamage(explodedPart, damageToDeal, nil, self.player)
+				self.gadgetsSystem.doDamage(explodedPart, damageToDeal, nil, self.player)
 			end
 		end)
 
 	end
 end
 
-function BulletWeapon:fire(origin, dir, charge)
+function GrenadeGadget:fire(origin, dir, charge)
 	if not self:isCharged() then
 		return
 	end
 
-	BaseWeapon.fire(self, origin, dir, charge)
+	BaseGadget.fire(self, origin, dir, charge)
 end
 
-function BulletWeapon:onFired(firingPlayer, fireInfo, fromNetwork)
+function GrenadeGadget:onFired(firingPlayer, fireInfo, fromNetwork)
 	if not IsServer and firingPlayer == Players.LocalPlayer and fromNetwork then
 		return
 	end
@@ -935,11 +936,11 @@ function BulletWeapon:onFired(firingPlayer, fireInfo, fromNetwork)
 
 	self.nextFireTime = tick() + cooldownTime
 
-	BaseWeapon.onFired(self, firingPlayer, fireInfo, fromNetwork)
+	BaseGadget.onFired(self, firingPlayer, fireInfo, fromNetwork)
 end
 
-function BulletWeapon:onConfigValueChanged(valueName, newValue, oldValue)
-	BaseWeapon.onConfigValueChanged(self, valueName, newValue, oldValue)
+function GrenadeGadget:onConfigValueChanged(valueName, newValue, oldValue)
+	BaseGadget.onConfigValueChanged(self, valueName, newValue, oldValue)
 	if valueName == "ShotEffect" then
 		self.bulletEffectTemplate = ShotsFolder:FindFirstChild(self.instance:GetAttribute("ShotEffect"))
 		if self.bulletEffectTemplate then
@@ -976,8 +977,8 @@ function BulletWeapon:onConfigValueChanged(valueName, newValue, oldValue)
 	end
 end
 
-function BulletWeapon:onActivatedChanged()
-	BaseWeapon.onActivatedChanged(self)
+function GrenadeGadget:onActivatedChanged()
+	BaseGadget.onActivatedChanged(self)
 
 	if not IsServer then
 		-- Reload if no ammo left in clip
@@ -998,8 +999,8 @@ function BulletWeapon:onActivatedChanged()
 	end
 end
 
-function BulletWeapon:onRenderStepped(dt)
-	BaseWeapon.onRenderStepped(self, dt)
+function GrenadeGadget:onRenderStepped(dt)
+	BaseGadget.onRenderStepped(self, dt)
 	if not self.tipAttach then
 		return
 	end
@@ -1020,8 +1021,8 @@ function BulletWeapon:onRenderStepped(dt)
 
 			local _, gunHitPoint = Roblox.penetrateCast(gunLookRay, self.ignoreList)
 
-			if self.weaponsSystem.aimRayCallback then
-				local _, hitPoint = Roblox.penetrateCast(self.weaponsSystem.aimRayCallback(), self.ignoreList)
+			if self.gadgetsSystem.aimRayCallback then
+				local _, hitPoint = Roblox.penetrateCast(self.gadgetsSystem.aimRayCallback(), self.ignoreList)
 				self.aimPoint = hitPoint
 			else
 				self.aimPoint = gunHitPoint
@@ -1040,7 +1041,7 @@ function BulletWeapon:onRenderStepped(dt)
 					aimZoomTrack:Play(0.15)
 				end
 				aimZoomTrack:AdjustSpeed(0.001)
-				if self.weaponsSystem.camera:isZoomed() then
+				if self.gadgetsSystem.camera:isZoomed() then
 					if aimTrack.WeightTarget ~= 0 then
 						aimZoomTrack:AdjustWeight(1)
 						aimTrack:AdjustWeight(0)
@@ -1054,11 +1055,11 @@ function BulletWeapon:onRenderStepped(dt)
 			local MIN_ANGLE = -80
 			local MAX_ANGLE = 80
 			local aimYAngle = math.deg(self.recoilIntensity)
-			if self.weaponsSystem.camera.enabled then
+			if self.gadgetsSystem.camera.enabled then
 				-- Gets pitch and recoil from camera to figure out how high/low to aim the gun
 				aimYAngle = math.deg(
-					self.weaponsSystem.camera:getRelativePitch()
-						+ self.weaponsSystem.camera.currentRecoil.Y
+					self.gadgetsSystem.camera:getRelativePitch()
+						+ self.gadgetsSystem.camera.currentRecoil.Y
 						+ self.recoilIntensity
 				)
 			end
@@ -1080,7 +1081,7 @@ function BulletWeapon:onRenderStepped(dt)
 	end
 end
 
-function BulletWeapon:setChargingParticles(charge)
+function GrenadeGadget:setChargingParticles(charge)
 	local ratePerCharge = self:getConfigValue("ChargingParticlesRatePerCharge", 20)
 	local rate = ratePerCharge * charge
 	for _, v in pairs(self.chargingParticles) do
@@ -1088,7 +1089,7 @@ function BulletWeapon:setChargingParticles(charge)
 	end
 end
 
-function BulletWeapon:onStepped(dt)
+function GrenadeGadget:onStepped(dt)
 	if not self.tipAttach then
 		return
 	end
@@ -1096,7 +1097,7 @@ function BulletWeapon:onStepped(dt)
 		return
 	end
 
-	BaseWeapon.onStepped(self, dt)
+	BaseGadget.onStepped(self, dt)
 
 	local now = tick()
 
@@ -1204,7 +1205,7 @@ function BulletWeapon:onStepped(dt)
 	end
 end
 
-function BulletWeapon:handleCharging(dt)
+function GrenadeGadget:handleCharging(dt)
 	local chargeDelta
 	local shouldCharge = self.activated or self.burstFiring or self:getConfigValue("ChargePassively", false)
 	if self.reloading or self.triggerDisconnected then
@@ -1220,11 +1221,11 @@ function BulletWeapon:handleCharging(dt)
 	self.charge = math.clamp(self.charge + chargeDelta, 0, 1)
 end
 
-function BulletWeapon:isCharged()
+function GrenadeGadget:isCharged()
 	return not self.usesCharging or self.charge >= 1
 end
 
-function BulletWeapon:canFire()
+function GrenadeGadget:canFire()
 	return self.player == Players.LocalPlayer
 		and (self.burstFiring or self.activated)
 		and not self.triggerDisconnected
@@ -1233,7 +1234,7 @@ function BulletWeapon:canFire()
 		and self.startupFinished
 end
 
-function BulletWeapon:doLocalFire()
+function GrenadeGadget:doLocalFire()
 	if self.tipAttach then
 		local tipCFrame = self.tipAttach.WorldCFrame
 		local tipPos = tipCFrame.Position
@@ -1243,4 +1244,4 @@ function BulletWeapon:doLocalFire()
 	end
 end
 
-return BulletWeapon
+return GrenadeGadget

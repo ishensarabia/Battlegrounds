@@ -180,7 +180,6 @@ end
 
 function DataService.Client:GetWeaponCustomization(player, weaponID: string)
 	local weaponData = self.Server:GetKeyValue(player, "weapons")
-	warn(weaponData, weaponID)
 	local weaponCustomization = {}
 	local dictionaryLength = getDictionaryLegnth(weaponData[weaponID].customization)
 	if weaponData[weaponID].customization and dictionaryLength > 0 then

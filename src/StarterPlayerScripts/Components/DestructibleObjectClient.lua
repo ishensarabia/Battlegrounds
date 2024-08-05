@@ -75,8 +75,8 @@ function DestructibleObjectClient:Start()
 	--Check for new interactable parts
 	self._janitor:Add(self.Instance.Interactable.ChildAdded:Connect(function(child)
 		if child:IsA("BasePart") then
-			self._janitor:Add(child.Attachment.ChildAdded:Connect(function(buildPart)
-				addParticles(buildPart)
+			self._janitor:Add(child.Attachment.ChildAdded:Connect(function(child)
+				addParticles(child)
 				if child:IsA("ProximityPrompt") then
 					self._janitor:Add(child)
 	

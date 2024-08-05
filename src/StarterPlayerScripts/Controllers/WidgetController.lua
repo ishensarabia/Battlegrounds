@@ -35,13 +35,13 @@ function WidgetController:CreateSkinFrame(skinData: table, parent: GuiObject?, l
 	skinItemFrame.ItemFrame.ImageColor3 = RaritiesEnum.Colors[skinData.rarity]
 	--Assing the skin to the image
 	skinItemFrame.SkinBackground.Image = skinData.skinID
-	--Get the weapon equipped
+--Get the weapon equipped
 	local DataService = Knit.GetService("DataService")
 	return DataService:GetKeyValue("loadout"):andThen(function(loadout)
 		local weaponModel = ReplicatedStorage.Weapons[loadout.weaponEquipped]:FindFirstChildWhichIsA("Model"):Clone()
 
 		--apply the skin
-		WidgetController._WeaponCustomizationController:ApplySkinForPreview(weaponModel, skinData)
+		self._WeaponCustomizationController:ApplySkinForPreview(weaponModel, skinData)
 		--get the viewport from the skin item template frame
 		local viewportFrame = skinItemFrame.ViewportFrame
 		--Create the viewport camera

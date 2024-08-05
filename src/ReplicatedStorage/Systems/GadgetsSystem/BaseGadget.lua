@@ -5,28 +5,28 @@ local Knit = require(ReplicatedStorage.Packages.Knit)
 
 local IsServer = RunService:IsServer()
 
-local WeaponsSystemFolder = ReplicatedStorage.Source.Systems.WeaponsSystem
-local AnimationsFolder = WeaponsSystemFolder:WaitForChild("Assets"):WaitForChild("Animations")
+local gadgetsSystemFolder : Folder = ReplicatedStorage.Source.Systems.GadgetsSystem
 
 local localRandom = Random.new()
 
-local BaseWeapon = {}
-BaseWeapon.__index = BaseWeapon
+local BaseGadget = {}
+BaseGadget.__index = BaseGadget
 
-BaseWeapon.CanAimDownSights = false
-BaseWeapon.CanBeReloaded = false
-BaseWeapon.CanBeFired = false
-BaseWeapon.CanHit = false
+BaseGadget.CanAimDownSights = false
+BaseGadget.CanBeReloaded = false
+BaseGadget.CanBeFired = false
+BaseGadget.CanHit = false
 
-function BaseWeapon.new(weaponsSystem, instance)
-	assert(instance, "BaseWeapon.new() requires a valid Instance to be attached to.")
+function BaseGadget.new(gadgetSystem : table, instance : Instance)
+	warn(gadgetSystem, instance)
+	assert(instance, "BaseGadget.new() requires a valid Instance to be attached to.")
 
-	local self = setmetatable({}, BaseWeapon)
+	local self = setmetatable({}, BaseGadget)
 	self.connections = {}
 	self.descendants = {}
 	self.descendantsRegistered = false
 	self.optionalDescendantNames = {}
-	self.weaponsSystem = weaponsSystem
+	self.gadgetsSystem = gadgetSystem
 	self.instance = instance
 	self.animController = nil
 	self.player = nil
@@ -55,22 +55,12 @@ function BaseWeapon.new(weaponsSystem, instance)
 	return self
 end
 
-function BaseWeapon:doInitialSetup()
+function BaseGadget:doInitialSetup()
 	local selfClass = getmetatable(self)
 	self.instanceIsTool = self.instance:IsA("Tool")
 
-	-- Set up child added/removed
-	self.connections.childAdded = self.instance.ChildAdded:Connect(function(child)
-		self:onChildAdded(child)
-	end)
-	self.connections.childRemoved = self.instance.ChildRemoved:Connect(function(child)
-		self:onChildRemoved(child)
-	end)
-	for _, child in (self.instance:GetChildren()) do
-		self:onChildAdded(child)
-	end
 
-	-- Initialize weapon ammo values
+	-- Initialize gadget ammo values
 	if selfClass.CanBeReloaded then
 		self.ammoInWeapon = self.instance:GetAttribute("CurrentAmmo") or 0
 		self.totalAmmo = self.instance:GetAttribute("TotalAmmo")
@@ -132,14 +122,15 @@ function BaseWeapon:doInitialSetup()
 			self:setActivated(false)
 		end)
 
-		-- Weld handle to weapon primary part
+		-- Weld handle to gadget primary part
 		if IsServer then
 			self.handle = self.instance:FindFirstChild("Handle")
-
+			
 			local model = self.instance:FindFirstChildOfClass("Model")
 			local handleAttachment = model:FindFirstChild("HandleAttachment", true)
-
+			
 			if self.handle and handleAttachment then
+				warn("Welding handle to primary part")
 				local handleOffset = model.PrimaryPart.CFrame:toObjectSpace(handleAttachment.WorldCFrame)
 
 				local weld = Instance.new("Weld")
@@ -157,7 +148,7 @@ function BaseWeapon:doInitialSetup()
 	end
 end
 
-function BaseWeapon:registerDescendants()
+function BaseGadget:registerDescendants()
 	if not self.instance then
 		error("No instance set yet!")
 	end
@@ -177,7 +168,7 @@ function BaseWeapon:registerDescendants()
 	self.descendantsRegistered = true
 end
 
-function BaseWeapon:addOptionalDescendant(key, descendantName)
+function BaseGadget:addOptionalDescendant(key, descendantName)
 	if self.instance == nil then
 		error("No instance set yet!")
 	end
@@ -188,7 +179,7 @@ function BaseWeapon:addOptionalDescendant(key, descendantName)
 
 	if self.descendants[descendantName] == "Multiple" then
 		error(
-			'Weapon "'
+			'gadget "'
 				.. self.instance.Name
 				.. '" has multiple descendants named "'
 				.. descendantName
@@ -205,7 +196,7 @@ function BaseWeapon:addOptionalDescendant(key, descendantName)
 	end
 end
 
-function BaseWeapon:onDescendantAdded(descendant)
+function BaseGadget:onDescendantAdded(descendant)
 	if self.descendants[descendant.Name] == nil then
 		self.descendants[descendant.Name] = descendant
 	else
@@ -216,7 +207,7 @@ function BaseWeapon:onDescendantAdded(descendant)
 	if desiredKey then
 		if self.descendants[descendant.Name] == "Multiple" then
 			error(
-				'Weapon "'
+				'gadget "'
 					.. self.instance.Name
 					.. '" has multiple descendants named "'
 					.. descendant.Name
@@ -228,7 +219,7 @@ function BaseWeapon:onDescendantAdded(descendant)
 	end
 end
 
-function BaseWeapon:cleanupConnection(...)
+function BaseGadget:cleanupConnection(...)
 	local args = { ... }
 	for _, name in pairs(args) do
 		if typeof(name) == "string" and self.connections[name] then
@@ -238,7 +229,7 @@ function BaseWeapon:cleanupConnection(...)
 	end
 end
 
-function BaseWeapon:onAncestryChanged()
+function BaseGadget:onAncestryChanged()
 	if self.instanceIsTool then
 		local player = nil
 		if self.instance:IsDescendantOf(Players) then
@@ -257,7 +248,7 @@ function BaseWeapon:onAncestryChanged()
 	end
 end
 
-function BaseWeapon:setPlayer(player)
+function BaseGadget:setPlayer(player)
 	if self.player == player then
 		return
 	end
@@ -265,7 +256,7 @@ function BaseWeapon:setPlayer(player)
 	self.player = player
 end
 
-function BaseWeapon:setEquipped(equipped)
+function BaseGadget:setEquipped(equipped)
 	if self.equipped == equipped then
 		return
 	end
@@ -278,7 +269,7 @@ function BaseWeapon:setEquipped(equipped)
 	end
 end
 
-function BaseWeapon:onEquippedChanged()
+function BaseGadget:onEquippedChanged()
 	local WeaponService = Knit.GetService("WeaponsService")
 
 	if self.activeRenderStepName then
@@ -287,8 +278,8 @@ function BaseWeapon:onEquippedChanged()
 	end
 	self:cleanupConnection("localStepped")
 
-	if not IsServer and self.weaponsSystem then
-		self.weaponsSystem.setWeaponEquipped(self, self.equipped)
+	if not IsServer and self.gadgetsSystem then
+		self.gadgetsSystem.setGadgetEquipped(self, self.equipped)
 		if self.equipped then
 			if self.player == Players.LocalPlayer then
 				RunService:BindToRenderStep(self.instance:GetFullName(), Enum.RenderPriority.Input.Value, function(dt)
@@ -303,24 +294,24 @@ function BaseWeapon:onEquippedChanged()
 	end
 
 	if self.instanceIsTool then
-		for _, part in pairs(self.instance:GetDescendants()) do
+		for _, part in (self.instance:GetDescendants()) do
 			if part:IsA("BasePart") then
 				part.CanCollide = part ~= self.handle and not self.equipped
 			end
 		end
 	end
 
-	if IsServer and self.equipped then
-		WeaponService:SetIKForWeapon(self.player, self.instance)
-	end
+	-- if IsServer and self.equipped then
+	-- 	WeaponService:SetIKForWeapon(self.player, self.instance)
+	-- end
 
-	if IsServer and not self.equipped then
-		WeaponService:CleanupIKForWeapon(self.player)
-	end
+	-- if IsServer and not self.equipped then
+	-- 	WeaponService:CleanupIKForWeapon(self.player)
+	-- end
 	self:setActivated(false)
 end
 
-function BaseWeapon:setActivated(activated, fromNetwork)
+function BaseGadget:setActivated(activated, fromNetwork)
 	if not IsServer and fromNetwork and self.player == Players.LocalPlayer then
 		return
 	end
@@ -331,19 +322,19 @@ function BaseWeapon:setActivated(activated, fromNetwork)
 
 	self.activated = activated
 	if IsServer and not fromNetwork then
-		self.weaponsSystem.getRemoteEvent("WeaponActivated"):FireAllClients(self.player, self.instance, self.activated)
+		self.gadgetsSystem.getRemoteEvent("WeaponActivated"):FireAllClients(self.player, self.instance, self.activated)
 	end
 
 	self:onActivatedChanged()
 end
 
-function BaseWeapon:onActivatedChanged() end
+function BaseGadget:onActivatedChanged() end
 
-function BaseWeapon:renderFire(fireInfo) end
+function BaseGadget:renderFire(fireInfo) end
 
-function BaseWeapon:simulateFire(fireInfo) end
+function BaseGadget:simulateFire(fireInfo) end
 
-function BaseWeapon:isOwnerAlive()
+function BaseGadget:isOwnerAlive()
 	if self.instance:IsA("Tool") then
 		local humanoid = self.instance.Parent:FindFirstChildOfClass("Humanoid")
 		if humanoid then
@@ -354,7 +345,7 @@ function BaseWeapon:isOwnerAlive()
 	return true
 end
 
-function BaseWeapon:fire(origin, dir, charge)
+function BaseGadget:fire(origin, dir, charge)
 	if not self:isOwnerAlive() or self.reloading then
 		return
 	end
@@ -373,13 +364,13 @@ function BaseWeapon:fire(origin, dir, charge)
 
 	if not IsServer then
 		self:onFired(self.player, fireInfo, false)
-		self.weaponsSystem.getRemoteEvent("WeaponFired"):FireServer(self.instance, fireInfo)
+		self.gadgetsSystem.getRemoteEvent("WeaponFired"):FireServer(self.instance, fireInfo)
 	else
 		self:onFired(self.player, fireInfo, false)
 	end
 end
 
-function BaseWeapon:onFired(firingPlayer, fireInfo, fromNetwork)
+function BaseGadget:onFired(firingPlayer, fireInfo, fromNetwork)
 	if not IsServer then
 		if firingPlayer == Players.LocalPlayer and fromNetwork then
 			return
@@ -391,11 +382,11 @@ function BaseWeapon:onFired(firingPlayer, fireInfo, fromNetwork)
 			return
 		end
 
-		self.weaponsSystem.getRemoteEvent("WeaponFired"):FireAllClients(firingPlayer, self.instance, fireInfo)
+		self.gadgetsSystem.getRemoteEvent("WeaponFired"):FireAllClients(firingPlayer, self.instance, fireInfo)
 	end
 end
 
-function BaseWeapon:getConfigValue(valueName, defaultValue)
+function BaseGadget:getConfigValue(valueName, defaultValue)
 	if self.configValues[valueName] ~= nil then
 		return self.configValues[valueName]
 	else
@@ -403,7 +394,7 @@ function BaseWeapon:getConfigValue(valueName, defaultValue)
 	end
 end
 
-function BaseWeapon:tryPlaySound(soundName, playbackSpeedRange)
+function BaseGadget:tryPlaySound(soundName, playbackSpeedRange)
 	playbackSpeedRange = playbackSpeedRange or 0
 
 	local soundTemplate = self.sounds[soundName]
@@ -429,7 +420,7 @@ function BaseWeapon:tryPlaySound(soundName, playbackSpeedRange)
 	return sound
 end
 
-function BaseWeapon:getSound(soundName)
+function BaseGadget:getSound(soundName)
 	local soundTemplate = self.sounds[soundName]
 	if not soundTemplate then
 		soundTemplate = self.instance:FindFirstChild(soundName, true)
@@ -439,9 +430,9 @@ function BaseWeapon:getSound(soundName)
 	return soundTemplate
 end
 
-function BaseWeapon:onDestroyed() end
+function BaseGadget:onDestroyed() end
 
-function BaseWeapon:onConfigValueAdded(valueObj)
+function BaseGadget:onConfigValueAdded(valueObj)
 	local valueName = valueObj.Name
 	local newValue = valueObj.Value
 	self.configValues[valueName] = newValue
@@ -461,11 +452,11 @@ function BaseWeapon:onConfigValueAdded(valueObj)
 	end)
 end
 
-function BaseWeapon:addConfigAttribute(name: string, attribute: any)
+function BaseGadget:addConfigAttribute(name: string, attribute: any)
 	self.configValues[name] = attribute
 end
 
-function BaseWeapon:onConfigValueRemoved(valueObj)
+function BaseGadget:onConfigValueRemoved(valueObj)
 	local valueName = valueObj.Name
 	self.configValues[valueName] = nil
 
@@ -474,7 +465,7 @@ function BaseWeapon:onConfigValueRemoved(valueObj)
 end
 
 -- This function is used to set configuration values from outside configuration objects/folders
-function BaseWeapon:importConfiguration(config)
+function BaseGadget:importConfiguration(config)
 	if not config or not config:IsA("Configuration") then
 		for _, child in pairs(config:GetChildren()) do
 			if child:IsA("ValueBase") then
@@ -488,7 +479,7 @@ function BaseWeapon:importConfiguration(config)
 	end
 end
 
-function BaseWeapon:setConfiguration(config)
+function BaseGadget:setConfiguration(config)
 	self:cleanupConnection("configChildAdded", "configChildRemoved")
 	if not config or not config:IsA("Configuration") then
 		return
@@ -512,25 +503,25 @@ function BaseWeapon:setConfiguration(config)
 	end)
 end
 
-function BaseWeapon:onChildAdded(child)
+function BaseGadget:onChildAdded(child)
 	if child:IsA("Configuration") then
 		self:setConfiguration(child)
 	end
 end
 
-function BaseWeapon:onChildRemoved(child)
+function BaseGadget:onChildRemoved(child)
 	if child:IsA("Configuration") then
 		self:setConfiguration(nil)
 	end
 end
 
-function BaseWeapon:onConfigValueChanged(valueName, newValue, oldValue) end
+function BaseGadget:onConfigValueChanged(valueName, newValue, oldValue) end
 
-function BaseWeapon:onRenderStepped(dt) end
+function BaseGadget:onRenderStepped(dt) end
 
-function BaseWeapon:onStepped(dt) end
+function BaseGadget:onStepped(dt) end
 
-function BaseWeapon:getAnimationController()
+function BaseGadget:getAnimationController()
 	if self.animController then
 		if
 			not self.instanceIsTool
@@ -555,7 +546,7 @@ function BaseWeapon:getAnimationController()
 	end
 end
 
-function BaseWeapon:setAnimationController(animController)
+function BaseGadget:setAnimationController(animController)
 	if animController == self.animController then
 		return
 	end
@@ -563,7 +554,7 @@ function BaseWeapon:setAnimationController(animController)
 	self.animController = animController
 end
 
-function BaseWeapon:stopAnimations()
+function BaseGadget:stopAnimations()
 	for _, track in pairs(self.animTracks) do
 		if track.IsPlaying then
 			track:Stop()
@@ -572,28 +563,28 @@ function BaseWeapon:stopAnimations()
 	self.animTracks = {}
 end
 
-function BaseWeapon:getAnimTrack(key)
-	local track = self.animTracks[key]
-	if not track then
-		local animController = self:getAnimationController()
-		if not animController then
-			warn("No animation controller when trying to play ", key)
-			return nil
-		end
+function BaseGadget:getAnimTrack(key)
+	-- local track = self.animTracks[key]
+	-- if not track then
+	-- 	local animController = self:getAnimationController()
+	-- 	if not animController then
+	-- 		warn("No animation controller when trying to play ", key)
+	-- 		return nil
+	-- 	end
 
-		local animation = AnimationsFolder:FindFirstChild(key)
-		if not animation then
-			error(string.format('No such animation "%s" ', tostring(key)))
-		end
+	-- 	local animation = AnimationsFolder:FindFirstChild(key)
+	-- 	if not animation then
+	-- 		error(string.format('No such animation "%s" ', tostring(key)))
+	-- 	end
 
-		track = animController:LoadAnimation(animation)
-		self.animTracks[key] = track
-	end
+	-- 	track = animController:LoadAnimation(animation)
+	-- 	self.animTracks[key] = track
+	-- end
 
 	return track
 end
 
-function BaseWeapon:reload(player, fromNetwork)
+function BaseGadget:reload(player, fromNetwork)
 	if
 		not self.equipped
 		or self.reloading
@@ -608,15 +599,15 @@ function BaseWeapon:reload(player, fromNetwork)
 		if self.player ~= nil and self.player ~= Players.LocalPlayer then
 			return
 		end
-		self.weaponsSystem.getRemoteEvent("WeaponReloadRequest"):FireServer(self.instance)
+		self.gadgetsSystem.getRemoteEvent("WeaponReloadRequest"):FireServer(self.instance)
 		self:onReloaded(self.player)
 	else
 		self:onReloaded(player, fromNetwork)
-		self.weaponsSystem.getRemoteEvent("WeaponReloaded"):FireAllClients(player, self.instance)
+		self.gadgetsSystem.getRemoteEvent("WeaponReloaded"):FireAllClients(player, self.instance)
 	end
 end
 
-function BaseWeapon:onReloaded(player, fromNetwork)
+function BaseGadget:onReloaded(player, fromNetwork)
 	if fromNetwork and player == Players.LocalPlayer then -- make sure localplayer doesn't reload twice
 		return
 	end
@@ -653,7 +644,7 @@ function BaseWeapon:onReloaded(player, fromNetwork)
 		return
 	end
 	self.connections.reload = RunService.Heartbeat:Connect(function()
-		-- Stop trying to reload if the player unequipped this weapon or reloading was canceled some other way
+		-- Stop trying to reload if the player unequipped this gadget or reloading was canceled some other way
 		if not self.reloading then
 			if self.connections.reload then
 				self.connections.reload:Disconnect()
@@ -671,7 +662,7 @@ function BaseWeapon:onReloaded(player, fromNetwork)
 
 		-- Check if there's enough ammo to reload
 		if self.instance:GetAttribute("TotalAmmo") >= ammoNeeded then
-			-- Add ammo to weapon
+			-- Add ammo to gadget
 			self.instance:SetAttribute("CurrentAmmo", self.instance:GetAttribute("AmmoCapacity"))
 
 			-- Reduce total ammo
@@ -695,7 +686,7 @@ function BaseWeapon:onReloaded(player, fromNetwork)
 	end)
 end
 
-function BaseWeapon:cancelReload(player, fromNetwork)
+function BaseGadget:cancelReload(player, fromNetwork)
 	if not self.reloading then
 		return
 	end
@@ -704,9 +695,9 @@ function BaseWeapon:cancelReload(player, fromNetwork)
 	end
 
 	if not IsServer and not fromNetwork and player == Players.LocalPlayer then
-		self.weaponsSystem.getRemoteEvent("WeaponReloadCanceled"):FireServer(self.instance)
+		self.gadgetsSystem.getRemoteEvent("WeaponReloadCanceled"):FireServer(self.instance)
 	elseif IsServer and fromNetwork then
-		self.weaponsSystem.getRemoteEvent("WeaponReloadCanceled"):FireAllClients(player, self.instance)
+		self.gadgetsSystem.getRemoteEvent("WeaponReloadCanceled"):FireAllClients(player, self.instance)
 	end
 
 	self.reloading = false
@@ -723,29 +714,29 @@ function BaseWeapon:cancelReload(player, fromNetwork)
 	end
 end
 
-function BaseWeapon:getAmmoInWeapon()
+function BaseGadget:getAmmoInWeapon()
 	if self.instance:GetAttribute("CurrentAmmo") then
 		return self.instance:GetAttribute("CurrentAmmo")
 	else
-		warn("No CurrentAmmo attribute found for weapon ", self.instance.Name)
+		warn("No CurrentAmmo attribute found for gadget ", self.instance.Name)
 	end
 end
 
-function BaseWeapon:getTotalAmmo()
+function BaseGadget:getTotalAmmo()
 	if self.instance:GetAttribute("TotalAmmo") then
 		return self.instance:GetAttribute("TotalAmmo")
 	else
-		warn("No TotalAmmo attribute found for weapon ", self.instance.Name)
+		warn("No TotalAmmo attribute found for gadget ", self.instance.Name)
 	end
 end
 
-function BaseWeapon:useAmmo(amount)
+function BaseGadget:useAmmo(amount)
 	local ammoUsed = math.min(amount, self.instance:GetAttribute("CurrentAmmo"))
 	self.instance:SetAttribute("CurrentAmmo", self.instance:GetAttribute("CurrentAmmo") - ammoUsed)
 	self.canReload = true
 	return ammoUsed
 end
 
-function BaseWeapon:renderCharge() end
+function BaseGadget:renderCharge() end
 
-return BaseWeapon
+return BaseGadget

@@ -30,7 +30,6 @@ local healthFrame
 local levelUpFrame
 
 function HUDWidget:Initialize()
-	warn("HUD widget initialized")
 	if not game.Players.LocalPlayer.PlayerGui:FindFirstChild("HUDGui") then
 		HUDGui = Assets.GuiObjects.ScreenGuis.HUDGui or game.Players.LocalPlayer.PlayerGui.HUDGui
 		HUDGui.Parent = game.Players.LocalPlayer.PlayerGui

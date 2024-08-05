@@ -27,8 +27,9 @@ DataConfig.profileTemplate = {
 	battleCoins = 0,
 	battleGems = 0,	
 	weapons = {
-		[WeaponsEnum.WeaponNames.M4A4] = table.clone(DataConfig.weaponTemplate),
+		[WeaponsEnum.WeaponNames.M16A1] = table.clone(DataConfig.weaponTemplate),
 		[WeaponsEnum.WeaponNames.Pistol] = table.clone(DataConfig.weaponTemplate),
+		[WeaponsEnum.WeaponNames.M4A4] = table.clone(DataConfig.purchasableWeaponTemplate),
 		[WeaponsEnum.WeaponNames.SPAS12] = table.clone(DataConfig.purchasableWeaponTemplate),
 		[WeaponsEnum.WeaponNames.AA12] = table.clone(DataConfig.purchasableWeaponTemplate),
 		[WeaponsEnum.WeaponNames.BarrettM82A1] = table.clone(DataConfig.purchasableWeaponTemplate),
@@ -40,6 +41,7 @@ DataConfig.profileTemplate = {
 		[WeaponsEnum.WeaponNames.Crossbow] = table.clone(DataConfig.purchasableWeaponTemplate),
 		[WeaponsEnum.WeaponNames.KrissVector] = table.clone(DataConfig.purchasableWeaponTemplate),
 		[WeaponsEnum.WeaponNames.Uzi] = table.clone(DataConfig.purchasableWeaponTemplate),
+		[WeaponsEnum.WeaponNames.SVD] = table.clone(DataConfig.purchasableWeaponTemplate),
 	},
 	skins = {},
 	colors = {},
@@ -58,9 +60,10 @@ DataConfig.profileTemplate = {
 	},
 	devProducts = {},
 	loadout = {
-		weaponEquipped = WeaponsEnum.WeaponNames.M4A4,
-		primary = WeaponsEnum.WeaponNames.M4A4,
+		weaponEquipped = WeaponsEnum.WeaponNames.M16A1,
+		primary = WeaponsEnum.WeaponNames.M16A1,
 		secondary = WeaponsEnum.WeaponNames.Pistol,
+		gadget1 = WeaponsEnum.WidgetNames.Grenade,
 	},
 	battlepass = {
 		currentSeason = "season_1",

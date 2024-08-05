@@ -25,7 +25,7 @@ function CurrencyService:GetCurrencyValue(player: Player, currency: string): num
 end
 
 function CurrencyService:AddCurrency(player: Player, currencyType: Currency, amount: number)
-	warn()
+	warn(currencyType)
 	local currentCurrency = self._dataService:GetKeyValue(player, currencyType)
 	if amount > 0 then
 		currentCurrency += amount

@@ -13,7 +13,7 @@ local ChallengesService = Knit.GetService("ChallengesService")
 local ButtonWidget = require(game.StarterPlayer.StarterPlayerScripts.Source.Widgets.ButtonWidget)
 --Enums
 local ChallengesEnum = require(ReplicatedStorage.Source.Enums.ChallengesEnum)
-local RewardTypesEnum = require(ReplicatedStorage.Source.Enums.RewardTypesEnum)
+local RewardsEnum = require(ReplicatedStorage.Source.Enums.RewardsEnum)
 --Main
 local ChallengesWidget = {}
 --Constants
@@ -31,7 +31,7 @@ local function CreateChallengeFrame(challenge: table, challengeType: string, ind
 	--Generate the rewards
 	for i, reward: table in challenge.rewards do
 		local rewardFrame = Assets.GuiObjects.Frames.ChallengeRewardFrame:Clone()
-		rewardFrame.RewardImage.Image = RewardTypesEnum.Icons[reward.rewardType]
+		rewardFrame.RewardImage.Image = RewardsEnum.Icons[reward.rewardType]
 		rewardFrame.RewardAmount.Text = FormatText.To_comma_value(reward.rewardAmount)
 		rewardFrame.LayoutOrder = i
 		rewardFrame.Parent = challengeFrame.RewardsFrame

@@ -1,5 +1,6 @@
 local ChallengesConfig = {}
 local CurrenciesEnum = require(game.ReplicatedStorage.Source.Enums.CurrenciesEnum)
+local RewardsEnum = require(game.ReplicatedStorage.Source.Enums.RewardsEnum)
 
 ChallengesConfig.challengesTypes = {
 	daily = "daily",
@@ -21,19 +22,19 @@ ChallengesConfig.challenges = {
 			goal = 1,
 			rewards = {
 				{
-					rewardType = CurrenciesEnum.BattleCoins,
+					rewardType = RewardsEnum.RewardTypes.BattleCoins,
 					rewardAmount = 100,
 				},
 				{
-					rewardType = CurrenciesEnum.BattleGems,
+					rewardType = RewardsEnum.RewardTypes.BattleGems,
 					rewardAmount = 10,
 				},
 				{
-					rewardType = "battlepassExp",
+					rewardType = RewardsEnum.RewardTypes.BattlepassExp,
 					rewardAmount = 100,
 				},
 				{
-					rewardType = "Exp",
+					rewardType = RewardsEnum.RewardTypes.Experience,
 					rewardAmount = 160,
 				}
 			},
@@ -41,23 +42,23 @@ ChallengesConfig.challenges = {
         {
 			name = "Make those coins rain!",
 			description = "Earn 250 BattleCoins",
-			typeOfProgression = CurrenciesEnum.BattleCoins,
+			typeOfProgression = RewardsEnum.RewardTypes.BattleCoins,
 			goal = 250,
 			rewards = {
 				{
-					rewardType = CurrenciesEnum.BattleCoins,
+					rewardType = RewardsEnum.RewardTypes.BattleCoins,
 					rewardAmount = 100,
 				},
 				{
-					rewardType = CurrenciesEnum.BattleGems,
+					rewardType = RewardsEnum.RewardTypes.BattleGems,
 					rewardAmount = 10,
 				},
 				{
-					rewardType = "battlepassExp",
+					rewardType = RewardsEnum.RewardTypes.BattlepassExp,
 					rewardAmount = 100,
 				},
 				{
-					rewardType = "Exp",
+					rewardType = RewardsEnum.RewardTypes.Experience,
 					rewardAmount = 160,
 				}
 			},
@@ -69,19 +70,19 @@ ChallengesConfig.challenges = {
 			goal = 25,
 			rewards = {
 				{
-					rewardType = CurrenciesEnum.BattleCoins,
+					rewardType = RewardsEnum.RewardTypes.BattleCoins,
 					rewardAmount = 100,
 				},
 				{
-					rewardType = CurrenciesEnum.BattleGems,
+					rewardType = RewardsEnum.RewardTypes.BattleGems,
 					rewardAmount = 10,
 				},
 				{
-					rewardType = "battlepassExp",
+					rewardType = RewardsEnum.RewardTypes.BattlepassExp,
 					rewardAmount = 100,
 				},
 				{
-					rewardType = "Exp",
+					rewardType = RewardsEnum.RewardTypes.Experience,
 					rewardAmount = 160,
 				}
 			},
@@ -93,19 +94,19 @@ ChallengesConfig.challenges = {
 			goal = 10,
 			rewards = {
 				{
-					rewardType = CurrenciesEnum.BattleCoins,
+					rewardType = RewardsEnum.RewardTypes.BattleCoins,
 					rewardAmount = 100,
 				},
 				{
-					rewardType = CurrenciesEnum.BattleGems,
+					rewardType = RewardsEnum.RewardTypes.BattleGems,
 					rewardAmount = 10,
 				},
 				{
-					rewardType = "battlepassExp",
+					rewardType = RewardsEnum.RewardTypes.BattlepassExp,
 					rewardAmount = 100,
 				},
 				{
-					rewardType = "Exp",
+					rewardType = RewardsEnum.RewardTypes.Experience,
 					rewardAmount = 3360,
 				}
 			},
@@ -117,19 +118,19 @@ ChallengesConfig.challenges = {
 			goal = 10,
 			rewards = {
 				{
-					rewardType = CurrenciesEnum.BattleCoins,
+					rewardType = RewardsEnum.RewardTypes.BattleCoins,
 					rewardAmount = 100,
 				},
 				{
-					rewardType = CurrenciesEnum.BattleGems,
+					rewardType = RewardsEnum.RewardTypes.BattleGems,
 					rewardAmount = 10,
 				},
 				{
-					rewardType = "battlepassExp",
+					rewardType = RewardsEnum.RewardTypes.BattlepassExp,
 					rewardAmount = 100,
 				},
 				{
-					rewardType = "Exp",
+					rewardType = RewardsEnum.RewardTypes.Experience,
 					rewardAmount = 260,
 				}
 			},
@@ -141,19 +142,19 @@ ChallengesConfig.challenges = {
 			goal = 5,
 			rewards = {
 				{
-					rewardType = CurrenciesEnum.BattleCoins,
+					rewardType = RewardsEnum.RewardTypes.BattleCoins,
 					rewardAmount = 100,
 				},
 				{
-					rewardType = CurrenciesEnum.BattleGems,
+					rewardType = RewardsEnum.RewardTypes.BattleGems,
 					rewardAmount = 10,
 				},
 				{
-					rewardType = "battlepassExp",
+					rewardType = RewardsEnum.RewardTypes.BattlepassExp,
 					rewardAmount = 16666,
 				},
 				{
-					rewardType = "Exp",
+					rewardType = RewardsEnum.RewardTypes.Experience,
 					rewardAmount = 333,
 				}
 			},
@@ -165,19 +166,19 @@ ChallengesConfig.challenges = {
 			goal = 10,
 			rewards = {
 				{
-					rewardType = CurrenciesEnum.BattleCoins,
+					rewardType = RewardsEnum.RewardTypes.BattleCoins,
 					rewardAmount = 100,
 				},
 				{
-					rewardType = CurrenciesEnum.BattleGems,
+					rewardType = RewardsEnum.RewardTypes.BattleGems,
 					rewardAmount = 10,
 				},
 				{
-					rewardType = "battlepassExp",
+					rewardType = RewardsEnum.RewardTypes.BattlepassExp,
 					rewardAmount = 100,
 				},
 				{
-					rewardType = "Exp",
+					rewardType = RewardsEnum.RewardTypes.Experience,
 					rewardAmount = 260,
 				}
 			},
@@ -189,19 +190,19 @@ ChallengesConfig.challenges = {
 			goal = 3,
 			rewards = {
 				{
-					rewardType = CurrenciesEnum.BattleCoins,
+					rewardType = RewardsEnum.RewardTypes.BattleCoins,
 					rewardAmount = 100,
 				},
 				{
-					rewardType = CurrenciesEnum.BattleGems,
+					rewardType = RewardsEnum.RewardTypes.BattleGems,
 					rewardAmount = 10,
 				},
 				{
-					rewardType = "battlepassExp",
+					rewardType = RewardsEnum.RewardTypes.BattlepassExp,
 					rewardAmount = 100,
 				},
 				{
-					rewardType = "Exp",
+					rewardType = RewardsEnum.RewardTypes.Experience,
 					rewardAmount = 260,
 				}
 			},
@@ -213,19 +214,19 @@ ChallengesConfig.challenges = {
 			goal = 3,
 			rewards = {
 				{
-					rewardType = CurrenciesEnum.BattleCoins,
+					rewardType = RewardsEnum.RewardTypes.BattleCoins,
 					rewardAmount = 400,
 				},
 				{
-					rewardType = CurrenciesEnum.BattleGems,
+					rewardType = RewardsEnum.RewardTypes.BattleGems,
 					rewardAmount = 30,
 				},
 				{
-					rewardType = "battlepassExp",
+					rewardType = RewardsEnum.RewardTypes.BattlepassExp,
 					rewardAmount = 330,
 				},
 				{
-					rewardType = "Exp",
+					rewardType = RewardsEnum.RewardTypes.Experience,
 					rewardAmount = 260,
 				}
 
@@ -238,19 +239,19 @@ ChallengesConfig.challenges = {
 			goal = 5,
 			rewards = {
 				{
-					rewardType = CurrenciesEnum.BattleCoins,
+					rewardType = RewardsEnum.RewardTypes.BattleCoins,
 					rewardAmount = 100,
 				},
 				{
-					rewardType = CurrenciesEnum.BattleGems,
+					rewardType = RewardsEnum.RewardTypes.BattleGems,
 					rewardAmount = 20,
 				},
 				{
-					rewardType = "battlepassExp",
+					rewardType = RewardsEnum.RewardTypes.BattlepassExp,
 					rewardAmount = 300,
 				},
 				{
-					rewardType = "Exp",
+					rewardType = RewardsEnum.RewardTypes.Experience,
 					rewardAmount = 260,
 				}
 			},
@@ -265,19 +266,19 @@ ChallengesConfig.challenges = {
 			goal = 5,
 			rewards = {
 				{
-					rewardType = CurrenciesEnum.BattleCoins,
+					rewardType = RewardsEnum.RewardTypes.BattleCoins,
 					rewardAmount = 1000,
 				},
 				{
-					rewardType = CurrenciesEnum.BattleGems,
+					rewardType = RewardsEnum.RewardTypes.BattleGems,
 					rewardAmount = 100,
 				},
 				{
-					rewardType = "battlepassExp",
+					rewardType = RewardsEnum.RewardTypes.BattlepassExp,
 					rewardAmount = 1000,
 				},
 				{
-					rewardType = "Exp",
+					rewardType = RewardsEnum.RewardTypes.Experience,
 					rewardAmount = 1000,
 				}
 			},
@@ -289,19 +290,19 @@ ChallengesConfig.challenges = {
 			goal = 100,
 			rewards = {
 				{
-					rewardType = CurrenciesEnum.BattleCoins,
+					rewardType = RewardsEnum.RewardTypes.BattleCoins,
 					rewardAmount = 1000,
 				},
 				{
-					rewardType = CurrenciesEnum.BattleGems,
+					rewardType = RewardsEnum.RewardTypes.BattleGems,
 					rewardAmount = 100,
 				},
 				{
-					rewardType = "battlepassExp",
+					rewardType = RewardsEnum.RewardTypes.BattlepassExp,
 					rewardAmount = 6666,
 				},
 				{
-					rewardType = "Exp",
+					rewardType = RewardsEnum.RewardTypes.Experience,
 					rewardAmount = 1000,
 				}
 			},
@@ -313,19 +314,19 @@ ChallengesConfig.challenges = {
 			goal = 33,
 			rewards = {
 				{
-					rewardType = CurrenciesEnum.BattleCoins,
+					rewardType = RewardsEnum.RewardTypes.BattleCoins,
 					rewardAmount = 1000,
 				},
 				{
-					rewardType = CurrenciesEnum.BattleGems,
+					rewardType = RewardsEnum.RewardTypes.BattleGems,
 					rewardAmount = 100,
 				},
 				{
-					rewardType = "battlepassExp",
+					rewardType = RewardsEnum.RewardTypes.BattlepassExp,
 					rewardAmount = 1000,
 				},
 				{
-					rewardType = "Exp",
+					rewardType = RewardsEnum.RewardTypes.Experience,
 					rewardAmount = 1000,
 				}
 			},
@@ -337,19 +338,19 @@ ChallengesConfig.challenges = {
 			goal = 100,
 			rewards = {
 				{
-					rewardType = CurrenciesEnum.BattleCoins,
+					rewardType = RewardsEnum.RewardTypes.BattleCoins,
 					rewardAmount = 1000,
 				},
 				{
-					rewardType = CurrenciesEnum.BattleGems,
+					rewardType = RewardsEnum.RewardTypes.BattleGems,
 					rewardAmount = 100,
 				},
 				{
-					rewardType = "battlepassExp",
+					rewardType = RewardsEnum.RewardTypes.BattlepassExp,
 					rewardAmount = 1000,
 				},
 				{
-					rewardType = "Exp",
+					rewardType = RewardsEnum.RewardTypes.Experience,
 					rewardAmount = 1000,
 				}
 			},
@@ -361,19 +362,19 @@ ChallengesConfig.challenges = {
 			goal = 10,
 			rewards = {
 				{
-					rewardType = CurrenciesEnum.BattleCoins,
+					rewardType = RewardsEnum.RewardTypes.BattleCoins,
 					rewardAmount = 1000,
 				},
 				{
-					rewardType = CurrenciesEnum.BattleGems,
+					rewardType = RewardsEnum.RewardTypes.BattleGems,
 					rewardAmount = 100,
 				},
 				{
-					rewardType = "battlepassExp",
+					rewardType = RewardsEnum.RewardTypes.BattlepassExp,
 					rewardAmount = 1000,
 				},
 				{
-					rewardType = "Exp",
+					rewardType = RewardsEnum.RewardTypes.Experience,
 					rewardAmount = 1000,
 				}
 			},
@@ -385,19 +386,19 @@ ChallengesConfig.challenges = {
 			goal = 35,
 			rewards = {
 				{
-					rewardType = CurrenciesEnum.BattleCoins,
+					rewardType = RewardsEnum.RewardTypes.BattleCoins,
 					rewardAmount = 1000,
 				},
 				{
-					rewardType = CurrenciesEnum.BattleGems,
+					rewardType = RewardsEnum.RewardTypes.BattleGems,
 					rewardAmount = 100,
 				},
 				{
-					rewardType = "battlepassExp",
+					rewardType = RewardsEnum.RewardTypes.BattlepassExp,
 					rewardAmount = 1000,
 				},
 				{
-					rewardType = "Exp",
+					rewardType = RewardsEnum.RewardTypes.Experience,
 					rewardAmount = 1000,
 				}
 			},

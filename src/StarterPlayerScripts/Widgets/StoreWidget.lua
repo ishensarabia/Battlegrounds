@@ -180,7 +180,7 @@ local function CreateOwnedText(parentFrame: Frame)
 	ownedText.Parent = parentFrame
 end
 
-local function CreatePurchasableSkinFrame(skin: table, prestigeNeeded: number?)
+local function CreatePrestigePurchasableSkinFrame(skin: table, prestigeNeeded: number?)
 	WidgetController:CreateSkinFrame(skin.data, ItemsScrollingFrame):andThen(function(skinFrame)
 		--Check if the player owns the skin
 		DataService:GetKeyValue("skins"):andThen(function(skins: table)
@@ -756,7 +756,7 @@ function StoreWidget:OpenStore(category: string, _backButtonCallback: Function?)
 		--Get the prestige items
 		StoreService:GetPrestigeItems():andThen(function(prestigeItems: table)
 			for index, skin: table in prestigeItems.Skins do
-				CreatePurchasableSkinFrame(skin, skin.prestigeNeeded)
+				CreatePrestigePurchasableSkinFrame(skin, skin.prestigeNeeded)
 			end
 		end)
 	end
@@ -774,7 +774,7 @@ function StoreWidget:ChangeSubcategory(subcategory: string)
 	StoreService:GetPrestigeItems():andThen(function(prestigeItems: table)
 		if subcategory == StoreConfig.Subcategoires.Prestige.Skins then
 			for index, skin: table in prestigeItems.Skins do
-				CreatePurchasableSkinFrame(skin, skin.prestigeNeeded)
+				CreatePrestigePurchasableSkinFrame(skin, skin.prestigeNeeded)
 			end
 		end
 

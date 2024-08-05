@@ -36,7 +36,6 @@ function PlayerPreviewController:SpawnWeaponInCharacterMenu()
 	--Spawn equipped weapon / power
 	--Get equipped weapon
 	DataService:GetKeyValue("loadout"):andThen(function(loadout : table)
-		warn(loadout)
 		if loadout.weaponEquipped then
 			weaponEquipped = ReplicatedStorage.Weapons[loadout.weaponEquipped]:Clone()
 			WeaponCustomWidget:ApplySavedCustomization(loadout.weaponEquipped, weaponEquipped:FindFirstChildOfClass("Model"))

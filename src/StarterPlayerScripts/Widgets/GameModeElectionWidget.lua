@@ -60,7 +60,6 @@ function GameModeElectionWidget:ShowElectionFrame()
 end
 
 function GameModeElectionWidget:HideElectionFrame()
-	self.isActive = false
 	mainFrame.Interactable = false
 	StarterGui:SetCoreGuiEnabled(Enum.CoreGuiType.PlayerList, true)
 	TweenService:Create(mainFrame, TweenInfo.new(0.69), { GroupTransparency = 1 }):Play()
@@ -72,6 +71,9 @@ function GameModeElectionWidget:MinimizeElectionFrame()
 end
 
 function GameModeElectionWidget:OpenElectionFrame(timeToVote)
+	if self.isActive then
+		return
+	end
 	--Enable gui
 	gameModeElectionGui.Enabled = true
 
@@ -182,6 +184,7 @@ function GameModeElectionWidget:CloseElectionFrame()
 		TweenService:Create(gameModeElectionGui.MinimizedFrame, TweenInfo.new(0.33), { GroupTransparency = 1 })
 	minimizedTransparencyTween:Play()
 	if self.isActive then
+		self.isActive = false
 		self:HideElectionFrame()
 	end
 	minimizedTransparencyTween.Completed:Connect(function(playbackState)

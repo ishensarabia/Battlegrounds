@@ -12,6 +12,7 @@ function GameModeController:KnitStart()
 	self._cameraController = Knit.GetController("CameraController")
 	self._menuController = Knit.GetController("MenuController")
 	self._canRespawn = false
+	self._isWidgetOpen = false
 
 	self._gameModeService.InitializeElectionSignal:Connect(function(timeToVote)
 		self:InitializeElection(timeToVote)
@@ -48,7 +49,7 @@ function GameModeController:KnitStart()
 end
 
 function GameModeController:InitializeElection(timeToVote)
-	GameModeElectionWidget:OpenElectionFrame(timeToVote)
+GameModeElectionWidget:OpenElectionFrame(timeToVote)
 end
 
 function GameModeController:KnitInit() end

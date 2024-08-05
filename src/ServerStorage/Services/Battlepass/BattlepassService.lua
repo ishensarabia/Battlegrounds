@@ -8,7 +8,7 @@ local BASE_LEVEL_UP_XP = 1000
 --Config
 local BattlepassConfig = require(ReplicatedStorage.Source.Configurations.BattlepassConfig)
 --Enum
-local RewardsEnum = require(ReplicatedStorage.Source.Enums.RewardTypesEnum)
+local RewardsEnum = require(ReplicatedStorage.Source.Enums.RewardsEnum)
 
 local BattlepassService = Knit.CreateService({
 	Name = "BattlepassService",

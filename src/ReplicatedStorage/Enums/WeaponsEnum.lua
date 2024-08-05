@@ -16,6 +16,14 @@ local WeaponsEnum = {
         Rhino = "Rhino",
         Uzi = "Uzi",
         XM8 = "XM8",
+        M16A1 = "M16A1",
+        FAL = "FAL",
+        SVD = "SVD",
+        MK3A1 = "MK3A1",
+    },
+
+    WidgetNames = {
+        Grenade = "Grenade",
     }
 }
 return WeaponsEnum
