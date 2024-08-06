@@ -910,7 +910,6 @@ function ShoulderCamera:onZoomAction(actionName, inputState, inputObj)
 		or not self.canZoom
 		or not self.currentCamera
 		or not self.currentCharacter
-		or not self.weaponsSystem.currentWeapon
 	then
 		self:setZoomedFromInput(false)
 		return Enum.ContextActionResult.Pass
