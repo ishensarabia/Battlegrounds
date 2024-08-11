@@ -72,7 +72,7 @@ end
 function WeaponsService:GetCategoryWeaponsForPlayer(category: string, player: Player) end
 
 function WeaponsService:SendWeaponData(targetPlayer: Player, typeOfData: string, dealerPosition: Vector3)
-	self.Client.SendWeaponData:Fire(targetPlayer, typeOfData, dealerPosition)
+	self.Client.SendWeaponData:Fire(targetPlayer, tyyopeOfData, dealerPosition)
 end
 
 function WeaponsService:SetIKForWeapon(player, instance: Instance)

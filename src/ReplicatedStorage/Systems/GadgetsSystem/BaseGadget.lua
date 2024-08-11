@@ -6,6 +6,7 @@ local Knit = require(ReplicatedStorage.Packages.Knit)
 local IsServer = RunService:IsServer()
 
 local gadgetsSystemFolder : Folder = ReplicatedStorage.Source.Systems.GadgetsSystem
+local AnimationsFolder : Folder = gadgetsSystemFolder.Assets.Animations
 
 local localRandom = Random.new()
 
@@ -130,7 +131,6 @@ function BaseGadget:doInitialSetup()
 			local handleAttachment = model:FindFirstChild("HandleAttachment", true)
 			
 			if self.handle and handleAttachment then
-				warn("Welding handle to primary part")
 				local handleOffset = model.PrimaryPart.CFrame:toObjectSpace(handleAttachment.WorldCFrame)
 
 				local weld = Instance.new("Weld")
@@ -279,6 +279,7 @@ function BaseGadget:onEquippedChanged()
 	self:cleanupConnection("localStepped")
 
 	if not IsServer and self.gadgetsSystem then
+		warn(self.gadgetsSystem)
 		self.gadgetsSystem.setGadgetEquipped(self, self.equipped)
 		if self.equipped then
 			if self.player == Players.LocalPlayer then
@@ -444,6 +445,7 @@ function BaseGadget:onConfigValueAdded(valueObj)
 
 		self:onConfigValueChanged(valueName, changedValue, oldValue)
 	end)
+
 	self.connections["valueRenamed:" .. valueName] = valueObj:GetPropertyChangedSignal("Name"):Connect(function()
 		self.configValues[valueName] = nil
 		self:cleanupConnection("valueChanged:" .. valueName)
@@ -555,7 +557,7 @@ function BaseGadget:setAnimationController(animController)
 end
 
 function BaseGadget:stopAnimations()
-	for _, track in pairs(self.animTracks) do
+	for _, track in (self.animTracks) do
 		if track.IsPlaying then
 			track:Stop()
 		end
@@ -564,22 +566,22 @@ function BaseGadget:stopAnimations()
 end
 
 function BaseGadget:getAnimTrack(key)
-	-- local track = self.animTracks[key]
-	-- if not track then
-	-- 	local animController = self:getAnimationController()
-	-- 	if not animController then
-	-- 		warn("No animation controller when trying to play ", key)
-	-- 		return nil
-	-- 	end
+	local track = self.animTracks[key]
+	if not track then
+		local animController = self:getAnimationController()
+		if not animController then
+			warn("No animation controller when trying to play ", key)
+			return nil
+		end
 
-	-- 	local animation = AnimationsFolder:FindFirstChild(key)
-	-- 	if not animation then
-	-- 		error(string.format('No such animation "%s" ', tostring(key)))
-	-- 	end
+		local animation = AnimationsFolder:FindFirstChild(key)
+		if not animation then
+			error(string.format('No such animation "%s" ', tostring(key)))
+		end
 
-	-- 	track = animController:LoadAnimation(animation)
-	-- 	self.animTracks[key] = track
-	-- end
+		track = animController:LoadAnimation(animation)
+		self.animTracks[key] = track
+	end
 
 	return track
 end

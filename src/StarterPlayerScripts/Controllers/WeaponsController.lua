@@ -20,11 +20,15 @@ function WeaponsController:KnitInit()
     end
 end
 
-function WeaponsController:Crouch(animationTrack)
+function WeaponsController:Crouch(animationTrack : AnimationTrack)
     WeaponsSystem.camera.isCrouching = true
-    animationTrack.Ended:Connect(function()
-        WeaponsSystem.camera.isCrouching = false 
+    animationTrack.Stopped:Connect(function()
+        WeaponsSystem.camera.isCrouching = false
     end)
+end
+
+function WeaponsController:GetCamera()
+    return WeaponsSystem.camera
 end
 
 function WeaponsController:Dash()
@@ -36,7 +40,7 @@ end
 
 function WeaponsController:Slide(animationTrack : AnimationTrack)
     WeaponsSystem.camera.isSliding = true
-    animationTrack.Ended:Connect(function()
+    animationTrack.Stopped:Connect(function()
         WeaponsSystem.camera.isSliding = false
     end)
 end

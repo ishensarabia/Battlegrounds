@@ -85,17 +85,12 @@ function GameModeElectionWidget:OpenElectionFrame(timeToVote)
 		self.GamemodeService = Knit.GetService("GameModeService")
 	end
 
-	if not self.WidgetController then
-		self.WidgetController = Knit.GetController("WidgetController")
-	end
-	
-	if self.WidgetController.MainMenuWidget.isActive then		
+	if Knit.GetController("MenuController").isInMenu then
 		self:ShowElectionFrame()
 	else
 		self:MinimizeElectionFrame()
 	end
 
-	
 	--Connect the buttons
 	for index, child in gamemodesFrame:GetChildren() do
 		if child:IsA("TextButton") then
@@ -115,7 +110,7 @@ function GameModeElectionWidget:OpenElectionFrame(timeToVote)
 	--Update the time to vote
 	for i = timeToVote - 2, 0, -1 do
 		-- warn("Voting, time left to vote:" .. timeToVote)
-		--Check 
+		--Check
 		if i == 1 then
 			timeLeftTextLabel.Text = string.format("VOTING GAME MODE: %s SECOND LEFT", tostring(i))
 		elseif i == 0 then

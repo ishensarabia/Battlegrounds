@@ -36,7 +36,6 @@ function GameModeService:KnitStart()
 	self._challengesService = Knit.GetService("ChallengesService")
 
 	if self.currentGameMode == nil then
-		task.wait(10)
 		self:InitializeElection()
 	end
 end

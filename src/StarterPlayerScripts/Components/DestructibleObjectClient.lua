@@ -22,7 +22,8 @@ local DestructibleObjectClient = Component.new({
 	Extensions = {Conditions}
 })
 
-local function addParticles(part)
+local function addParticles(part : BasePart)
+	assert(part:IsA("BasePart"), "addParticles must be called with a BasePart, got " .. part.ClassName)
 	local particlesAttachment = assets.Particles.Building.ParticlesAttachment:Clone()
 	particlesAttachment.Parent = part
 end
@@ -75,8 +76,8 @@ function DestructibleObjectClient:Start()
 	--Check for new interactable parts
 	self._janitor:Add(self.Instance.Interactable.ChildAdded:Connect(function(child)
 		if child:IsA("BasePart") then
+			addParticles(child)
 			self._janitor:Add(child.Attachment.ChildAdded:Connect(function(child)
-				addParticles(child)
 				if child:IsA("ProximityPrompt") then
 					self._janitor:Add(child)
 	

@@ -832,7 +832,7 @@ function BulletWeapon:onHit(hitInfo)
 	end
 
 	-- Create invisible explosion on server that deals damage to anything caught in the explosion
-	if IsServer and self:getConfigValue("ExplodeOnImpact", false) then
+	if IsServer and self.instance:GetAttribute("ExplodeOnImpact")then
 		local blastRadius = self:getConfigValue("BlastRadius", 8)
 		local blastPressure = self:getConfigValue("BlastPressure", 10000)
 		local blastDamage = self:getConfigValue("BlastDamage", 100)

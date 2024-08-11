@@ -238,9 +238,7 @@ function ShoulderCamera.new(weaponsSystem)
 	ContextActionService:BindAction(SPRINT_ACTION_NAME, function(...)
 		self:onSprintAction(...)
 	end, false, unpack(self.sprintInputs))
-	RunService:BindToRenderStep(CAMERA_RENDERSTEP_NAME, Enum.RenderPriority.Camera.Value - 1, function(dt)
-		self:onRenderStep(dt)
-	end)
+
 
 	return self
 end
@@ -256,6 +254,9 @@ function ShoulderCamera:setEnabled(enabled)
 			self:onZoomAction(...)
 		end, false, unpack(self.zoomInputs))
 
+		RunService:BindToRenderStep(CAMERA_RENDERSTEP_NAME, Enum.RenderPriority.Camera.Value - 1, function(dt)
+			self:onRenderStep(dt)
+		end)
 		table.insert(
 			self.eventConnections,
 			LocalPlayer.CharacterAdded:Connect(function(character)
@@ -321,6 +322,7 @@ function ShoulderCamera:setEnabled(enabled)
 		end
 	else
 		ContextActionService:UnbindAction(ZOOM_ACTION_NAME)
+		RunService:UnbindFromRenderStep(CAMERA_RENDERSTEP_NAME)
 
 		if self.currentHumanoid then
 			self.currentHumanoid.AutoRotate = true
@@ -333,12 +335,16 @@ function ShoulderCamera:setEnabled(enabled)
 
 		self.yaw = 0
 		self.pitch = 0
-
+		
 		for _, conn in pairs(self.eventConnections) do
 			conn:Disconnect()
 		end
 		self.eventConnections = {}
+		self.SpringService:Stop(self.currentHumanoid, "WalkSpeed")
 
+		self.currentHumanoid.AutomaticScalingEnabled = true
+		self.currentHumanoid.AutomaticScalingEnabled = false
+		
 		UserInputService.MouseBehavior = Enum.MouseBehavior.Default
 		UserInputService.MouseIconEnabled = true
 	end
@@ -581,7 +587,7 @@ end
 
 -- This function keeps the held weapon from bouncing up and down too much when you move
 function ShoulderCamera:applyRootJointFix()
-	if self.rootJoint and not self.isDashing then
+	if self.rootJoint and not self.isDashing or self.isSliding then
 		local translationScale = self.zoomState and Vector3.new(0.25, 0.25, 0.25) or Vector3.new(0.5, 0.5, 0.5)
 		local rotationScale = self.zoomState and 0.15 or 0.2
 		local rootRotation = self.rootJoint.Part0.CFrame - self.rootJoint.Part0.CFrame.Position
@@ -626,6 +632,7 @@ end
 
 function ShoulderCamera:onCurrentCharacterChanged(character)
 	self.currentCharacter = character
+	self.storedHumanoidRootPartCFrame = character.HumanoidRootPart.CFrame
 	if self.currentCharacter then
 		self.raycastIgnoreList[1] = self.currentCharacter
 		self.currentHumanoid = character:WaitForChild("Humanoid")
@@ -845,7 +852,7 @@ function ShoulderCamera:setZoomFactor(zoomFactor)
 	local nominalFOVRadians = math.rad(self.fieldOfView)
 	local nominalImageHeight = math.tan(nominalFOVRadians / 2)
 	local zoomedImageHeight = nominalImageHeight / self.currentZoomFactor
-	self.zoomedFOV = math.deg(math.atan(zoomedImageHeight) * 2)
+	self.zoomedFOV = math.deg(math.atan(zoomedImageHeight) * 2.5)
 	self:updateZoomState()
 end
 

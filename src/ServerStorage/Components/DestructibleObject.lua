@@ -16,6 +16,7 @@ local DestructibleObject = Component.new({
 })
 
 function DestructibleObject:Construct()
+	warn("destructible object started")
 	self.isConstructed = true
 	self.isBeingConstructed = false
 	self._janitor = Janitor.new()
@@ -86,6 +87,7 @@ function DestructibleObject:DestroyObject(player)
 end
 
 function DestructibleObject:Start()
+	warn("destructible object started")
 	if self.Instance:FindFirstChild("Interactable") then		
 		self:_setModelPartCFrames()
 	end

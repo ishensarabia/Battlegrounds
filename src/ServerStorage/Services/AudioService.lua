@@ -31,8 +31,8 @@ function AudioService:PlaySound(player, sound: string, soundProperties : table)
 		soundToPlay.SoundId = Sounds[sound]
 		soundToPlay.Name = sound
 		soundToPlay.RollOffMode = soundProperties.RollOffMode
-		soundToPlay.RollOffMaxDistance = soundProperties.RollOffMaxDistance
-		soundToPlay.RollOffMinDistance = soundProperties.RollfOffMinDistance
+		soundToPlay.RollOffMaxDistance = soundProperties.RollOffMaxDistance or 50
+		soundToPlay.RollOffMinDistance = soundProperties.RollfOffMinDistance or 10
 		soundToPlay.Parent = player.Character.HumanoidRootPart
 		soundToPlay:Play()
 		soundToPlay.Ended:Wait()

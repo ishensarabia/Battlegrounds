@@ -147,7 +147,7 @@ function MovementController:Slide()
 			-- Get necessary controllers and services
 
 			-- Play the slide animation and trigger necessary actions
-			local animationTrack = self._AnimationController:PlayAnimation("Slide")
+			local animationTrack : AnimationTrack = self._AnimationController:PlayAnimation("Slide")
 			--Notify weapon controller and VFX service that the player is slideing
 			self._WeaponsController:Slide(animationTrack)
 			self._VFXService:Slide()
@@ -165,9 +165,9 @@ function MovementController:Slide()
 			--Reduce the velocity of the character over time to simulate friction
 			local slideLoop
 			local slideForceLeft = SLIDE_FORCE + character.Humanoid.WalkSpeed
-			slideLoop = RunService.Heartbeat:Connect(function()
+			self._slideLoop = RunService.Heartbeat:Connect(function()
 				slideForceLeft -= 0.133
-				if linearVelocity.Velocity.Magnitude > 0 and slideForceLeft > 9 then
+				if linearVelocity.Velocity.Magnitude > 0 and slideForceLeft > 9 and self.isSliding then
 					self._StatsService:ExecuteAction("Slide")
 					self._AudioService:PlaySound(
 						"Slide",
@@ -175,15 +175,20 @@ function MovementController:Slide()
 						{ RollOffMaxDistance = 100, RollOffMinDistance = 10, RollOffMode = Enum.RollOffMode.Linear }
 					)
 					linearVelocity.Velocity = character.HumanoidRootPart.CFrame.LookVector * slideForceLeft
+					character.Humanoid.HipHeight = 1
+					warn("Sliding")
 				else
+					warn("Stop sliding")
 					self._AnimationController:StopAnimation("Slide")
-					slideLoop:Disconnect()
+					self.isSliding = false
+					character.Humanoid.HipHeight = 3.124
+					self._slideLoop:Disconnect()
 				end
 				task.wait(1)
 			end)
 
 			-- Reset debounced state, enable IK and footsteps sound at the end of the dash animation
-			animationTrack.Ended:Connect(function()
+			animationTrack.Stopped:Connect(function()
 				self._StatsService:StopAction("Slide")
 				self._VFXService:StopSlide()
 				self.isSliding = false
@@ -225,11 +230,13 @@ function MovementController:Crouch()
 			--Notify weapon controller
 			self._WeaponsController:Crouch(animationTrack)
 			character.Humanoid.CameraOffset = Vector3.new(0, -0.5, 0)
+			character.Humanoid.HipHeight = 2.5
 		else
 			self.isCrouching = false
 			self._AnimationController:StopAnimation("Crouch")
 			character.Humanoid.WalkSpeed = normalWalkSpeed
 			character.Humanoid.CameraOffset = Vector3.new(0, 0, 0)
+			character.Humanoid.HipHeight = 3.124
 		end
 	end
 end
@@ -310,7 +317,7 @@ function MovementController:OnJumpRequest()
 		end)
 		humanoid.Died:Connect(DetachFromLedge)
 	end
-	
+
 	if
 		canVault
 		and (
@@ -424,6 +431,8 @@ function MovementController:KnitInit()
 			end
 			if actionName == ACTION_CROUCH and inputState == Enum.UserInputState.End and self.isSliding then
 				self._AnimationController:StopAnimation("Slide")
+				self.isSliding = false
+				character.Humanoid.HipHeight = 3.124
 			end
 		end, true, CROUCH_KEYCODE, Enum.KeyCode.ButtonR3)
 

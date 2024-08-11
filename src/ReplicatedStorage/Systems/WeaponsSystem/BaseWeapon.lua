@@ -466,7 +466,7 @@ end
 -- This function is used to set configuration values from outside configuration objects/folders
 function BaseWeapon:importConfiguration(config)
 	if not config or not config:IsA("Configuration") then
-		for _, child in pairs(config:GetChildren()) do
+		for _, child in (config:GetChildren()) do
 			if child:IsA("ValueBase") then
 				local valueName = child.Name
 				local newValue = child.Value
@@ -486,7 +486,7 @@ function BaseWeapon:onRenderStepped(dt) end
 
 function BaseWeapon:onStepped(dt) end
 
-function BaseWeapon:getAnimationController()
+function BaseWeapon: getAnimationController()
 	if self.animController then
 		if
 			not self.instanceIsTool
@@ -531,7 +531,7 @@ end
 function BaseWeapon:getAnimTrack(key)
 	local track = self.animTracks[key]
 	if not track then
-		local animController = self:getAnimationController()
+		local animController : AnimationController = self:getAnimationController()
 		if not animController then
 			warn("No animation controller when trying to play ", key)
 			return nil

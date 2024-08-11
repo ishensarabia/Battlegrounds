@@ -14,6 +14,7 @@ local GadgetsSystemFolder = ReplicatedStorage.Source.Systems.GadgetsSystem
 local Libraries = ReplicatedStorage.Source.Systems:WaitForChild("Libraries")
 local BaseGadget = require(GadgetsSystemFolder:WaitForChild("BaseGadget"))
 local Parabola = require(Libraries:WaitForChild("Parabola"))
+local Bezier = require(Libraries:WaitForChild("Bezier"))
 local Roblox = require(Libraries:WaitForChild("Roblox"))
 local ancestorHasTag = require(Libraries:WaitForChild("ancestorHasTag"))
 local Knit = require(ReplicatedStorage.Packages.Knit)
@@ -45,10 +46,9 @@ GrenadeGadget.CanBeFired = true
 GrenadeGadget.CanBeReloaded = true
 GrenadeGadget.CanHit = true
 
-function GrenadeGadget.new(gadgetSystem : table, instance : Instance)
+function GrenadeGadget.new(gadgetSystem: table, instance: Instance)
 	local self = BaseGadget.new(gadgetSystem, instance)
 	setmetatable(self, GrenadeGadget)
-	
 
 	self.usesCharging = false
 	self.charge = 0
@@ -64,7 +64,7 @@ function GrenadeGadget.new(gadgetSystem : table, instance : Instance)
 	self.recoilIntensity = 0
 	self.aimPoint = Vector3.new()
 
-	-- self:addOptionalDescendant("tipAttach", "TipAttachment")
+	self:addOptionalDescendant("tipAttach", "TipAttachment")
 
 	-- self:addOptionalDescendant("boltMotor", "BoltMotor")
 	-- self:addOptionalDescendant("boltMotorStart", "BoltMotorStart")
@@ -92,8 +92,8 @@ function GrenadeGadget.new(gadgetSystem : table, instance : Instance)
 
 	-- self:addOptionalDescendant("casingEjectPoint", "CasingEjectPoint")
 
-	-- self.ignoreList = {}
-	-- self.ignoreListRefreshTime = 0
+	self.ignoreList = {}
+	self.ignoreListRefreshTime = 0
 
 	-- self:addOptionalDescendant("handAttach", "LeftHandAttachment")
 	-- self.handAlignPos = nil
@@ -252,8 +252,9 @@ function GrenadeGadget:simulateFire(firingPlayer, fireInfo)
 			RunService.RenderStepped:Wait()
 
 			-- Add recoil to camera
-			local recoilMin, recoilMax = self.instance:GetAttribute("RecoilMin"), self.instance:GetAttribute("RecoilMax")
-			local intensityToAdd = randomGenerator:NextNumber(recoilMin, recoilMax)
+			-- local recoilMin, recoilMax =
+			-- 	self.instance:GetAttribute("RecoilMin") or , self.instance:GetAttribute("RecoilMax")
+			local intensityToAdd = randomGenerator:NextNumber(0, 0.12)
 			local xIntensity = math.sin(tick() * 2) * intensityToAdd * math.rad(0.05)
 			local yIntensity = intensityToAdd * 0.025
 			self.gadgetsSystem.camera:addRecoil(Vector2.new(xIntensity, yIntensity))
@@ -879,7 +880,7 @@ function GrenadeGadget:onHit(hitInfo)
 						vectorForce.RelativeTo = Enum.ActuatorRelativeTo.World
 						vectorForce.Parent = hitPlayer.Character.HumanoidRootPart
 						Debris:AddItem(vectorForce, 2)
-					
+
 						-- Add angular velocity
 						local angularVelocity = Instance.new("AngularVelocity")
 						angularVelocity.AngularVelocity = Vector3.new(0, 10, 0) -- Set the angular velocity
@@ -888,13 +889,11 @@ function GrenadeGadget:onHit(hitInfo)
 					end
 					self.gadgetsSystem.doDamage(humanoid, damageToDeal, nil, self.player)
 				end
-
 			elseif not CollectionService:HasTag(explodedPart, "gadgetsSystemIgnore") then
 				-- Do damage to a part (sends damage to breaking system)
 				self.gadgetsSystem.doDamage(explodedPart, damageToDeal, nil, self.player)
 			end
 		end)
-
 	end
 end
 
@@ -911,7 +910,7 @@ function GrenadeGadget:onFired(firingPlayer, fireInfo, fromNetwork)
 		return
 	end
 
-	local cooldownTime = self.instance:GetAttribute("CooldownTime")
+	local cooldownTime = self.instance:GetAttribute("CooldownTime") or 0.1
 	local fireMode = self.instance:GetAttribute("FireMode") or "Semiautomatic"
 	local isSemiAuto = fireMode == "Semiautomatic"
 	local isBurst = fireMode == "Burst"
@@ -1001,9 +1000,11 @@ end
 
 function GrenadeGadget:onRenderStepped(dt)
 	BaseGadget.onRenderStepped(self, dt)
+
 	if not self.tipAttach then
 		return
 	end
+
 	if not self.equipped then
 		return
 	end
@@ -1012,72 +1013,128 @@ function GrenadeGadget:onRenderStepped(dt)
 	if self.player == Players.LocalPlayer then
 		--//Animation functionality//--
 		-- Retrieve aim point from camera and update player's aim animation
-		local aimTrack = self:getAnimTrack(self:getConfigValue("AimTrack", "RifleAim"))
-		local aimZoomTrack = self:getAnimTrack(self:getConfigValue("AimZoomTrack", "RifleAimDownSights"))
-		if aimTrack then
+		local aimTrack = self:getAnimTrack(self:getConfigValue("AimTrack", "Grenade"))
+		local aimZoomTrack = self:getAnimTrack(self:getConfigValue("AimZoomTrack", "GrenadeAim"))
+		local aimDir = tipCFrame.LookVector
+		if not self.tipAttach then
+			return
+		end
+
+		if not self.equipped then
+			return
+		end
+
+		local tipCFrame = self.tipAttach.WorldCFrame
+		if self.player == Players.LocalPlayer then
+			--//Animation functionality//--
+			-- Retrieve aim point from camera and update player's aim animation
+			local aimTrack = self:getAnimTrack(self:getConfigValue("AimTrack", "Grenade"))
+			local aimZoomTrack = self:getAnimTrack(self:getConfigValue("AimZoomTrack", "GrenadeAim"))
 			local aimDir = tipCFrame.LookVector
+			if aimTrack then
+				local gunLookRay = Ray.new(tipCFrame.p, aimDir * 500)
 
-			local gunLookRay = Ray.new(tipCFrame.p, aimDir * 500)
+				local _, gunHitPoint = Roblox.penetrateCast(gunLookRay, self.ignoreList)
 
-			local _, gunHitPoint = Roblox.penetrateCast(gunLookRay, self.ignoreList)
-
-			if self.gadgetsSystem.aimRayCallback then
-				local _, hitPoint = Roblox.penetrateCast(self.gadgetsSystem.aimRayCallback(), self.ignoreList)
-				self.aimPoint = hitPoint
-			else
-				self.aimPoint = gunHitPoint
-			end
-
-			if not aimTrack.IsPlaying and not self.reloading then
-				aimTrack:Play(0.15)
-				coroutine.wrap(function() -- prevent player from firing until gun is fully out
-					task.wait(self:getConfigValue("StartupTime", 0.2))
-					self.startupFinished = true
-				end)()
-			end
-
-			if aimZoomTrack and not self.reloading then
-				if not aimZoomTrack.IsPlaying then
-					aimZoomTrack:Play(0.15)
+				if self.gadgetsSystem.aimRayCallback then
+					local _, hitPoint = Roblox.penetrateCast(self.gadgetsSystem.aimRayCallback(), self.ignoreList)
+					self.aimPoint = hitPoint
+				else
+					self.aimPoint = gunHitPoint
 				end
-				aimZoomTrack:AdjustSpeed(0.001)
-				if self.gadgetsSystem.camera:isZoomed() then
-					if aimTrack.WeightTarget ~= 0 then
-						aimZoomTrack:AdjustWeight(1)
-						aimTrack:AdjustWeight(0)
+
+				if aimZoomTrack and not self.reloading then
+					if not aimZoomTrack.IsPlaying then
+						aimZoomTrack:Play(0.15)
+					end
+					aimZoomTrack:AdjustSpeed(0.001)
+					-- Adjust weight of aimTrack and aimZoomTrack based on whether the player is zoomed in or not
+					if self.gadgetsSystem.camera:isZoomed() then
+						if aimTrack.WeightTarget ~= 0 then
+							aimZoomTrack:AdjustWeight(1)
+							aimTrack:AdjustWeight(0)
+						end
+						local midPoint = (tipCFrame.p + self.aimPoint) / 2
+						-- Calculate control point dynamically based on the direction and distance
+						local direction = (self.aimPoint - tipCFrame.p).Unit
+						local distance = (self.aimPoint - tipCFrame.p).Magnitude
+						local controlPoint1 = midPoint + Vector3.new(0, distance / 2, 0) -- Adjust height to create an arc
+
+						-- Bezier curve for grenade trajectory
+						local controlPoints = {
+							tipCFrame.p, -- Start point
+							controlPoint1, -- Control point 1
+							self.aimPoint, -- End point
+						}
+
+						local bezierCurve = Bezier.new(unpack(controlPoints))
+
+						local positions = {}
+						for t = 0, 1, 0.1 do
+							local position = bezierCurve:CalculatePositionAt(t)
+							table.insert(positions, position)
+						end
+
+						-- Create or update Beam
+						if not self.beam then
+							self.beam = Instance.new("Beam")
+							self.beam.Color = ColorSequence.new(Color3.new(1, 0, 0)) -- Red color
+							self.beam.Width0 = 0.1
+							self.beam.Width1 = 0.1
+							self.beam.FaceCamera = false
+
+							self.attachment0 = Instance.new("Attachment")
+							self.attachment0.Parent = workspace.Terrain
+
+							self.attachment1 = Instance.new("Attachment")
+							self.attachment1.Parent = workspace.Terrain
+
+							self.beam.Attachment0 = self.attachment0
+							self.beam.Attachment1 = self.attachment1
+							self.beam.Parent = self.instance
+						end
+
+						-- Update beam positions
+						if #positions >= 2 then
+							self.attachment0.Position = positions[1]
+							self.attachment1.Position = positions[#positions]
+							self.beam.CurveSize0 = (self.attachment1.Position - self.attachment0.Position).Magnitude / 2
+							self.beam.CurveSize1 = self.beam.CurveSize0
+						end
+					else
+						if self.beam then
+							self.beam:Destroy()
+							self.beam = nil
+						end
 					end
 				elseif aimTrack.WeightTarget ~= 1 then
 					aimZoomTrack:AdjustWeight(0)
 					aimTrack:AdjustWeight(1)
 				end
 			end
-
-			local MIN_ANGLE = -80
-			local MAX_ANGLE = 80
-			local aimYAngle = math.deg(self.recoilIntensity)
-			if self.gadgetsSystem.camera.enabled then
-				-- Gets pitch and recoil from camera to figure out how high/low to aim the gun
-				aimYAngle = math.deg(
-					self.gadgetsSystem.camera:getRelativePitch()
-						+ self.gadgetsSystem.camera.currentRecoil.Y
-						+ self.recoilIntensity
-				)
-			end
-			local aimTimePos = 2 * ((aimYAngle - MIN_ANGLE) / (MAX_ANGLE - MIN_ANGLE))
-
-			aimTrack:AdjustSpeed(0.001)
-			aimTrack.TimePosition = math.clamp(aimTimePos, 0.001, 1.97)
-
-			if aimZoomTrack then
-				aimZoomTrack.TimePosition = math.clamp(aimTimePos, 0.001, 1.97)
-			end
-
-			-- Update recoil (decay over time)
-			local recoilDecay = self.instance:GetAttribute("RecoilDecay")
-			self.recoilIntensity = math.clamp(self.recoilIntensity * recoilDecay, 0, math.huge)
-		else
-			warn("no aimTrack")
 		end
+
+		local MIN_ANGLE = -80
+		local MAX_ANGLE = 80
+		local aimYAngle = math.deg(self.recoilIntensity)
+		if self.gadgetsSystem.camera.enabled then
+			-- Gets pitch and recoil from camera to figure out how high/low to aim the gun
+			aimYAngle =
+				math.deg(self.gadgetsSystem.camera:getRelativePitch() + self.gadgetsSystem.camera.currentRecoil.Y)
+		end
+		local aimTimePos = 2 * ((aimYAngle - MIN_ANGLE) / (MAX_ANGLE - MIN_ANGLE))
+
+		aimTrack:AdjustSpeed(0.001)
+		aimTrack.TimePosition = math.clamp(aimTimePos, 0.001, 1.97)
+
+		if aimZoomTrack then
+			aimZoomTrack.TimePosition = math.clamp(aimTimePos, 0.001, 1.97)
+		end
+
+		-- Update recoil (decay over time)
+		local recoilDecay = self.instance:GetAttribute("RecoilDecay")
+	else
+		warn("no aimTrack")
 	end
 end
 

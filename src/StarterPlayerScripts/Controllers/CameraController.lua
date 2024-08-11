@@ -6,9 +6,9 @@ local TweenService = game:GetService("TweenService")
 --Module dependencies
 local Knit = require(ReplicatedStorage.Packages.Knit)
 local Promise = require(Knit.Util.Promise)
-local TweenObject = require(ReplicatedStorage.Source.Modules.Util.TweenObject)
+local Libraries = ReplicatedStorage.Source.Systems:WaitForChild("Libraries")
 local Janitor = require(ReplicatedStorage.Packages.Janitor)
-local Bezier = require(ReplicatedStorage.Source.Modules.Util.Bezier)
+local Bezier = require(Libraries.Bezier)
 
 --Class
 local CameraController = Knit.CreateController({ Name = "CameraController" })

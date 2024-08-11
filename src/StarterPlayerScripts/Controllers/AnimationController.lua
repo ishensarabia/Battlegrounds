@@ -1,6 +1,8 @@
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Knit = require(ReplicatedStorage.Packages.Knit)
+--Variables
+local player: Player = Players.LocalPlayer
 
 local AnimationController = Knit.CreateController({ Name = "AnimationController" })
 
@@ -14,7 +16,7 @@ function AnimationController:InitAnimation(character: Model, animationName: stri
 	animationTrack.Name = animationName
 	animationTrack.AnimationId = animationID
 	animationTrack.Parent = character.Humanoid
-	self._animationTracks[animationName] = character:WaitForChild("Humanoid").Animator:LoadAnimation(animationTrack)
+	self._animationTracks[animationName] = animationTrack
 end
 
 function AnimationController:PlayAnimation(animationName: string, playbackSpeed: number)
@@ -22,20 +24,32 @@ function AnimationController:PlayAnimation(animationName: string, playbackSpeed:
 	animationName = animationName:gsub(" ", "_")
 	animationName = animationName:gsub("-", "_")
 	animationName = animationName:gsub("'", "")
-	self._animationTracks[animationName]:Play()
+	local animationTrack: AnimationTrack = player.Character.Humanoid.Animator:LoadAnimation(self._animationTracks[animationName])
+	animationTrack:Play()
 	if playbackSpeed then
-		self._animationTracks[animationName]:AdjustSpeed(playbackSpeed)
+		animationTrack:AdjustSpeed(playbackSpeed)
 	end
-	return self._animationTracks[animationName]
+	self._loadedAnimationTracks[animationName] = animationTrack
+	animationTrack.Ended:Connect(function()
+		animationTrack:Destroy()
+		self._loadedAnimationTracks[animationName] = nil
+	end)
+	return animationTrack
 end
 
 --Stop animation function -0.165, 0.3, -0.3
 function AnimationController:StopAnimation(animationName: string)
+	if not self._loadedAnimationTracks[animationName] then
+		warn(string.format("Animation %s not found in loaded animations", animationName))
+		return
+	end
 	--Format the animation name
 	animationName = animationName:gsub(" ", "_")
 	animationName = animationName:gsub("-", "_")
 	animationName = animationName:gsub("'", "")
-	self._animationTracks[animationName]:Stop()
+	self._loadedAnimationTracks[animationName]:Stop()
+	self._loadedAnimationTracks[animationName]:Destroy()
+	self._loadedAnimationTracks[animationName] = nil
 end
 
 --Disable tool animation
@@ -58,11 +72,11 @@ local function DisableHandOut(character)
 end
 
 function AnimationController:KnitInit()
-	self.Animations = require(ReplicatedStorage.Source.Assets.Animations)
-	self._animationTrack = Instance.new("Animation")
+	self._animations = require(ReplicatedStorage.Source.Assets.Animations)
 	self._animationTracks = {}
+	self._loadedAnimationTracks = {}
 	Players.LocalPlayer.CharacterAdded:Connect(function(character)
-		for animationCategory, animationCategoryTable in self.Animations do
+		for animationCategory, animationCategoryTable in self._animations do
 			for animationName, animationID in animationCategoryTable do
 				self:InitAnimation(character, animationName, animationID)
 			end

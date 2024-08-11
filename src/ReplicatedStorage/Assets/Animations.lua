@@ -20,7 +20,7 @@ return {
 		Left_Dash = "rbxassetid://18368474907",
 		Climb = "rbxassetid://18366906994",
 		Climb_Up = "rbxassetid://18367374086",
-		Slide = "rbxassetid://18508394821",
+		Slide = "rbxassetid://18863030249",
 		Crouch = "rbxassetid://18389522899",
 		Sprinting = "rbxassetid://15407280617",
 	},
