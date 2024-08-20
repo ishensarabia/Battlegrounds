@@ -55,10 +55,10 @@ function LoadoutService:SpawnLoadout(player)
 		self:LoadWeaponCustomization(player, loadout.secondary)
 	end
 
-	--Assign the widgets properties to the player
+	--Assign the gadgets properties to the player
 	if loadout.gadget1 then
-		
-		
+		local gadget1 = ReplicatedStorage.Gadgets[loadout.gadget1]:Clone()
+		gadget1.Parent = player.Backpack
 	end
 end
 

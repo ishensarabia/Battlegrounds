@@ -7,14 +7,16 @@ local Knit = require(ReplicatedStorage.Packages.Knit)
 local FormatText = require(ReplicatedStorage.Source.Modules.Util.FormatText)
 --Enums
 local CurrenciesEnum = require(ReplicatedStorage.Source.Enums.CurrenciesEnum)
+local LoadoutEnum = require(ReplicatedStorage.Source.Enums.LoadoutEnum)
 --Controllers
 local WidgetController = Knit.GetController("WidgetController")
 --Assets
-local Assets = ReplicatedStorage.Assets
-local Weapons = ReplicatedStorage.Weapons
+local Assets: Folder = ReplicatedStorage.Assets
+local WeaponsFolder: Folder = ReplicatedStorage.Weapons
+local GadgetsFolder: Folder = ReplicatedStorage.Gadgets
 --Widget
 local ButtonWidget = require(game.StarterPlayer.StarterPlayerScripts.Source.Widgets.ButtonWidget)
-local WeaponPreviewWidget = require(game.StarterPlayer.StarterPlayerScripts.Source.Widgets.WeaponPreviewWidget)
+local ObjectPreviewWidget = require(game.StarterPlayer.StarterPlayerScripts.Source.Widgets.ObjectPreviewWidget)
 --Main
 local LoadoutWidget = {}
 local loadoutGui
@@ -115,9 +117,9 @@ local function SetupInventoryButtons()
 		if LoadoutWidget.state == "Items" then
 			LoadoutWidget:CloseLoadout()
 			showMainMenuCallback()
-			WeaponPreviewWidget:ClosePreview()
+			ObjectPreviewWidget:ClosePreview()
 		elseif LoadoutWidget.state == "WeaponPreview" then
-			WeaponPreviewWidget:ClosePreview()
+			ObjectPreviewWidget:ClosePreview()
 			LoadoutWidget:SetInventoryItemsVis(true)
 			LoadoutWidget.state = "Items"
 		end
@@ -235,77 +237,157 @@ function LoadoutWidget:OpenLoadout(callback)
 
 	showMainMenuCallback = callback
 	--Generate items frame
-	Knit.GetService("DataService"):GetKeyValue("weapons"):andThen(function(weapons: table)
-		for weaponID, weaponData: table in weapons do
-			--Filter the category
-			--Get the tool to identify if it has texture
-			local weapon: Tool = Weapons[weaponID]
-			if weapon.TextureId and weapon:GetAttribute("Slot"):lower() == self.slot then
-				local weaponFrame = WidgetController:CreateWeaponFrame(weaponID, itemsFrame)
-				--Assign the weaon attribute
-				weaponFrame:SetAttribute("Weapon", weaponID)
+	warn(self.category)
+	warn(self.slot)
 
-				if not weaponData.owned then
-					Assets.GuiObjects.TextLabels.RequiredLevelTextLabel:Clone().Parent = weaponFrame.Frame
-					Assets.GuiObjects.Icons.LockIcon:Clone().Parent = weaponFrame.Frame
-					if player:GetAttribute("Level") >= weapon:GetAttribute("RequiredLevel") then
-						local buyButtonFrame = Assets.GuiObjects.Buttons.BuyButtonFrame:Clone()
-						buyButtonFrame.Parent = weaponFrame.Frame
+	if self.slot == LoadoutEnum.Slots.Gadget then
+		Knit.GetService("DataService"):GetKeyValue("gadgets"):andThen(function(gadgets: table)
+			warn(gadgets)
+			for gadgetID, gadgetData: table in gadgets do
+				local gadget: Tool = GadgetsFolder[gadgetID]
+				if gadget.TextureId and gadget:GetAttribute("Slot"):lower() == self.slot then
+					local gadgetFrame = WidgetController:CreateGadgetFrame(gadgetID, itemsFrame)
+					--Assign the gadget attribute
+					gadgetFrame:SetAttribute("Gadget", gadgetID)
+					if not gadgetData.owned then
+						Assets.GuiObjects.TextLabels.RequiredLevelTextLabel:Clone().Parent = gadgetFrame.Frame
+						Assets.GuiObjects.Icons.LockIcon:Clone().Parent = gadgetFrame.Frame
+						if player:GetAttribute("Level") >= gadget:GetAttribute("RequiredLevel") then
+							local buyButtonFrame = Assets.GuiObjects.Buttons.BuyButtonFrame:Clone()
+							buyButtonFrame.Parent = gadgetFrame.Frame
 
-						weaponFrame.Frame.BuyButtonFrame.BuyButton.PriceText.Text =
-							FormatText.To_comma_value(weapon:GetAttribute("Price"))
-						weaponFrame.Frame.BuyButtonFrame.BuyButton.CurrencyIcon.Image =
-							CurrenciesEnum.Icons[weapon:GetAttribute("Currency")]
+							gadgetFrame.Frame.BuyButtonFrame.BuyButton.PriceText.Text =
+								FormatText.To_comma_value(gadget:GetAttribute("Price"))
+							gadgetFrame.Frame.BuyButtonFrame.BuyButton.CurrencyIcon.Image =
+								CurrenciesEnum.Icons[gadget:GetAttribute("Currency")]
 
-						--Create buy button
-						ButtonWidget.new(weaponFrame.Frame.BuyButtonFrame, function()
-							Knit.GetService("LoadoutService"):PurchaseWeapon(weaponID, false)
-						end)
-						weaponFrame.Frame.RequiredLevelTextLabel.Text = string.format(
-							"Level <font color='rgb(74, 188, 127)'><b>%s</b></font> required",
-							weapon:GetAttribute("RequiredLevel")
-						)
-					else
-						--Set up early buy button
-						local earlyButtonFrame = Assets.GuiObjects.Buttons.BuyEarlyButtonFrame:Clone()
-						earlyButtonFrame.Parent = weaponFrame.Frame
-
-						earlyButtonFrame.BuyEarlyButton.PriceText.Text =
-							FormatText.To_comma_value(weapon:GetAttribute("EarlyPrice"))
-						earlyButtonFrame.BuyEarlyButton.CurrencyIcon.Image =
-							CurrenciesEnum.Icons[weapon:GetAttribute("EarlyCurrency")]
-
-						--Create early buy button
-						ButtonWidget.new(weaponFrame.Frame.BuyEarlyButtonFrame, function()
-							Knit.GetService("LoadoutService"):PurchaseWeapon(weaponID, true):andThen(function(result)
-								if result then
-									earlyButtonFrame:Destroy()
-								end
+							--Create buy button
+							ButtonWidget.new(gadgetFrame.Frame.BuyButtonFrame, function()
+								Knit.GetService("LoadoutService"):PurchaseGadget(gadgetID, false)
 							end)
-						end)
+							gadgetFrame.Frame.RequiredLevelTextLabel.Text = string.format(
+								"Level <font color='rgb(74, 188, 127)'><b>%s</b></font> required",
+								gadget:GetAttribute("RequiredLevel")
+							)
+						else
+							--Set up early buy button
+							local earlyButtonFrame = Assets.GuiObjects.Buttons.BuyEarlyButtonFrame:Clone()
+							earlyButtonFrame.Parent = gadgetFrame.Frame
 
-						weaponFrame.Frame.RequiredLevelTextLabel.Text = string.format(
-							"Level <font color='rgb(255, 125, 0)'><b>%s</b></font> required",
-							weapon:GetAttribute("RequiredLevel")
-						)
+							earlyButtonFrame.BuyEarlyButton.PriceText.Text =
+								FormatText.To_comma_value(gadget:GetAttribute("EarlyPrice"))
+							earlyButtonFrame.BuyEarlyButton.CurrencyIcon.Image =
+								CurrenciesEnum.Icons[gadget:GetAttribute("EarlyCurrency")]
+
+							--Create early buy button
+							ButtonWidget.new(gadgetFrame.Frame.BuyEarlyButtonFrame, function()
+								Knit.GetService("LoadoutService"):PurchaseGadget(gadgetID, true):andThen(function(result)
+									if result then
+										earlyButtonFrame:Destroy()
+									end
+								end)
+							end)
+
+							gadgetFrame.Frame.RequiredLevelTextLabel.Text = string.format(
+								"Level <font color='rgb(255, 125, 0)'><b>%s</b></font> required",
+								gadget:GetAttribute("RequiredLevel"))
+							
+						end
+					else
+						Assets.GuiObjects.Buttons.EquipButtonFrame:Clone().Parent = gadgetFrame.Frame
+						--Create equip button
+						ButtonWidget.new(gadgetFrame.Frame.EquipButtonFrame, function()
+							self._loadoutService:SetGadgetEquipped(gadgetID, self.slot)
+							Knit.GetController("PlayerPreviewController"):SpawnGadgetInCharacterMenu()
+						end)
 					end
-				else
-					Assets.GuiObjects.Buttons.EquipButtonFrame:Clone().Parent = weaponFrame.Frame
-					--Create equip button
-					ButtonWidget.new(weaponFrame.Frame.EquipButtonFrame, function()
-						self._loadoutService:SetWeaponEquipped(weaponID, self.slot)
-						Knit.GetController("PlayerPreviewController"):SpawnWeaponInCharacterMenu()
+
+					ButtonWidget.new(gadgetFrame.Frame, function()
+						LoadoutWidget.state = "WeaponPreview"
+						LoadoutWidget:SetInventoryItemsVis(false)
+						ObjectPreviewWidget:OpenPreview(gadgetID, self.slot)
 					end)
 				end
-
-				ButtonWidget.new(weaponFrame.Frame, function()
-					LoadoutWidget.state = "WeaponPreview"
-					LoadoutWidget:SetInventoryItemsVis(false)
-					WeaponPreviewWidget:OpenPreview(weaponID, self.slot)
-				end)
 			end
-		end
-	end)
+		end)
+	end
+
+	if self.slot == LoadoutEnum.Slots.Primary or self.slot == LoadoutEnum.Slots.Secondary then
+		Knit.GetService("DataService"):GetKeyValue("weapons"):andThen(function(weapons: table)
+			for weaponID, weaponData: table in weapons do
+				--Filter the category
+				--Get the tool to identify if it has texture
+				local weapon: Tool = WeaponsFolder[weaponID]
+				if weapon.TextureId and weapon:GetAttribute("Slot"):lower() == self.slot then
+					local weaponFrame = WidgetController:CreateWeaponFrame(weaponID, itemsFrame)
+					--Assign the weaon attribute
+					weaponFrame:SetAttribute("Weapon", weaponID)
+	
+					if not weaponData.owned then
+						Assets.GuiObjects.TextLabels.RequiredLevelTextLabel:Clone().Parent = weaponFrame.Frame
+						Assets.GuiObjects.Icons.LockIcon:Clone().Parent = weaponFrame.Frame
+						if player:GetAttribute("Level") >= weapon:GetAttribute("RequiredLevel") then
+							local buyButtonFrame = Assets.GuiObjects.Buttons.BuyButtonFrame:Clone()
+							buyButtonFrame.Parent = weaponFrame.Frame
+	
+							weaponFrame.Frame.BuyButtonFrame.BuyButton.PriceText.Text =
+								FormatText.To_comma_value(weapon:GetAttribute("Price"))
+							weaponFrame.Frame.BuyButtonFrame.BuyButton.CurrencyIcon.Image =
+								CurrenciesEnum.Icons[weapon:GetAttribute("Currency")]
+	
+							--Create buy button
+							ButtonWidget.new(weaponFrame.Frame.BuyButtonFrame, function()
+								Knit.GetService("LoadoutService"):PurchaseWeapon(weaponID, false)
+							end)
+							weaponFrame.Frame.RequiredLevelTextLabel.Text = string.format(
+								"Level <font color='rgb(74, 188, 127)'><b>%s</b></font> required",
+								weapon:GetAttribute("RequiredLevel")
+							)
+						else
+							--Set up early buy button
+							local earlyButtonFrame = Assets.GuiObjects.Buttons.BuyEarlyButtonFrame:Clone()
+							earlyButtonFrame.Parent = weaponFrame.Frame
+	
+							earlyButtonFrame.BuyEarlyButton.PriceText.Text =
+								FormatText.To_comma_value(weapon:GetAttribute("EarlyPrice"))
+							earlyButtonFrame.BuyEarlyButton.CurrencyIcon.Image =
+								CurrenciesEnum.Icons[weapon:GetAttribute("EarlyCurrency")]
+	
+							--Create early buy button
+							ButtonWidget.new(weaponFrame.Frame.BuyEarlyButtonFrame, function()
+								Knit.GetService("LoadoutService"):PurchaseWeapon(weaponID, true):andThen(function(result)
+									if result then
+										earlyButtonFrame:Destroy()
+									end
+								end)
+							end)
+	
+							weaponFrame.Frame.RequiredLevelTextLabel.Text = string.format(
+								"Level <font color='rgb(255, 125, 0)'><b>%s</b></font> required",
+								weapon:GetAttribute("RequiredLevel")
+							)
+						end
+					else
+						Assets.GuiObjects.Buttons.EquipButtonFrame:Clone().Parent = weaponFrame.Frame
+						--Create equip button
+						ButtonWidget.new(weaponFrame.Frame.EquipButtonFrame, function()
+							self._loadoutService:SetWeaponEquipped(weaponID, self.slot)
+							Knit.GetController("PlayerPreviewController"):SpawnWeaponInCharacterMenu()
+						end)
+					end
+	
+					ButtonWidget.new(weaponFrame.Frame, function()
+						LoadoutWidget.state = "WeaponPreview"
+						LoadoutWidget:SetInventoryItemsVis(false)
+						ObjectPreviewWidget:OpenPreview(weaponID, self.slot)
+					end)
+				end
+			end
+		end)
+	end
+
+	
+
 end
 
 return LoadoutWidget:Initialize()

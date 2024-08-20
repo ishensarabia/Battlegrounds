@@ -9,7 +9,7 @@ local Assets = ReplicatedStorage.Assets
 
 --Widget
 local ButtonWidget = require(game.StarterPlayer.StarterPlayerScripts.Source.Widgets.ButtonWidget)
-local WeaponPreviewWidget = require(game.StarterPlayer.StarterPlayerScripts.Source.Widgets.WeaponPreviewWidget)
+local ObjectPreviewWidget = require(game.StarterPlayer.StarterPlayerScripts.Source.Widgets.ObjectPreviewWidget)
 --Main
 local GameModeElectionWidget = {}
 local gameModeElectionGui

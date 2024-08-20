@@ -1,5 +1,3 @@
 return {
-
-	LEVEL_TO_PRESTIGE = 7,
-	MAX_PRESTIGE = 3,
+	LEVEL_TO_PRESTIGE = 100,
 }

@@ -77,7 +77,7 @@ function BulletWeapon.new(weaponsSystem, instance)
 	self:addOptionalDescendant("muzzleFlash1", "MuzzleFlash1")
 	self:addOptionalDescendant("muzzleFlashBeam", "MuzzleFlash")
 
-	self.hitMarkTemplate = HitMarksFolder:FindFirstChild(self:getConfigValue("HitMarkEffect", "BulletHole"))
+	self.hitMarkTemplate = HitMarksFolder:FindFirstChild(self.instance:GetAttribute("HitMarkEffect") or "BulletHole")
 
 	self.casingTemplate = CasingsFolder:FindFirstChild(self.instance:GetAttribute("CasingEffect"))
 	self.bulletEffectTemplate = ShotsFolder:FindFirstChild(self.instance:GetAttribute("ShotEffect"))
@@ -251,7 +251,8 @@ function BulletWeapon:simulateFire(firingPlayer, fireInfo)
 			RunService.RenderStepped:Wait()
 
 			-- Add recoil to camera
-			local recoilMin, recoilMax = self.instance:GetAttribute("RecoilMin"), self.instance:GetAttribute("RecoilMax")
+			local recoilMin, recoilMax =
+				self.instance:GetAttribute("RecoilMin"), self.instance:GetAttribute("RecoilMax")
 			local intensityToAdd = randomGenerator:NextNumber(recoilMin, recoilMax)
 			local xIntensity = math.sin(tick() * 2) * intensityToAdd * math.rad(0.05)
 			local yIntensity = intensityToAdd * 0.025
@@ -293,12 +294,12 @@ function BulletWeapon:simulateProjectile(firingPlayer, fireInfo, projectileIdx, 
 	local localPlayerInitiatedShot = self.player == Players.LocalPlayer
 
 	-- Retrieve config values
-	local bulletSpeed = self:getConfigValue("BulletSpeed", 1000)
+	local bulletSpeed = self.instance:GetAttribute("BulletSpeed") or 1000
 	local maxDistance = self:getConfigValue("MaxDistance", 2000)
 	local trailLength = self:getConfigValue("TrailLength", nil)
 	local trailLengthFactor = self:getConfigValue("TrailLengthFactor", 1)
 	local showEntireTrailUntilHit = self:getConfigValue("ShowEntireTrailUntilHit", false)
-	local gravityFactor = self:getConfigValue("GravityFactor", 0)
+	local gravityFactor = self.instance:GetAttribute("GravityFactor") or 0
 	local minSpread = self.instance:GetAttribute("MinSpread") or 0
 	local maxSpread = self.instance:GetAttribute("MaxSpread") or 0
 	local shouldMovePart = self.instance:GetAttribute("ShouldMovePart") or false
@@ -832,10 +833,10 @@ function BulletWeapon:onHit(hitInfo)
 	end
 
 	-- Create invisible explosion on server that deals damage to anything caught in the explosion
-	if IsServer and self.instance:GetAttribute("ExplodeOnImpact")then
+	if IsServer and self.instance:GetAttribute("ExplodeOnImpact") then
 		local blastRadius = self:getConfigValue("BlastRadius", 8)
-		local blastPressure = self:getConfigValue("BlastPressure", 10000)
-		local blastDamage = self:getConfigValue("BlastDamage", 100)
+		local blastPressure = self.instance:GetAttribute("BlastPressure") or 10000
+		local blastDamage = self.instance:GetAttribute("BlastDamage") or 100
 		local ragdollTime = self:getConfigValue("RagdollTime", 3)
 
 		local explosion = Instance.new("Explosion")
@@ -849,7 +850,7 @@ function BulletWeapon:onHit(hitInfo)
 
 		explosion.Hit:Connect(function(explodedPart, hitDist)
 			local damageMultiplier = (1 - math.clamp((hitDist / blastRadius), 0, 1))
-			local damageToDeal = blastDamage * damageMultiplier
+			local damageToDeal = blastDamage
 			local destructibleObject = ancestorHasTag(explodedPart, "DestructibleObject")
 			if destructibleObject then
 				require(game.ServerStorage.Source.Components.DestructibleObject)
@@ -867,33 +868,34 @@ function BulletWeapon:onHit(hitInfo)
 						self.player
 					)
 				then
-					-- Do damage to players/humanoids
-					local hitPlayer = Players:GetPlayerFromCharacter(humanoid.Parent)
-					if hitPlayer and hitPlayer.Character then
-						Knit.GetService("RagdollService"):RagdollPlayer(hitPlayer, ragdollTime)
-						local direction = (hitPlayer.Character.HumanoidRootPart.Position - explosion.Position).Unit
-						local vectorForce = Instance.new("VectorForce")
-						vectorForce.Force = direction * blastPressure -- Set the force
-						vectorForce.ApplyAtCenterOfMass = true
-						vectorForce.RelativeTo = Enum.ActuatorRelativeTo.World
-						vectorForce.Parent = hitPlayer.Character.HumanoidRootPart
-						Debris:AddItem(vectorForce, 2)
-					
-						-- Add angular velocity
-						local angularVelocity = Instance.new("AngularVelocity")
-						angularVelocity.AngularVelocity = Vector3.new(0, 10, 0) -- Set the angular velocity
-						angularVelocity.Parent = hitPlayer.Character.HumanoidRootPart
-						Debris:AddItem(angularVelocity, 2)
-					end
-					self.weaponsSystem.doDamage(humanoid, damageToDeal, nil, self.player)
-				end
+            -- Do damage to players/humanoids
+            local hitPlayer = Players:GetPlayerFromCharacter(humanoid.Parent)
+            if hitPlayer and hitPlayer.Character then
+                warn("Ragdolling player")
+                Knit.GetService("RagdollService"):RagdollPlayer(hitPlayer, ragdollTime)
+                local direction = (hitPlayer.Character.HumanoidRootPart.Position - explosion.Position).Unit
+                -- Calculate force based on distance and mass
+                local distance = (hitPlayer.Character.HumanoidRootPart.Position - explosion.Position).Magnitude
+                local mass = hitPlayer.Character.HumanoidRootPart:GetMass()
+                local forceMagnitude = blastPressure / (distance * mass)
+                
+                -- Apply force using AssemblyLinearVelocity
+                hitPlayer.Character.HumanoidRootPart.AssemblyLinearVelocity = direction * forceMagnitude
 
+                -- Add angular velocity
+                local angularVelocity = Instance.new("BodyAngularVelocity")
+                angularVelocity.AngularVelocity = Vector3.new(0, 10, 0) -- Set the angular velocity
+                angularVelocity.MaxTorque = Vector3.new(100000, 100000, 100000) -- Ensure it can rotate the part
+                angularVelocity.Parent = hitPlayer.Character.HumanoidRootPart
+                Debris:AddItem(angularVelocity, 2)
+            end
+            self.weaponsSystem.doDamage(humanoid, damageToDeal, nil, self.player)
+        end
 			elseif not CollectionService:HasTag(explodedPart, "WeaponsSystemIgnore") then
 				-- Do damage to a part (sends damage to breaking system)
 				self.weaponsSystem.doDamage(explodedPart, damageToDeal, nil, self.player)
 			end
 		end)
-
 	end
 end
 

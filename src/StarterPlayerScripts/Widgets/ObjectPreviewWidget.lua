@@ -10,9 +10,10 @@ local DragToRotateViewportFrame = require(ReplicatedStorage.Source.Modules.Util.
 --Widgets
 local WeaponCustomWidget = require(game.StarterPlayer.StarterPlayerScripts.Source.Widgets.WeaponCustomWidget)
 local ButtonWidget = require(game.StarterPlayer.StarterPlayerScripts.Source.Widgets.ButtonWidget)
-
+--Enum
+local LoadoutEnum = require(ReplicatedStorage.Source.Enums.LoadoutEnum)
 --Main
-local WeaponPreviewWidget = {}
+local ObjectPreviewWidget = {}
 --Variables
 local weaponPreviewGui
 local itemPreviewFrame
@@ -60,11 +61,11 @@ local function ShowCustomizationAndEquipButtons()
 end
 
 local function OpenCustomizationWidget(category: string)
-	warn(WeaponPreviewWidget.weaponID, WeaponPreviewWidget.itemModel, category, ShowCustomizationAndEquipButtons)
+	warn(ObjectPreviewWidget.weaponID, ObjectPreviewWidget.itemModel, category, ShowCustomizationAndEquipButtons)
 	HideCustomizationAndEquipButtons()
 	WeaponCustomWidget:OpenCustomization(
-		WeaponPreviewWidget.weaponID,
-		WeaponPreviewWidget.itemModel,
+		ObjectPreviewWidget.weaponID,
+		ObjectPreviewWidget.itemModel,
 		category,
 		ShowCustomizationAndEquipButtons
 	)
@@ -83,7 +84,7 @@ local function SetupWeaponPreviewButtons()
 	--Create equip button
 	ButtonWidget.new(equipButtonFrame, function()
 		Knit.GetService("LoadoutService")
-			:SetWeaponEquipped(WeaponPreviewWidget.weaponID, WeaponPreviewWidget.loadoutSlot)
+			:SetWeaponEquipped(ObjectPreviewWidget.weaponID, ObjectPreviewWidget.loadoutSlot)
 		local PlayerPreviewController = Knit.GetController("PlayerPreviewController")
 		PlayerPreviewController:SpawnWeaponInCharacterMenu()
 	end)
@@ -111,7 +112,7 @@ local function setTransparencyForWeaponParts(model, weaponPart: string, value: n
 	end
 end
 
-function WeaponPreviewWidget:Initialize()
+function ObjectPreviewWidget:Initialize()
 	weaponPreviewGui = Assets.GuiObjects.ScreenGuis.WeaponPreviewGui
 	itemPreviewFrame = weaponPreviewGui.ItemPreviewFrame
 	itemInfoFrame = weaponPreviewGui.ItemInfoFrame
@@ -124,10 +125,10 @@ function WeaponPreviewWidget:Initialize()
 	weaponPreviewGui.Enabled = false
 
 	SetupWeaponPreviewButtons()
-	return WeaponPreviewWidget
+	return ObjectPreviewWidget
 end
 
-function WeaponPreviewWidget:ClosePreview()
+function ObjectPreviewWidget:ClosePreview()
 	if viewportConnection then
 		viewportConnection:Disconnect()
 	end
@@ -169,14 +170,14 @@ local function RaycastInViewportFrame(viewportFrame, raycastDistance, raycastPar
 	)
 end
 
-function WeaponPreviewWidget:OpenPreview(weaponID: string, loadoutSlot)
+function ObjectPreviewWidget:OpenPreview(objectID: string, loadoutSlot)
 	--set the loadout slot
-	WeaponPreviewWidget.loadoutSlot = loadoutSlot
+	ObjectPreviewWidget.loadoutSlot = loadoutSlot
 	--Enable the gui
 	weaponPreviewGui.Enabled = true
 
 	local DataService = Knit.GetService("DataService")
-	DataService:IsWeaponOwned(weaponID):andThen(function(isWeaponOwned)
+	DataService:IsWeaponOwned(objectID):andThen(function(isWeaponOwned)
 		if isWeaponOwned then
 			--Show equip button
 			TweenService:Create(
@@ -201,30 +202,36 @@ function WeaponPreviewWidget:OpenPreview(weaponID: string, loadoutSlot)
 	TweenService:Create(itemPreviewFrame, TweenInfo.new(0.363), { Position = UDim2.fromScale(0, 0) }):Play()
 	ShowCustomizationAndEquipButtons()
 	--Set up item frame properties
-	local formattedWeaponName = string.gsub(weaponID, "_", " ")
+	local formattedWeaponName = string.gsub(objectID, "_", " ")
 	itemInfoFrame.ItemTitleFrame.Title.Text = string.upper(formattedWeaponName)
-	itemInfoFrame.Description.Text = ReplicatedStorage.Weapons[weaponID]:GetAttribute("Description") or ""
+	local objectModel
 
-	local weaponModel = ReplicatedStorage.Weapons[weaponID]:Clone()
+	if loadoutSlot == LoadoutEnum.Slots.Gadget then
+		objectModel = ReplicatedStorage.Gadgets[objectID]:Clone()
+
+	elseif loadoutSlot == LoadoutEnum.Slots.Primary or loadoutSlot == LoadoutEnum.Slots.Secondary then
+		itemInfoFrame.Description.Text =  ReplicatedStorage.Weapons[objectID]:GetAttribute("Description") or ""
+		objectModel = ReplicatedStorage.Weapons[objectID]:Clone()
+	end
 	--Check if the item is a tool get the model
-	if weaponModel:IsA("Tool") then
-		weaponModel = weaponModel:FindFirstChildOfClass("Model"):Clone()
-	elseif weaponModel:IsA("Model") then
-		weaponModel = weaponModel:Clone()
+	if objectModel:IsA("Tool") then
+		objectModel = objectModel:FindFirstChildOfClass("Model"):Clone()
+	elseif objectModel:IsA("Model") then
+		objectModel = objectModel:Clone()
 	end
 
 	--Load up saved up customization
-	WeaponCustomWidget:ApplySavedCustomization(weaponID, weaponModel)
+	WeaponCustomWidget:ApplySavedCustomization(objectID, objectModel)
 	--Set up customization
-	WeaponPreviewWidget.itemModel = weaponModel
-	WeaponPreviewWidget.weaponID = weaponID
+	ObjectPreviewWidget.itemModel = objectModel
+	ObjectPreviewWidget.weaponID = objectID
 
 	--Generate the world model
 	local worldModel = Instance.new("WorldModel")
 	worldModel.Parent = viewportFrame
 	--Set up the primary part
-	worldModel.PrimaryPart = weaponModel.PrimaryPart
-	weaponModel.Parent = worldModel
+	worldModel.PrimaryPart = objectModel.PrimaryPart
+	objectModel.Parent = worldModel
 
 	dtrViewportFrame:SetModel(worldModel)
 
@@ -252,7 +259,7 @@ function WeaponPreviewWidget:OpenPreview(weaponID: string, loadoutSlot)
 						0,
 						Pos.Y * viewportFrame.Parent.AbsoluteSize.Y
 					)
-					setTransparencyForWeaponParts(weaponModel, result.Instance.Name, 0.66)
+					setTransparencyForWeaponParts(objectModel, result.Instance.Name, 0.66)
 					-- itemPreviewFrame.ImageLabel.Visible = true
 					-- itemPreviewFrame.ImageLabel.Position = Pos
 				end
@@ -269,4 +276,4 @@ function WeaponPreviewWidget:OpenPreview(weaponID: string, loadoutSlot)
 	end)
 end
 
-return WeaponPreviewWidget:Initialize()
+return ObjectPreviewWidget:Initialize()

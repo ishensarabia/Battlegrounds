@@ -13,7 +13,6 @@ function RagdollService:KnitStart() end
 
 local function activateVelocity(player)
 	-- player.character.HumanoidRootPart.AngularVelocity.Enabled = true
-	player.character.HumanoidRootPart.LinearVelocity.Enabled = true
 	if player.character:FindFirstChild("LeftUpperLeg") and player.character:FindFirstChild("RightUpperLeg") then
 		-- player.character.LeftUpperLeg.AngularVelocity.Enabled = true
 		-- player.character.RightUpperLeg.AngularVelocity.Enabled = true

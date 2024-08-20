@@ -247,7 +247,7 @@ function MainMenuWidget:Initialize()
 	LevelFrame = CharacterCanvas.LevelFrame
 	--Set up level frame
 	LevelFrame.ProgressCircleFrame.LevelTextLabel.Text = player:GetAttribute("Level") or "Loading..."
-	if player:GetAttribute("Level") == LevelsConfig.LEVEL_TO_PRESTIGE and not player:GetAttribute("Prestige") == LevelsConfig.MAX_PRESTIGE then
+	if player:GetAttribute("Level") == LevelsConfig.LEVEL_TO_PRESTIGE and not player:GetAttribute("Prestige") == #Prestiges then
 		CharacterCanvas.PrestigeFrame.Visible = true
 		--Create the presige buttton
 		ButtonWidget.new(CharacterCanvas.PrestigeFrame, function()
@@ -260,7 +260,7 @@ function MainMenuWidget:Initialize()
 	--Connect attribute change
 	player:GetAttributeChangedSignal("Level"):Connect(function()
 		LevelFrame.ProgressCircleFrame.LevelTextLabel.Text = player:GetAttribute("Level")
-		if player:GetAttribute("Level") == LevelsConfig.LEVEL_TO_PRESTIGE and player:GetAttribute("Prestige") ~= LevelsConfig.MAX_PRESTIGE then
+		if player:GetAttribute("Level") == LevelsConfig.LEVEL_TO_PRESTIGE and player:GetAttribute("Prestige") ~= #Prestiges then
 			CharacterCanvas.PrestigeFrame.Visible = true
 			--Create the presige buttton
 			ButtonWidget.new(CharacterCanvas.PrestigeFrame, function()

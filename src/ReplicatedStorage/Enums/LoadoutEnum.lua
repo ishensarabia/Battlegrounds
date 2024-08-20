@@ -1,4 +1,10 @@
-local WeaponsEnum = {
+return {
+    Slots = {
+        Primary = "primary",
+        Secondary = "secondary",
+        Gadget = "gadget",
+    },
+
     WeaponNames = {
         P90 = "P-90",
         RocketLauncher = "Rocket Launcher",
@@ -22,8 +28,8 @@ local WeaponsEnum = {
         MK3A1 = "MK3A1",
     },
 
-    WidgetNames = {
+    GadgetNames = {
         Grenade = "Grenade",
+        HandCannon = "Hand Cannon",
     }
 }
-return WeaponsEnum

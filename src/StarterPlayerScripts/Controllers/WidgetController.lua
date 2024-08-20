@@ -101,6 +101,28 @@ function WidgetController:CreateWeaponFrame(weaponName : string, parent: GuiObje
 	return weaponFrame
 end
 
+function WidgetController:CreateGadgetFrame(gadgetName: string, parent: GuiObject?, layoutOrder: number?)
+	local gadget = ReplicatedStorage.Gadgets[gadgetName]
+	local gadgetFrame = Assets.GuiObjects.Frames.GadgetTemplateFrame:Clone()
+	--Assign the name
+	gadgetFrame.Name = gadget.name
+	--Assign the gadget name
+	gadgetFrame.Frame.GadgetNameTextLabel.Text = gadget.name
+	--Assign the color of the rarity
+	gadgetFrame.Frame.BackgroundLabel.ImageColor3 = RaritiesEnum.Colors[gadget:GetAttribute("Rarity")]
+	--Assing the gadget to the image
+	gadgetFrame.Frame.GadgetImageLabel.Image = gadget.TextureId
+
+	if parent then
+		gadgetFrame.Parent = parent
+	end
+
+	if layoutOrder then
+		gadgetFrame.LayoutOrder = layoutOrder
+	end
+	return gadgetFrame
+end
+
 function WidgetController:CreateCrateFrame(crateName: string, parent: GuiObject, rarityColor: Color3)
 	--clone the crate template frame
 	local crateFrame = Assets.GuiObjects.Frames.CrateFrame:Clone()

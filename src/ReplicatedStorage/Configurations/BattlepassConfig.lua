@@ -3,7 +3,7 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Skins = require(ReplicatedStorage.Source.Assets.Skins)
 local Emotes = require(ReplicatedStorage.Source.Assets.Emotes)
 local EmoteIcons = require(ReplicatedStorage.Source.Assets.EmoteIcons)
-local WeaponsEnum = require(ReplicatedStorage.Source.Enums.WeaponsEnum)
+local LoadoutEnum = require(ReplicatedStorage.Source.Enums.LoadoutEnum)
 local Weapons = ReplicatedStorage.Weapons
 --Enums
 local RaritiesEnum = require(ReplicatedStorage.Source.Enums.RaritiesEnum)
@@ -73,8 +73,8 @@ BattlepassConfig.rewards = {
 				},
 				[3] = {
 					rewardType = BattlepassConfig.RewardTypes.Weapon,
-					weaponName = WeaponsEnum.WeaponNames.P90,
-					rarityColor = RaritiesEnum.Colors[Weapons[WeaponsEnum.WeaponNames.P90]:GetAttribute("Rrarity")],
+					weaponName = LoadoutEnum.WeaponNames.P90,
+					rarityColor = RaritiesEnum.Colors[Weapons[LoadoutEnum.WeaponNames.P90]:GetAttribute("Rrarity")],
 				}
 			},
 		},
@@ -129,8 +129,8 @@ BattlepassConfig.rewards = {
 				},
 				[2] = {
 					rewardType = BattlepassConfig.RewardTypes.Weapon,
-					weaponName = WeaponsEnum.WeaponNames.Rhino,
-					rarityColor = RaritiesEnum.Colors[Weapons[WeaponsEnum.WeaponNames.Rhino]:GetAttribute("Rrarity")],
+					weaponName = LoadoutEnum.WeaponNames.Rhino,
+					rarityColor = RaritiesEnum.Colors[Weapons[LoadoutEnum.WeaponNames.Rhino]:GetAttribute("Rrarity")],
 				}
 			},
 		},

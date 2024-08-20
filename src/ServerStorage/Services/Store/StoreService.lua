@@ -16,7 +16,7 @@ local TableUtil = require(ReplicatedStorage.Source.Modules.Util.TableUtil)
 local RaritiesEnum = require(ReplicatedStorage.Source.Enums.RaritiesEnum)
 local ItemTypesEnum = require(ReplicatedStorage.Source.Enums.ItemTypesEnum)
 local CurrenciesEnum = require(ReplicatedStorage.Source.Enums.CurrenciesEnum)
-local WeaponsEnum = require(ReplicatedStorage.Source.Enums.WeaponsEnum)
+local LoadoutEnum = require(ReplicatedStorage.Source.Enums.LoadoutEnum)
 
 --Config
 local StoreConfig = require(ReplicatedStorage.Source.Configurations.StoreConfig)
@@ -261,19 +261,19 @@ StoreService.prestigeItems = {
 
 	Weapons = {
 		{
-			prestigeNeeded = Weapons[WeaponsEnum.WeaponNames.XM8]:GetAttribute("RequiredPrestige"),
+			prestigeNeeded = Weapons[LoadoutEnum.WeaponNames.XM8]:GetAttribute("RequiredPrestige"),
 			data = {
-				name = WeaponsEnum.WeaponNames.XM8,
-				price = Weapons[WeaponsEnum.WeaponNames.XM8]:GetAttribute("Price"),
-				currency = Weapons[WeaponsEnum.WeaponNames.XM8]:GetAttribute("Currency"),
+				name = LoadoutEnum.WeaponNames.XM8,
+				price = Weapons[LoadoutEnum.WeaponNames.XM8]:GetAttribute("Price"),
+				currency = Weapons[LoadoutEnum.WeaponNames.XM8]:GetAttribute("Currency"),
 			},
 		},
 		{
-			prestigeNeeded = Weapons[WeaponsEnum.WeaponNames.MK3A1]:GetAttribute("RequiredPrestige"),
+			prestigeNeeded = Weapons[LoadoutEnum.WeaponNames.MK3A1]:GetAttribute("RequiredPrestige"),
 			data = {
-				name = WeaponsEnum.WeaponNames.MK3A1,
-				price = Weapons[WeaponsEnum.WeaponNames.MK3A1]:GetAttribute("Price"),
-				currency = Weapons[WeaponsEnum.WeaponNames.MK3A1]:GetAttribute("Currency"),
+				name = LoadoutEnum.WeaponNames.MK3A1,
+				price = Weapons[LoadoutEnum.WeaponNames.MK3A1]:GetAttribute("Price"),
+				currency = Weapons[LoadoutEnum.WeaponNames.MK3A1]:GetAttribute("Currency"),
 			},
 		}
 	},

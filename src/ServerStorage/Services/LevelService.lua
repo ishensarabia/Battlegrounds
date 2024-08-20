@@ -92,7 +92,7 @@ function LevelService:CheckLevelUp(player)
 			else
 				self._dataService:incrementIntValue(player, "experience", -experienceToLevelUp)
 				player:SetAttribute("Experience", self._dataService:GetKeyValue(player, "experience"))
-				experienceToLevelUp = 100 + (player:GetAttribute("Level") * 50) -- Recalculate experienceToLevelUp after leveling up
+				experienceToLevelUp = 100 + (player:GetAttribute("Level") * 100) -- Recalculate experienceToLevelUp after leveling up
 				player:SetAttribute("ExperienceToLevelUp", experienceToLevelUp)
 				self:CheckLevelUp(player)
 			end
