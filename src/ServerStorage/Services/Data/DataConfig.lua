@@ -44,7 +44,6 @@ DataConfig.profileTemplate = {
 		[LoadoutEnum.WeaponNames.AUG3] = table.clone(DataConfig.purchasableWeaponTemplate),
 		[LoadoutEnum.WeaponNames.AK47] = table.clone(DataConfig.purchasableWeaponTemplate),
 		[LoadoutEnum.WeaponNames.DEagle] = table.clone(DataConfig.purchasableWeaponTemplate),
-		[LoadoutEnum.WeaponNames.P90] = table.clone(DataConfig.purchasableWeaponTemplate),
 		[LoadoutEnum.WeaponNames.Crossbow] = table.clone(DataConfig.purchasableWeaponTemplate),
 		[LoadoutEnum.WeaponNames.KrissVector] = table.clone(DataConfig.purchasableWeaponTemplate),
 		[LoadoutEnum.WeaponNames.Uzi] = table.clone(DataConfig.purchasableWeaponTemplate),
